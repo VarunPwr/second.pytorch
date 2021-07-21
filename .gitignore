@@ -4,3 +4,4 @@ licenses/
 *.txt
 *.sh
 logs/
+__pycache__/

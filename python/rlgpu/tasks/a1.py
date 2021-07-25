@@ -7,8 +7,7 @@
 
 import numpy as np
 import os
-import time
-
+import collections
 from numpy.core.numeric import indices
 
 from rlgpu.utils.torch_jit_utils import *
@@ -85,7 +84,7 @@ class A1(BaseTask):
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
 
-        self.cfg["env"]["numObservations"] = 48 * self.historical_step
+        self.cfg["env"]["numObservations"] = 24 * (self.historical_step + 1)
         self.cfg["env"]["numActions"] = 12
 
         self.cfg["device_type"] = device_type
@@ -127,6 +126,12 @@ class A1(BaseTask):
             self.num_envs, -1, 3)  # shape: num_envs, num_bodies, xyz axis
         self.torques = gymtorch.wrap_tensor(
             torques).view(self.num_envs, self.num_dof)
+
+        if self.historical_step > 1:
+            self.dof_pos_buf = torch.zeros(
+                (self.num_envs, self.historical_step, self.num_dof), device=self.device)
+            self.actions_buf = torch.zeros(
+                (self.num_envs, self.historical_step, self.num_dof), device=self.device)
 
         self.commands = torch.zeros(
             self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
@@ -241,6 +246,11 @@ class A1(BaseTask):
 
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
+
+        if self.historical_step > 1:
+            self.actions_buf = torch.cat(
+                [self.actions_buf[:, :-1], self.actions.unsqueeze(1)], dim=1)
+
         targets = self.action_scale * self.actions + self.default_dof_pos
         self.gym.set_dof_position_target_tensor(
             self.sim, gymtorch.unwrap_tensor(targets))
@@ -253,6 +263,10 @@ class A1(BaseTask):
         if len(env_ids) > 0:
             self.reset(env_ids)
         self._update_viewer()
+
+        if self.historical_step > 1:
+            self.dof_pos_buf = torch.cat(
+                [self.dof_pos_buf[:, :-1], self.dof_pos.unsqueeze(1)], dim=1)
         self.compute_observations()
         self.compute_reward(self.actions)
 
@@ -278,20 +292,37 @@ class A1(BaseTask):
         self.gym.refresh_net_contact_force_tensor(self.sim)
         self.gym.refresh_dof_force_tensor(self.sim)
 
-        self.obs_buf[:] = compute_a1_observations(  # tensors
-            self.root_states,
-            self.commands,
-            self.dof_pos,
-            self.default_dof_pos,
-            self.dof_vel,
-            self.gravity_vec,
-            self.action_scale * self.actions,
-            # scales
-            self.lin_vel_scale,
-            self.ang_vel_scale,
-            self.dof_pos_scale,
-            self.dof_vel_scale
-        )
+        if self.historical_step > 1:
+            dof_pos = (self.dof_pos_buf -
+                       self.default_dof_pos.unsqueeze(1)).view(self.num_envs, -1)
+            actions = self.actions_buf.view(self.num_envs, -1)
+            self.obs_buf[:] = compute_a1_observations(  # tensors
+                self.root_states,
+                self.commands,
+                dof_pos,
+                self.dof_vel,
+                self.gravity_vec,
+                self.action_scale * actions,
+                # scales
+                self.lin_vel_scale,
+                self.ang_vel_scale,
+                self.dof_pos_scale,
+                self.dof_vel_scale
+            )
+        else:
+            self.obs_buf[:] = compute_a1_observations(  # tensors
+                self.root_states,
+                self.commands,
+                self.dof_pos - self.default_dof_pos,
+                self.dof_vel,
+                self.gravity_vec,
+                self.action_scale * self.actions,
+                # scales
+                self.lin_vel_scale,
+                self.ang_vel_scale,
+                self.dof_pos_scale,
+                self.dof_vel_scale
+            )
 
     def reset(self, env_ids):
         # Randomization can happen only at reset time, since it can reset actor positions on GPU
@@ -326,6 +357,9 @@ class A1(BaseTask):
         self.commands_yaw[env_ids] = torch_rand_float(
             self.command_yaw_range[0], self.command_yaw_range[1], (len(env_ids), 1), device=self.device).squeeze()
 
+        if self.historical_step > 1:
+            self.dof_pos_buf[env_ids] = 0
+            self.actions_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
 
@@ -393,7 +427,6 @@ def compute_a1_reward(
 def compute_a1_observations(root_states: Tensor,
                             commands: Tensor,
                             dof_pos: Tensor,
-                            default_dof_pos: Tensor,
                             dof_vel: Tensor,
                             gravity_vec: Tensor,
                             actions: Tensor,
@@ -410,7 +443,7 @@ def compute_a1_observations(root_states: Tensor,
     base_ang_vel = quat_rotate_inverse(
         base_quat, root_states[:, 10:13]) * ang_vel_scale
     projected_gravity = quat_rotate(base_quat, gravity_vec)
-    dof_pos_scaled = (dof_pos - default_dof_pos) * dof_pos_scale
+    dof_pos_scaled = dof_pos * dof_pos_scale
 
     commands_scaled = commands * \
         torch.tensor([lin_vel_scale, lin_vel_scale, ang_vel_scale],

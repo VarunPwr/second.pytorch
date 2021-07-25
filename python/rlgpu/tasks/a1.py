@@ -41,6 +41,7 @@ class A1(BaseTask):
         self.rew_scales["lin_vel_xy"] = self.cfg["env"]["learn"]["linearVelocityXYRewardScale"]
         self.rew_scales["ang_vel_z"] = self.cfg["env"]["learn"]["angularVelocityZRewardScale"]
         self.rew_scales["torque"] = self.cfg["env"]["learn"]["torqueRewardScale"]
+        self.rew_scales["torque_smoothing"] = self.cfg["env"]["learn"]["torqueSmoothingRewardScale"]
 
         # randomization
         self.randomization_params = self.cfg["task"]["randomization_params"]
@@ -63,8 +64,11 @@ class A1(BaseTask):
         v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
         state = pos + rot + v_lin + v_ang
 
+        # sensor settings
+        self.historical_step = self.cfg["env"]["sensor"]["historical_step"]
+
         self.base_init_state = state
-        print(self.base_init_state)
+        self.refEnv = self.cfg["env"]["viewer"]["refEnv"]
 
         # default joint positions
         self.named_default_joint_angles = self.cfg["env"]["defaultJointAngles"]
@@ -76,11 +80,12 @@ class A1(BaseTask):
             self.max_episode_length_s / self.dt + 0.5)
         self.Kp = self.cfg["env"]["control"]["stiffness"]
         self.Kd = self.cfg["env"]["control"]["damping"]
+        self.freq = self.cfg["env"]["control"]["controlFrequencyInv"]
 
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
 
-        self.cfg["env"]["numObservations"] = 48
+        self.cfg["env"]["numObservations"] = 48 * self.historical_step
         self.cfg["env"]["numActions"] = 12
 
         self.cfg["device_type"] = device_type
@@ -89,9 +94,11 @@ class A1(BaseTask):
 
         super().__init__(cfg=self.cfg)
 
-        if self.viewer != None:
+        if self.viewer is not None:
             p = self.cfg["env"]["viewer"]["pos"]
             lookat = self.cfg["env"]["viewer"]["lookat"]
+            self.camera_distance = [
+                _lookat - _p for _lookat, _p in zip(lookat, p)]
             cam_pos = gymapi.Vec3(p[0], p[1], p[2])
             cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
             self.gym.viewer_camera_look_at(
@@ -206,6 +213,7 @@ class A1(BaseTask):
             dof_props['driveMode'][i] = gymapi.DOF_MODE_POS
             dof_props['stiffness'][i] = self.Kp
             dof_props['damping'][i] = self.Kd
+
         env_lower = gymapi.Vec3(-spacing, -spacing, 0.0)
         env_upper = gymapi.Vec3(spacing, spacing, spacing)
         self.a1_handles = []
@@ -233,18 +241,18 @@ class A1(BaseTask):
 
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
-        # print(actions)
-        # targets = self.default_dof_pos
         targets = self.action_scale * self.actions + self.default_dof_pos
         self.gym.set_dof_position_target_tensor(
             self.sim, gymtorch.unwrap_tensor(targets))
+        # self.gym.set_dof_velocity_target_tensor(
+        #     self.sim, gymtorch.unwrap_tensor(torch.zeros_like(targets)))
 
     def post_physics_step(self):
         self.progress_buf += 1
         env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
         if len(env_ids) > 0:
             self.reset(env_ids)
-
+        self._update_viewer()
         self.compute_observations()
         self.compute_reward(self.actions)
 
@@ -277,7 +285,7 @@ class A1(BaseTask):
             self.default_dof_pos,
             self.dof_vel,
             self.gravity_vec,
-            self.actions,
+            self.action_scale * self.actions,
             # scales
             self.lin_vel_scale,
             self.ang_vel_scale,
@@ -320,6 +328,16 @@ class A1(BaseTask):
 
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
+
+    def _update_viewer(self):
+        if self.viewer is not None:
+            lookat = self.root_states[self.refEnv, 0:3]
+            p = [_lookat - _camera_distance for _camera_distance,
+                 _lookat in zip(self.camera_distance, lookat)]
+            cam_pos = gymapi.Vec3(p[0], p[1], p[2])
+            cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
+            self.gym.viewer_camera_look_at(
+                self.viewer, None, cam_pos, cam_target)
 
 #####################################################################
 ###=========================jit functions=========================###

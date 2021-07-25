@@ -148,7 +148,7 @@ class BaseTask():
     def get_states(self):
         return self.states_buf
 
-    def render(self, sync_frame_time=False):
+    def render(self, sync_frame_time=True):
         if self.viewer:
             # check for window closed
             if self.gym.query_viewer_has_closed(self.viewer):
@@ -169,6 +169,8 @@ class BaseTask():
             if self.enable_viewer_sync:
                 self.gym.step_graphics(self.sim)
                 self.gym.draw_viewer(self.viewer, self.sim, True)
+                if sync_frame_time:
+                    self.gym.sync_frame_time(self.sim)
             else:
                 self.gym.poll_viewer_events(self.viewer)
 

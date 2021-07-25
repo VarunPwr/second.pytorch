@@ -170,7 +170,8 @@ def load_cfg(args, use_rlg_config=False):
 
         if args.experiment != 'Base':
             if args.metadata:
-                exp_name = "{}_{}_{}_{}".format(args.experiment, args.task_type, args.device, str(args.physics_engine).split("_")[-1])
+                exp_name = "{}_{}_{}_{}".format(args.experiment, args.task_type, args.device, str(
+                    args.physics_engine).split("_")[-1])
 
                 if cfg["task"]["randomize"]:
                     exp_name += "_DR"
@@ -212,7 +213,8 @@ def load_cfg(args, use_rlg_config=False):
         log_id = args.logdir
         if args.experiment != 'Base':
             if args.metadata:
-                log_id = args.logdir + "_{}_{}_{}_{}".format(args.experiment, args.task_type, args.device, str(args.physics_engine).split("_")[-1])
+                log_id = args.logdir + "_{}_{}_{}_{}".format(
+                    args.experiment, args.task_type, args.device, str(args.physics_engine).split("_")[-1])
                 if cfg["task"]["randomize"]:
                     log_id += "_DR"
             else:
@@ -227,7 +229,8 @@ def load_cfg(args, use_rlg_config=False):
 def parse_sim_params(args, cfg, cfg_train):
     # initialize sim
     sim_params = gymapi.SimParams()
-    sim_params.dt = 1./60.
+    # sim_params.dt = 1. / 10.
+    sim_params.dt = 1. / 60.
     sim_params.num_client_threads = args.slices
 
     if args.physics_engine == gymapi.SIM_FLEX:
@@ -301,7 +304,10 @@ def get_args(benchmark=False, use_rlg_config=False):
         {"name": "--randomize", "action": "store_true", "default": False,
             "help": "Apply physics domain randomization"},
         {"name": "--torch_deterministic", "action": "store_true", "default": False,
-            "help": "Apply additional PyTorch settings for more deterministic behaviour"}]
+            "help": "Apply additional PyTorch settings for more deterministic behaviour"},
+        {"name": "--sync_frame_time", "action": "store_true", "default": False,
+            "help": "run in the real time"},
+    ]
 
     if benchmark:
         custom_parameters += [{"name": "--num_proc", "type": int, "default": 1, "help": "Number of child processes to launch"},
@@ -336,9 +342,11 @@ def get_args(benchmark=False, use_rlg_config=False):
         if args.steps_num != -1:
             print("Setting number of simulation steps per iteration from command line is not supported by rl-pytorch.")
         if args.minibatch_size != -1:
-            print("Setting minibatch size from command line is not supported by rl-pytorch.")
+            print(
+                "Setting minibatch size from command line is not supported by rl-pytorch.")
         if args.checkpoint != "Base":
-            raise ValueError("--checkpoint is not supported by rl-pytorch. Please use --resume <iteration number>")
+            raise ValueError(
+                "--checkpoint is not supported by rl-pytorch. Please use --resume <iteration number>")
 
     # use custom parameters if provided by user
     if args.logdir == "logs/":

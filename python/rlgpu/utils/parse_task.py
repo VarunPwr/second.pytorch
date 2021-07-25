@@ -31,6 +31,7 @@ def parse_task(args, cfg, cfg_train, sim_params):
     # create native task and pass custom config
     device_id = args.device_id
     rl_device = args.rl_device
+    sync_frame_time = args.sync_frame_time
 
     cfg["seed"] = cfg_train.get("seed", -1)
     cfg_task = cfg["env"]
@@ -46,7 +47,7 @@ def parse_task(args, cfg, cfg_train, sim_params):
                 task.init(device_id, -1, args.physics_engine, sim_params)
             else:
                 task.init(device_id, device_id, args.physics_engine, sim_params)
-            env = VecTaskCPU(task, rl_device, False, cfg_train.get("clip_observations", 5.0), cfg_train.get("clip_actions", 1.0))
+            env = VecTaskCPU(task, rl_device, sync_frame_time, cfg_train.get("clip_observations", 5.0), cfg_train.get("clip_actions", 1.0))
         else:
             print("C++ GPU")
 

@@ -5,3 +5,4 @@ licenses/
 *.sh
 logs/
 __pycache__/
+*.pyc

@@ -251,10 +251,35 @@ class A1(BaseTask):
             self.actions_buf = torch.cat(
                 [self.actions_buf[:, :-1], self.actions.unsqueeze(1)], dim=1)
 
+    def step(self, actions):
+        if self.dr_randomizations.get('actions', None):
+            actions = self.dr_randomizations['actions']['noise_lambda'](
+                actions)
+
+        # apply actions
+        self.pre_physics_step(actions)
+
+        # step physics and render each frame
+
         targets_pos = self.action_scale * self.actions + self.default_dof_pos
 
-        self.gym.set_dof_position_target_tensor(
-            self.sim, gymtorch.unwrap_tensor(targets_pos))
+        # this is the correct way to use action repeat with position control!
+        for _ in range(self.control_freq_inv):
+            self.render()
+            self.gym.set_dof_position_target_tensor(
+                self.sim, gymtorch.unwrap_tensor(targets_pos))
+            self.gym.simulate(self.sim)
+
+        # to fix!
+        if self.device == 'cpu':
+            self.gym.fetch_results(self.sim, True)
+
+        # compute observations, rewards, resets, ...
+        self.post_physics_step()
+
+        if self.dr_randomizations.get('observations', None):
+            self.obs_buf = self.dr_randomizations['observations']['noise_lambda'](
+                self.obs_buf)
 
     def post_physics_step(self):
         self.progress_buf += 1

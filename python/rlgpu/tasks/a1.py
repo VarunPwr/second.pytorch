@@ -132,7 +132,8 @@ class A1(BaseTask):
                 (self.num_envs, self.historical_step, self.num_dof), device=self.device)
             self.actions_buf = torch.zeros(
                 (self.num_envs, self.historical_step, self.num_dof), device=self.device)
-
+            self.torques_buf = torch.zeros(
+                (self.num_envs, self.historical_step, self.num_dof), device=self.device)
         self.commands = torch.zeros(
             self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
         self.commands_y = self.commands.view(self.num_envs, 3)[..., 1]
@@ -263,7 +264,7 @@ class A1(BaseTask):
 
         targets_pos = self.action_scale * self.actions + self.default_dof_pos
 
-        # this is the correct way to use action repeat with position control!
+        # this is the common way to use action repeat with position control!
         for _ in range(self.control_freq_inv):
             self.render()
             self.gym.set_dof_position_target_tensor(
@@ -287,10 +288,12 @@ class A1(BaseTask):
         if len(env_ids) > 0:
             self.reset(env_ids)
         self._update_viewer()
-
         if self.historical_step > 1:
             self.dof_pos_buf = torch.cat(
                 [self.dof_pos_buf[:, :-1], self.dof_pos.unsqueeze(1)], dim=1)
+            self.torques_buf = torch.cat(
+                [self.torques_buf[:, :-1], self.torques.unsqueeze(1)], dim=1)
+            
         self.compute_observations()
         self.compute_reward(self.actions)
 
@@ -308,6 +311,7 @@ class A1(BaseTask):
             # other
             self.base_index,
             self.max_episode_length,
+            last_torques=self.torques_buf[:, -2]
         )
 
     def compute_observations(self):
@@ -384,6 +388,7 @@ class A1(BaseTask):
         if self.historical_step > 1:
             self.dof_pos_buf[env_ids] = 0
             self.actions_buf[env_ids] = 0
+            self.torques_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
 
@@ -416,6 +421,7 @@ def compute_a1_reward(
     # other
     base_index: int,
     max_episode_length: int,
+    last_torques: Tensor
 ) -> Tuple[Tensor, Tensor]:  # (reward, reset, feet_in air, feet_air_time, episode sums)
 
     # prepare quantities (TODO: return from obs ?)
@@ -434,6 +440,8 @@ def compute_a1_reward(
     # torque penalty
     rew_torque = torch.sum(torch.square(torques), dim=1) * rew_scales["torque"]
 
+    if last_torques is not None:
+        rew_torque += torch.sum(torch.square(torques - last_torques), dim=1) * rew_scales["torque_smoothing"]
     total_reward = rew_lin_vel_xy + rew_ang_vel_z + rew_torque
     total_reward = torch.clip(total_reward, 0., None)
     # reset agents

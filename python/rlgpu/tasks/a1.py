@@ -77,7 +77,7 @@ class A1(BaseTask):
         self.dt = sim_params.dt
         self.max_episode_length_s = self.cfg["env"]["learn"]["episodeLength_s"]
         self.max_episode_length = int(
-            self.max_episode_length_s / self.control_freq_inv * self.dt + 0.5)
+            self.max_episode_length_s / (self.control_freq_inv * self.dt) + 0.5)
         self.Kp = self.cfg["env"]["control"]["stiffness"]
         self.Kd = self.cfg["env"]["control"]["damping"]
 

@@ -62,6 +62,9 @@ env:
     # episode length in seconds
     episodeLength_s: 50
 
+    # use diagonal action
+    diagonal_act: True
+
   # viewer cam:
   viewer:
     refEnv: 0

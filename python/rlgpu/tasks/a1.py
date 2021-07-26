@@ -42,6 +42,9 @@ class A1(BaseTask):
         self.rew_scales["torque"] = self.cfg["env"]["learn"]["torqueRewardScale"]
         self.rew_scales["torque_smoothing"] = self.cfg["env"]["learn"]["torqueSmoothingRewardScale"]
 
+        # use diagonal action
+        self.diagonal_act = self.cfg["env"]["learn"]["diagonal_act"]
+
         # randomization
         self.randomization_params = self.cfg["task"]["randomization_params"]
         self.randomize = self.cfg["task"]["randomize"]
@@ -84,9 +87,15 @@ class A1(BaseTask):
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
 
-        self.cfg["env"]["numObservations"] = 24 * (self.historical_step + 1)
-        self.cfg["env"]["numActions"] = 12
+        
 
+        if self.diagonal_act:
+            self.cfg["env"]["numObservations"] = 18 * self.historical_step + 24
+            self.cfg["env"]["numActions"] = 6
+        else:
+            self.cfg["env"]["numObservations"] = 24 * (self.historical_step + 1)
+            self.cfg["env"]["numActions"] = 12
+            
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
         self.cfg["headless"] = headless
@@ -261,8 +270,12 @@ class A1(BaseTask):
         self.pre_physics_step(actions)
 
         # step physics and render each frame
-
-        targets_pos = self.action_scale * self.actions + self.default_dof_pos
+        if self.diagonal_act:
+            right_action, left_action = torch.chunk(self.actions, 2, dim=-1)
+            whole_action = torch.cat([right_action, left_action, left_action, right_action], dim=-1)
+            targets_pos = self.action_scale * whole_action + self.default_dof_pos
+        else:
+            targets_pos = self.action_scale * self.actions + self.default_dof_pos
 
         self.gym.set_dof_position_target_tensor(
             self.sim, gymtorch.unwrap_tensor(targets_pos))

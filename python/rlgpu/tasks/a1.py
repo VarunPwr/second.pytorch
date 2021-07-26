@@ -150,12 +150,13 @@ class A1(BaseTask):
         self.commands_yaw = self.commands.view(self.num_envs, 3)[..., 2]
         self.default_dof_pos = torch.zeros_like(
             self.dof_pos, dtype=torch.float, device=self.device, requires_grad=False)
-        for i in range(self.cfg["env"]["numActions"]):
+        for i in range(self.num_dof):
             name = self.dof_names[i]
             angle = self.named_default_joint_angles[name]
 
             self.default_dof_pos[:, i] = angle
-        # print(self.default_dof_pos)
+        
+        print(self.default_dof_pos)
         # print("the init pos", self.dof_pos)
 
         # initialize some data used later on

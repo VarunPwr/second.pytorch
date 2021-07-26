@@ -73,13 +73,13 @@ class A1(BaseTask):
         self.named_default_joint_angles = self.cfg["env"]["defaultJointAngles"]
 
         # other
+        self.control_freq_inv = self.cfg["env"]["control"]["controlFrequencyInv"]
         self.dt = sim_params.dt
         self.max_episode_length_s = self.cfg["env"]["learn"]["episodeLength_s"]
         self.max_episode_length = int(
-            self.max_episode_length_s / self.dt + 0.5)
+            self.max_episode_length_s / self.control_freq_inv * self.dt + 0.5)
         self.Kp = self.cfg["env"]["control"]["stiffness"]
         self.Kd = self.cfg["env"]["control"]["damping"]
-        self.freq = self.cfg["env"]["control"]["controlFrequencyInv"]
 
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
@@ -251,11 +251,10 @@ class A1(BaseTask):
             self.actions_buf = torch.cat(
                 [self.actions_buf[:, :-1], self.actions.unsqueeze(1)], dim=1)
 
-        targets = self.action_scale * self.actions + self.default_dof_pos
+        targets_pos = self.action_scale * self.actions + self.default_dof_pos
+
         self.gym.set_dof_position_target_tensor(
-            self.sim, gymtorch.unwrap_tensor(targets))
-        # self.gym.set_dof_velocity_target_tensor(
-        #     self.sim, gymtorch.unwrap_tensor(torch.zeros_like(targets)))
+            self.sim, gymtorch.unwrap_tensor(targets_pos))
 
     def post_physics_step(self):
         self.progress_buf += 1

@@ -265,7 +265,7 @@ class A1(BaseTask):
         targets_pos = self.action_scale * self.actions + self.default_dof_pos
 
         self.gym.set_dof_position_target_tensor(
-                self.sim, gymtorch.unwrap_tensor(targets_pos))
+            self.sim, gymtorch.unwrap_tensor(targets_pos))
         self.render()
         # this is the correct way to use action repeat with position control!
         for _ in range(self.control_freq_inv):
@@ -295,26 +295,43 @@ class A1(BaseTask):
                 [self.dof_pos_buf[:, :-1], self.dof_pos.unsqueeze(1)], dim=1)
             self.torques_buf = torch.cat(
                 [self.torques_buf[:, :-1], self.torques.unsqueeze(1)], dim=1)
-            
+
         self.compute_observations()
         self.compute_reward(self.actions)
 
     def compute_reward(self, actions):
-        self.rew_buf[:], self.reset_buf[:] = compute_a1_reward(
-            # tensors
-            self.root_states,
-            self.commands,
-            self.torques,
-            self.contact_forces,
-            self.knee_indices,
-            self.progress_buf,
-            # Dict
-            self.rew_scales,
-            # other
-            self.base_index,
-            self.max_episode_length,
-            last_torques=self.torques_buf[:, -2]
-        )
+        if self.historical_step > 1:
+            self.rew_buf[:], self.reset_buf[:] = compute_a1_reward(
+                # tensors
+                self.root_states,
+                self.commands,
+                self.torques,
+                self.contact_forces,
+                self.knee_indices,
+                self.progress_buf,
+                # Dict
+                self.rew_scales,
+                # other
+                self.base_index,
+                self.max_episode_length,
+                last_torques=self.torques_buf[:, -2]
+            )
+        else:
+            self.rew_buf[:], self.reset_buf[:] = compute_a1_reward(
+                # tensors
+                self.root_states,
+                self.commands,
+                self.torques,
+                self.contact_forces,
+                self.knee_indices,
+                self.progress_buf,
+                # Dict
+                self.rew_scales,
+                # other
+                self.base_index,
+                self.max_episode_length,
+                last_torques=self.torques
+            )
 
     def compute_observations(self):
         self.gym.refresh_dof_state_tensor(self.sim)  # done in step
@@ -443,7 +460,8 @@ def compute_a1_reward(
     rew_torque = torch.sum(torch.square(torques), dim=1) * rew_scales["torque"]
 
     if last_torques is not None:
-        rew_torque += torch.sum(torch.square(torques - last_torques), dim=1) * rew_scales["torque_smoothing"]
+        rew_torque += torch.sum(torch.square(torques - last_torques),
+                                dim=1) * rew_scales["torque_smoothing"]
     total_reward = rew_lin_vel_xy + rew_ang_vel_z + rew_torque
     total_reward = torch.clip(total_reward, 0., None)
     # reset agents

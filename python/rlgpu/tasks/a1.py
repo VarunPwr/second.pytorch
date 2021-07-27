@@ -87,8 +87,6 @@ class A1(BaseTask):
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
 
-        
-
         if self.diagonal_act:
             self.cfg["env"]["numObservations"] = 18 * self.historical_step + 24
             self.cfg["env"]["numActions"] = 6
@@ -139,8 +137,12 @@ class A1(BaseTask):
         if self.historical_step > 1:
             self.dof_pos_buf = torch.zeros(
                 (self.num_envs, self.historical_step, self.num_dof), device=self.device)
-            self.actions_buf = torch.zeros(
-                (self.num_envs, self.historical_step, self.num_dof), device=self.device)
+            if self.diagonal_act:
+                self.actions_buf = torch.zeros(
+                    (self.num_envs, self.historical_step, self.num_dof // 2), device=self.device)
+            else:
+                self.actions_buf = torch.zeros(
+                    (self.num_envs, self.historical_step, self.num_dof), device=self.device)
             self.torques_buf = torch.zeros(
                 (self.num_envs, self.historical_step, self.num_dof), device=self.device)
         self.commands = torch.zeros(
@@ -156,9 +158,6 @@ class A1(BaseTask):
 
             self.default_dof_pos[:, i] = angle
         
-        print(self.default_dof_pos)
-        # print("the init pos", self.dof_pos)
-
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()

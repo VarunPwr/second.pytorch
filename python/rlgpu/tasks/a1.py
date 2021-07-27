@@ -277,13 +277,13 @@ class A1(BaseTask):
         else:
             targets_pos = self.action_scale * self.actions + self.default_dof_pos
 
-        self.gym.set_dof_position_target_tensor(
-            self.sim, gymtorch.unwrap_tensor(targets_pos))
+        # self.gym.set_dof_position_target_tensor(
+        #     self.sim, gymtorch.unwrap_tensor(targets_pos))
         self.render()
         # this is the correct way to use action repeat with position control!
         for _ in range(self.control_freq_inv):
-            # self.gym.set_dof_position_target_tensor(
-            #     self.sim, gymtorch.unwrap_tensor(targets_pos))
+            self.gym.set_dof_position_target_tensor(
+                self.sim, gymtorch.unwrap_tensor(targets_pos))
             self.gym.simulate(self.sim)
 
         # to fix!

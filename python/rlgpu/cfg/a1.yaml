@@ -132,27 +132,28 @@ task:
             schedule: "linear"  
             schedule_steps: 30000
 
-reward_randomization:
-  randomize: False
+randomize_reward:
+  randomize: True
   randomization_params:
-    frequency: 10000
-    linearVelocityXYRewardScale:
-      range: [1., 3.]
-      distribution: "uniform"
-      schedule: "linear"
-      schedule_steps: 50000
-    angularVelocityZRewardScale:
-      range: [1., 2.]
-      distribution: "uniform"
-      schedule: "linear"
-      schedule_steps: 50000
-    torqueRewardScale:
-      range: [-0.000005, -0.000025]
-      distribution: "uniform"
-      schedule: "linear"
-      schedule_steps: 50000
-    torqueSmoothingRewardScale:
-      range: [-0.000005, -0.000015]
-      distribution: "uniform"
-      schedule: "linear"
-      schedule_steps: 50000
+    frequency: 100000
+    reward_scale:
+      linearVelocityXYRewardScale:
+        range: [1., 3.]
+        distribution: "uniform"
+        schedule: "linear"
+        schedule_steps: 50000
+      angularVelocityZRewardScale:
+        range: [1., 2.]
+        distribution: "uniform"
+        schedule: "linear"
+        schedule_steps: 50000
+      torqueRewardScale:
+        range: [-0.000005, -0.000035]
+        distribution: "uniform"
+        schedule: "linear"
+        schedule_steps: 50000
+      torqueSmoothingRewardScale:
+        range: [-0.000015, -0.000025]
+        distribution: "uniform"
+        schedule: "linear"
+        schedule_steps: 50000

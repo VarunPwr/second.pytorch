@@ -7,7 +7,6 @@
 
 import numpy as np
 import os
-import collections
 from numpy.core.numeric import indices
 
 from rlgpu.utils.torch_jit_utils import *
@@ -37,10 +36,10 @@ class A1(BaseTask):
 
         # reward scales
         self.rew_scales = {}
-        self.rew_scales["lin_vel_xy"] = self.cfg["env"]["learn"]["linearVelocityXYRewardScale"]
-        self.rew_scales["ang_vel_z"] = self.cfg["env"]["learn"]["angularVelocityZRewardScale"]
-        self.rew_scales["torque"] = self.cfg["env"]["learn"]["torqueRewardScale"]
-        self.rew_scales["torque_smoothing"] = self.cfg["env"]["learn"]["torqueSmoothingRewardScale"]
+        self.rew_scales["linearVelocityXYRewardScale"] = self.cfg["env"]["learn"]["linearVelocityXYRewardScale"]
+        self.rew_scales["angularVelocityZRewardScale"] = self.cfg["env"]["learn"]["angularVelocityZRewardScale"]
+        self.rew_scales["torqueRewardScale"] = self.cfg["env"]["learn"]["torqueRewardScale"]
+        self.rew_scales["torqueSmoothingRewardScale"] = self.cfg["env"]["learn"]["torqueSmoothingRewardScale"]
 
         # use diagonal action
         self.diagonal_act = self.cfg["env"]["learn"]["diagonal_act"]
@@ -48,6 +47,9 @@ class A1(BaseTask):
         # randomization
         self.randomization_params = self.cfg["task"]["randomization_params"]
         self.randomize = self.cfg["task"]["randomize"]
+
+        self.randomize_reward = self.cfg["randomize_reward"]["randomize"]
+        self.reward_randomization_params = self.cfg["randomize_reward"]["randomization_params"]
 
         # command ranges
         self.command_x_range = self.cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
@@ -91,9 +93,10 @@ class A1(BaseTask):
             self.cfg["env"]["numObservations"] = 18 * self.historical_step + 24
             self.cfg["env"]["numActions"] = 6
         else:
-            self.cfg["env"]["numObservations"] = 24 * (self.historical_step + 1)
+            self.cfg["env"]["numObservations"] = 24 * \
+                (self.historical_step + 1)
             self.cfg["env"]["numActions"] = 12
-            
+
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
         self.cfg["headless"] = headless
@@ -157,7 +160,7 @@ class A1(BaseTask):
             angle = self.named_default_joint_angles[name]
 
             self.default_dof_pos[:, i] = angle
-        
+
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
@@ -272,7 +275,8 @@ class A1(BaseTask):
         # step physics and render each frame
         if self.diagonal_act:
             right_action, left_action = torch.chunk(self.actions, 2, dim=-1)
-            whole_action = torch.cat([right_action, left_action, left_action, right_action], dim=-1)
+            whole_action = torch.cat(
+                [right_action, left_action, left_action, right_action], dim=-1)
             targets_pos = self.action_scale * whole_action + self.default_dof_pos
         else:
             targets_pos = self.action_scale * self.actions + self.default_dof_pos
@@ -384,10 +388,29 @@ class A1(BaseTask):
                 self.dof_vel_scale
             )
 
+    def apply_reward_randomizations(self, rr_params):
+        rand_freq = rr_params.get("frequency", 1)
+
+        self.last_step = self.gym.get_frame_count(self.sim)
+
+        do_rew_randomize = (
+            self.last_step - self.last_rew_rand_step) >= rand_freq
+        if do_rew_randomize:
+            self.last_rew_rand_step = self.last_step
+
+        scale_params = rr_params["reward_scale"]
+        for k, v in scale_params.items():
+            v_range = v["range"]
+            self.rew_scales[k] = np.random.uniform(low=v_range[0], high=v_range[1]) * self.dt
+
+
     def reset(self, env_ids):
         # Randomization can happen only at reset time, since it can reset actor positions on GPU
         if self.randomize:
             self.apply_randomizations(self.randomization_params)
+
+        if self.randomize_reward:
+            self.apply_reward_randomizations(self.reward_randomization_params)
 
         # positions_offset = torch_rand_float(
         #     0.5, 1.5, (len(env_ids), self.num_dof), device=self.device)
@@ -466,15 +489,17 @@ def compute_a1_reward(
         commands[:, :2] - base_lin_vel[:, :2]), dim=1)
     ang_vel_error = torch.square(commands[:, 2] - base_ang_vel[:, 2])
     rew_lin_vel_xy = torch.exp(-lin_vel_error / 0.25) * \
-        rew_scales["lin_vel_xy"]
-    rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * rew_scales["ang_vel_z"]
+        rew_scales["linearVelocityXYRewardScale"]
+    rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * \
+        rew_scales["angularVelocityZRewardScale"]
 
     # torque penalty
-    rew_torque = torch.sum(torch.square(torques), dim=1) * rew_scales["torque"]
+    rew_torque = torch.sum(torch.square(torques), dim=1) * \
+        rew_scales["torqueRewardScale"]
 
     if last_torques is not None:
         rew_torque += torch.sum(torch.square(torques - last_torques),
-                                dim=1) * rew_scales["torque_smoothing"]
+                                dim=1) * rew_scales["torqueSmoothingRewardScale"]
     total_reward = rew_lin_vel_xy + rew_ang_vel_z + rew_torque
     total_reward = torch.clip(total_reward, 0., None)
     # reset agents

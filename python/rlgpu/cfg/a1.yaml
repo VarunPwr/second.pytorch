@@ -92,27 +92,67 @@ sim:
     max_depenetration_velocity: 5.0
 
 task:
+  randomize: True
+  randomization_params:
+    frequency: 10000
+    observations:
+      range: [0, .002] # range for the white noise
+      range_correlated: [0, .001 ] # range for correlated noise, refreshed with freq `frequency`
+      operation: "additive"
+      distribution: "gaussian"
+      schedule: "linear"   # "constant" is to turn on noise after `schedule_steps` num steps
+      schedule_steps: 40000
+    actions:
+      range: [0., .05]
+      range_correlated: [0, .015] # range for correlated noise, refreshed with freq `frequency`
+      operation: "additive"
+      distribution: "gaussian"
+      schedule: "linear"  # "linear" will linearly interpolate between no rand and max rand
+      schedule_steps: 40000
+    actor_params:
+      a1:
+        dof_properties:
+          damping: 
+            range: [0.3, 0.8]
+            operation: "scaling"
+            distribution: "loguniform"
+            schedule: "linear"  
+            schedule_steps: 30000
+          stiffness: 
+            range: [40., 80.]
+            operation: "scaling"
+            distribution: "loguniform"
+            schedule: "linear"  
+            schedule_steps: 30000
+        rigid_body_properties:
+          mass: 
+            range: [0.8, 1.2]
+            operation: "scaling"
+            distribution: "uniform"
+            schedule: "linear"  
+            schedule_steps: 30000
+
+reward_randomization:
   randomize: False
   randomization_params:
     frequency: 10000
-    reward_randomization:
-      linearVelocityXYRewardScale:
-        range: [1., 3.]
-        distribution: "uniform"
-        schedule: "linear"
-        schedule_steps: 50000
-      angularVelocityZRewardScale:
-        range: [1., 2.]
-        distribution: "uniform"
-        schedule: "linear"
-        schedule_steps: 50000
-      torqueRewardScale:
-        range: [-0.000005, -0.000025]
-        distribution: "uniform"
-        schedule: "linear"
-        schedule_steps: 50000
-      torqueSmoothingRewardScale:
-        range: [-0.000005, -0.000015]
-        distribution: "uniform"
-        schedule: "linear"
-        schedule_steps: 50000
+    linearVelocityXYRewardScale:
+      range: [1., 3.]
+      distribution: "uniform"
+      schedule: "linear"
+      schedule_steps: 50000
+    angularVelocityZRewardScale:
+      range: [1., 2.]
+      distribution: "uniform"
+      schedule: "linear"
+      schedule_steps: 50000
+    torqueRewardScale:
+      range: [-0.000005, -0.000025]
+      distribution: "uniform"
+      schedule: "linear"
+      schedule_steps: 50000
+    torqueSmoothingRewardScale:
+      range: [-0.000005, -0.000015]
+      distribution: "uniform"
+      schedule: "linear"
+      schedule_steps: 50000

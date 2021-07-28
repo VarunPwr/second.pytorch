@@ -74,6 +74,7 @@ class BaseTask():
 
         self.last_step = -1
         self.last_rand_step = -1
+        self.last_rew_rand_step = -1
 
         # create envs, sim and viewer
         self.create_sim()
@@ -210,6 +211,7 @@ class BaseTask():
                             lows.append(lo_hi[0])
                             highs.append(lo_hi[1])
         return params, names, lows, highs
+
 
     # Apply randomizations only on resets, due to current PhysX limitations
     def apply_randomizations(self, dr_params):

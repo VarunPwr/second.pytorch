@@ -18,6 +18,11 @@ import torch
 from torch.tensor import Tensor
 from typing import Tuple, Dict
 
+terrain_init_pos = {
+    "triangle_mesh": [5.2, 0, 0.05],
+    "box": [0, 0, 0],
+}
+
 
 class A1(BaseTask):
 
@@ -196,31 +201,17 @@ class A1(BaseTask):
         plane_params.dynamic_friction = self.plane_dynamic_friction
         self.gym.add_ground(self.sim, plane_params)
 
-    def _create_triangle_mesh(self, env_ptr, env_id):
+    def _create_terrain(self, env_ptr, env_id):
 
         pose = gymapi.Transform()
-        pose.p.x = 5.2
-        pose.p.y = 0
-        pose.p.z = 0.15
+
+        pose.p.x = terrain_init_pos[self.terrain][0]
+        pose.p.y = terrain_init_pos[self.terrain][1]
+        pose.p.z = terrain_init_pos[self.terrain][2]
 
         handle = self.gym.create_actor(
             env_ptr, self.terrain_asset, pose, "tm", env_id, 2, 0)
         return handle
-
-    def _create_boxes(self, env_ptr, env_id):
-        box_options = gymapi.AssetOptions()
-        box_options.fix_base_link = True
-        box_asset = self.gym.create_box(
-            self.sim, 0.07, 0.07, 0.04, box_options)
-        for i in range(20):
-            for j in range(10):
-                box_pose = gymapi.Transform()
-                box_pose.p.x = -0.4 + 0.2 * i
-                box_pose.p.y = -1 + 0.2 * j
-                box_pose.p.z = 0.05
-                box_handle = self.gym.create_actor(env_ptr,
-                                                   box_asset, box_pose, "box_{}_{}".format(i, j), env_id, 0, 0)
-                self.box_handles.append(box_handle)
 
     def _create_envs(self, num_envs, spacing, num_per_row):
         asset_root = "../../assets"
@@ -274,10 +265,12 @@ class A1(BaseTask):
         self.box_handles = []
         self.envs = []
 
-        if self.terrain == "triangle_mesh":
+        if self.terrain != "plane":
             terrain_asset_root = "../../assets"
-            terrain_asset_file = "terrains/triangle_mesh/triangle_mesh.urdf"
-            terrain_asset_path = os.path.join(terrain_asset_root, terrain_asset_file)
+            terrain_asset_file = "terrains/{}/{}.urdf".format(
+                self.terrain, self.terrain)
+            terrain_asset_path = os.path.join(
+                terrain_asset_root, terrain_asset_file)
             terrain_asset_root = os.path.dirname(terrain_asset_path)
             terrain_asset_file = os.path.basename(terrain_asset_path)
 
@@ -297,15 +290,14 @@ class A1(BaseTask):
             self.gym.enable_actor_dof_force_sensors(env_ptr, a1_handle)
             self.envs.append(env_ptr)
             self.a1_handles.append(a1_handle)
-            a1_idx = self.gym.get_actor_index(env_ptr, a1_handle, gymapi.DOMAIN_SIM)
+            a1_idx = self.gym.get_actor_index(
+                env_ptr, a1_handle, gymapi.DOMAIN_SIM)
             self.a1_indices.append(a1_idx)
-            if self.terrain == "triangle_mesh":
-                terrain_handle = self._create_triangle_mesh(env_ptr, i)
-                terrain_idx = self.gym.get_actor_index(env_ptr, terrain_handle, gymapi.DOMAIN_SIM)
+            if self.terrain != "plane":
+                terrain_handle = self._create_terrain(env_ptr, i)
+                terrain_idx = self.gym.get_actor_index(
+                    env_ptr, terrain_handle, gymapi.DOMAIN_SIM)
                 self.terrain_indices.append(terrain_idx)
-                
-            elif self.terrain == "box":
-                self._create_boxes(env_ptr, i)
 
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(
@@ -315,8 +307,11 @@ class A1(BaseTask):
                 self.envs[0], self.a1_handles[0], knee_names[i])
         self.base_index = self.gym.find_actor_rigid_body_handle(
             self.envs[0], self.a1_handles[0], "trunk")
-        self.a1_indices = to_torch(self.a1_indices, dtype=torch.long, device=self.device)
-        self.terrain_indices = to_torch(self.terrain_indices, dtype=torch.long, device=self.device)
+        self.a1_indices = to_torch(
+            self.a1_indices, dtype=torch.long, device=self.device)
+        if self.terrain != "plane":
+            self.terrain_indices = to_torch(
+                self.terrain_indices, dtype=torch.long, device=self.device)
 
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
@@ -548,8 +543,10 @@ def compute_a1_reward(
 
     # prepare quantities (TODO: return from obs ?)
     base_quat = root_states[a1_indices, 3:7]
-    base_lin_vel = quat_rotate_inverse(base_quat, root_states[a1_indices, 7:10])
-    base_ang_vel = quat_rotate_inverse(base_quat, root_states[a1_indices, 10:13])
+    base_lin_vel = quat_rotate_inverse(
+        base_quat, root_states[a1_indices, 7:10])
+    base_ang_vel = quat_rotate_inverse(
+        base_quat, root_states[a1_indices, 10:13])
 
     # velocity tracking reward
     lin_vel_error = torch.sum(torch.square(

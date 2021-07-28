@@ -133,7 +133,7 @@ class A1(BaseTask):
 
         # create some wrapper tensors for different slices
         self.root_states = gymtorch.wrap_tensor(
-            actor_root_state).view(self.num_envs, -1, 13)
+            actor_root_state).view(-1, 13)
         self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
         self.dof_pos = self.dof_state.view(
             self.num_envs, self.num_dof, 2)[..., 0]
@@ -171,7 +171,7 @@ class A1(BaseTask):
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
-        self.initial_root_states[:, 0] = to_torch(
+        self.initial_root_states[self.a1_indices] = to_torch(
             self.base_init_state, device=self.device, requires_grad=False)
         self.gravity_vec = to_torch(
             get_axis_params(-1., self.up_axis_idx), device=self.device).repeat((self.num_envs, 1))
@@ -203,8 +203,9 @@ class A1(BaseTask):
         pose.p.y = 0
         pose.p.z = 0.15
 
-        self.gym.create_actor(
+        handle = self.gym.create_actor(
             env_ptr, self.terrain_asset, pose, "tm", env_id, 2, 0)
+        return handle
 
     def _create_boxes(self, env_ptr, env_id):
         box_options = gymapi.AssetOptions()
@@ -266,7 +267,10 @@ class A1(BaseTask):
 
         env_lower = gymapi.Vec3(-spacing, -spacing, 0.0)
         env_upper = gymapi.Vec3(spacing, spacing, spacing)
+        self.a1_indices = []
         self.a1_handles = []
+        self.terrain_handles = []
+        self.terrain_indices = []
         self.box_handles = []
         self.envs = []
 
@@ -293,8 +297,13 @@ class A1(BaseTask):
             self.gym.enable_actor_dof_force_sensors(env_ptr, a1_handle)
             self.envs.append(env_ptr)
             self.a1_handles.append(a1_handle)
+            a1_idx = self.gym.get_actor_index(env_ptr, a1_handle, gymapi.DOMAIN_SIM)
+            self.a1_indices.append(a1_idx)
             if self.terrain == "triangle_mesh":
-                self._create_triangle_mesh(env_ptr, i)
+                terrain_handle = self._create_triangle_mesh(env_ptr, i)
+                terrain_idx = self.gym.get_actor_index(env_ptr, terrain_handle, gymapi.DOMAIN_SIM)
+                self.terrain_indices.append(terrain_idx)
+                
             elif self.terrain == "box":
                 self._create_boxes(env_ptr, i)
 
@@ -306,6 +315,8 @@ class A1(BaseTask):
                 self.envs[0], self.a1_handles[0], knee_names[i])
         self.base_index = self.gym.find_actor_rigid_body_handle(
             self.envs[0], self.a1_handles[0], "trunk")
+        self.a1_indices = to_torch(self.a1_indices, dtype=torch.long, device=self.device)
+        self.terrain_indices = to_torch(self.terrain_indices, dtype=torch.long, device=self.device)
 
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
@@ -381,7 +392,8 @@ class A1(BaseTask):
                 # other
                 self.base_index,
                 self.max_episode_length,
-                last_torques=self.torques_buf[:, -2]
+                last_torques=self.torques_buf[:, -2],
+                a1_indices=self.a1_indices
             )
         else:
             self.rew_buf[:], self.reset_buf[:] = compute_a1_reward(
@@ -397,7 +409,8 @@ class A1(BaseTask):
                 # other
                 self.base_index,
                 self.max_episode_length,
-                last_torques=self.torques
+                last_torques=self.torques,
+                a1_indices=self.a1_indices
             )
 
     def compute_observations(self):
@@ -421,7 +434,8 @@ class A1(BaseTask):
                 self.lin_vel_scale,
                 self.ang_vel_scale,
                 self.dof_pos_scale,
-                self.dof_vel_scale
+                self.dof_vel_scale,
+                self.a1_indices
             )
         else:
             self.obs_buf[:] = compute_a1_observations(  # tensors
@@ -435,7 +449,8 @@ class A1(BaseTask):
                 self.lin_vel_scale,
                 self.ang_vel_scale,
                 self.dof_pos_scale,
-                self.dof_vel_scale
+                self.dof_vel_scale,
+                self.a1_indices
             )
 
     def apply_reward_randomizations(self, rr_params):
@@ -474,11 +489,11 @@ class A1(BaseTask):
         # self.dof_vel[env_ids] = 0
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)
-
+        a1_indices = self.a1_indices[env_ids].to(torch.int32)
         self.gym.set_actor_root_state_tensor_indexed(self.sim,
                                                      gymtorch.unwrap_tensor(
                                                          self.initial_root_states),
-                                                     gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
+                                                     gymtorch.unwrap_tensor(a1_indices), len(env_ids_int32))
 
         self.gym.set_dof_state_tensor_indexed(self.sim,
                                               gymtorch.unwrap_tensor(
@@ -501,7 +516,7 @@ class A1(BaseTask):
 
     def _update_viewer(self):
         if self.viewer is not None:
-            lookat = self.root_states[self.refEnv, 0, 0:3]
+            lookat = self.root_states[self.a1_indices[self.refEnv], 0:3]
             p = [_lookat - _camera_distance for _camera_distance,
                  _lookat in zip(self.camera_distance, lookat)]
             cam_pos = gymapi.Vec3(p[0], p[1], p[2])
@@ -528,13 +543,14 @@ def compute_a1_reward(
     # other
     base_index: int,
     max_episode_length: int,
-    last_torques: Tensor
+    last_torques: Tensor,
+    a1_indices: Tensor
 ) -> Tuple[Tensor, Tensor]:  # (reward, reset, feet_in air, feet_air_time, episode sums)
 
     # prepare quantities (TODO: return from obs ?)
-    base_quat = root_states[:, 0, 3:7]
-    base_lin_vel = quat_rotate_inverse(base_quat, root_states[:, 0, 7:10])
-    base_ang_vel = quat_rotate_inverse(base_quat, root_states[:, 0, 10:13])
+    base_quat = root_states[a1_indices, 3:7]
+    base_lin_vel = quat_rotate_inverse(base_quat, root_states[a1_indices, 7:10])
+    base_ang_vel = quat_rotate_inverse(base_quat, root_states[a1_indices, 10:13])
 
     # velocity tracking reward
     lin_vel_error = torch.sum(torch.square(
@@ -578,15 +594,16 @@ def compute_a1_observations(root_states: Tensor,
                             lin_vel_scale: float,
                             ang_vel_scale: float,
                             dof_pos_scale: float,
-                            dof_vel_scale: float
+                            dof_vel_scale: float,
+                            a1_indices: Tensor
                             ) -> Tensor:
 
     # base_position = root_states[:, 0:3]
-    base_quat = root_states[:, 0, 3:7]
+    base_quat = root_states[a1_indices, 3:7]
     base_lin_vel = quat_rotate_inverse(
-        base_quat, root_states[:, 0, 7:10]) * lin_vel_scale
+        base_quat, root_states[a1_indices, 7:10]) * lin_vel_scale
     base_ang_vel = quat_rotate_inverse(
-        base_quat, root_states[:, 0, 10:13]) * ang_vel_scale
+        base_quat, root_states[a1_indices, 10:13]) * ang_vel_scale
     projected_gravity = quat_rotate(base_quat, gravity_vec)
 
     dof_pos_scaled = dof_pos * dof_pos_scale

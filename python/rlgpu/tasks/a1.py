@@ -91,9 +91,10 @@ class A1(BaseTask):
             self.cfg["env"]["numObservations"] = 18 * self.historical_step + 24
             self.cfg["env"]["numActions"] = 6
         else:
-            self.cfg["env"]["numObservations"] = 24 * (self.historical_step + 1)
+            self.cfg["env"]["numObservations"] = 24 * \
+                (self.historical_step + 1)
             self.cfg["env"]["numActions"] = 12
-            
+
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
         self.cfg["headless"] = headless
@@ -157,7 +158,7 @@ class A1(BaseTask):
             angle = self.named_default_joint_angles[name]
 
             self.default_dof_pos[:, i] = angle
-        
+
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
@@ -272,7 +273,8 @@ class A1(BaseTask):
         # step physics and render each frame
         if self.diagonal_act:
             right_action, left_action = torch.chunk(self.actions, 2, dim=-1)
-            whole_action = torch.cat([right_action, left_action, left_action, right_action], dim=-1)
+            whole_action = torch.cat(
+                [right_action, left_action, left_action, right_action], dim=-1)
             targets_pos = self.action_scale * whole_action + self.default_dof_pos
         else:
             targets_pos = self.action_scale * self.actions + self.default_dof_pos
@@ -481,6 +483,10 @@ def compute_a1_reward(
     reset = torch.norm(contact_forces[:, base_index, :], dim=1) > 1.
     reset = reset | torch.any(torch.norm(
         contact_forces[:, knee_indices, :], dim=2) > 1., dim=1)
+
+    # reset due to fall
+    reset = reset | (base_quat[:, -1] < 0.6)
+
     # no terminal reward for time-outs
     time_out = episode_lengths > max_episode_length
     reset = reset | time_out

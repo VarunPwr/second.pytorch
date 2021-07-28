@@ -74,7 +74,7 @@ env:
 
   # sensor:
   sensor:
-    historical_step: 3
+    historical_step: 4
 
 sim:
   substeps: 2
@@ -102,13 +102,6 @@ task:
       distribution: "gaussian"
       schedule: "linear"   # "constant" is to turn on noise after `schedule_steps` num steps
       schedule_steps: 40000
-    actions:
-      range: [0., .05]
-      range_correlated: [0, .015] # range for correlated noise, refreshed with freq `frequency`
-      operation: "additive"
-      distribution: "gaussian"
-      schedule: "linear"  # "linear" will linearly interpolate between no rand and max rand
-      schedule_steps: 40000
     actor_params:
       a1:
         dof_properties:
@@ -133,7 +126,7 @@ task:
             schedule_steps: 30000
 
 randomize_reward:
-  randomize: True
+  randomize: False
   randomization_params:
     frequency: 100000
     reward_scale:

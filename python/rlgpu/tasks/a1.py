@@ -160,7 +160,7 @@ class A1(BaseTask):
             angle = self.named_default_joint_angles[name]
 
             self.default_dof_pos[:, i] = angle
-
+        
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
@@ -417,7 +417,7 @@ class A1(BaseTask):
         velocities = torch_rand_float(-0.1, 0.1,
                                       (len(env_ids), self.num_dof), device=self.device)
 
-        self.dof_pos[env_ids] = self.default_dof_pos[env_ids]
+        self.dof_pos[env_ids] = self.default_dof_pos[env_ids] + 0.1 * (torch.rand_like(self.default_dof_pos[env_ids], device=self.device) - 0.5)
         self.dof_vel[env_ids] = velocities
         # self.dof_vel[env_ids] = 0
 
@@ -496,7 +496,6 @@ def compute_a1_reward(
     # torque penalty
     rew_torque = torch.sum(torch.square(torques), dim=1) * \
         rew_scales["torqueRewardScale"]
-
     if last_torques is not None:
         rew_torque += torch.sum(torch.square(torques - last_torques),
                                 dim=1) * rew_scales["torqueSmoothingRewardScale"]

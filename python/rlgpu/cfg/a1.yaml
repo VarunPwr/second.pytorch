@@ -1,5 +1,5 @@
 env:
-  numEnvs: 1
+  numEnvs: 8192
   envSpacing: 4.  # [m]
   terrain: "triangle_mesh"
   plane:

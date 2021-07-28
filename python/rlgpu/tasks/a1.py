@@ -494,11 +494,10 @@ class A1(BaseTask):
                                                      gymtorch.unwrap_tensor(
                                                          self.initial_root_states),
                                                      gymtorch.unwrap_tensor(a1_indices), len(env_ids_int32))
-
         self.gym.set_dof_state_tensor_indexed(self.sim,
                                               gymtorch.unwrap_tensor(
                                                   self.dof_state),
-                                              gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
+                                              gymtorch.unwrap_tensor(a1_indices), len(env_ids_int32))
 
         self.commands_x[env_ids] = torch_rand_float(
             self.command_x_range[0], self.command_x_range[1], (len(env_ids), 1), device=self.device).squeeze()

@@ -1,7 +1,7 @@
 env:
-  numEnvs: 8192
+  numEnvs: 1
   envSpacing: 4.  # [m]
-
+  terrain: "box"
   plane:
     staticFriction: 10.0  # [-]
     dynamicFriction: 10.0  # [-]

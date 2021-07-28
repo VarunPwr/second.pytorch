@@ -56,6 +56,9 @@ class A1(BaseTask):
         self.command_y_range = self.cfg["env"]["randomCommandVelocityRanges"]["linear_y"]
         self.command_yaw_range = self.cfg["env"]["randomCommandVelocityRanges"]["yaw"]
 
+        # terrain
+        self.terrain = self.cfg["env"]["terrain"]
+
         # plane params
         self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]
         self.plane_dynamic_friction = self.cfg["env"]["plane"]["dynamicFriction"]
@@ -66,6 +69,10 @@ class A1(BaseTask):
         rot = self.cfg["env"]["baseInitState"]["rot"]
         v_lin = self.cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
+
+        if self.terrain == "triangle_mesh":
+            pos[-1] += 0.28
+
         state = pos + rot + v_lin + v_ang
 
         # sensor settings
@@ -190,11 +197,32 @@ class A1(BaseTask):
         plane_params.dynamic_friction = self.plane_dynamic_friction
         self.gym.add_ground(self.sim, plane_params)
 
+    def _create_triangle_mesh(self, env_ptr, env_id):
+        asset_options = gymapi.AssetOptions()
+        asset_options.fix_base_link = True
+
+        asset_root = "../../assets"
+        asset_file = "terrains/triangle_mesh/triangle_mesh.urdf"
+        asset_path = os.path.join(asset_root, asset_file)
+        asset_root = os.path.dirname(asset_path)
+        asset_file = os.path.basename(asset_path)
+
+        terrain_asset = self.gym.load_asset(
+            self.sim, asset_root, asset_file, asset_options)
+
+        pose = gymapi.Transform()
+        pose.p.x = 5.2
+        pose.p.y = 0
+        pose.p.z = 0.15
+
+        self.gym.create_actor(
+            env_ptr, terrain_asset, pose, "tm", env_id, 2, 0)
+
     def _create_boxes(self, env_ptr, env_id):
         box_options = gymapi.AssetOptions()
         box_options.fix_base_link = True
         box_asset = self.gym.create_box(
-            self.sim, 0.09, 0.09, 0.05, box_options)
+            self.sim, 0.07, 0.07, 0.04, box_options)
         for i in range(20):
             for j in range(10):
                 box_pose = gymapi.Transform()
@@ -264,7 +292,10 @@ class A1(BaseTask):
             self.gym.enable_actor_dof_force_sensors(env_ptr, a1_handle)
             self.envs.append(env_ptr)
             self.a1_handles.append(a1_handle)
-            self._create_boxes(env_ptr, i)
+            if self.terrain == "triangle_mesh":
+                self._create_triangle_mesh(env_ptr, i)
+            elif self.terrain == "box":
+                self._create_boxes(env_ptr, i)
 
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(

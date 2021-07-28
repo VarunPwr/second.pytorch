@@ -196,9 +196,9 @@ class A1(BaseTask):
         box_asset = self.gym.create_box(
             self.sim, 0.05, 0.05, 0.05, box_options)
         for i in range(50):
-            for j in range(50):
+            for j in range(20):
                 box_pose = gymapi.Transform()
-                box_pose.p.x = -7.5 + 0.2 * i
+                box_pose.p.x = -2 + 0.2 * i
                 box_pose.p.y = -2 + 0.2 * j
                 box_pose.p.z = 0.05
                 box_handle = self.gym.create_actor(env_ptr,

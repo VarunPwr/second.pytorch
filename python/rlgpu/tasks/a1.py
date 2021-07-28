@@ -70,7 +70,7 @@ class A1(BaseTask):
         v_lin = self.cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
         if self.terrain == "triangle_mesh":
-            pos[-1] += 0.28
+            pos[-1] += 0.52
 
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
@@ -479,7 +479,7 @@ class A1(BaseTask):
 
         # positions_offset = torch_rand_float(
         #     0.5, 1.5, (len(env_ids), self.num_dof), device=self.device)
-        velocities = torch_rand_float(-0.1, 0.1,
+        velocities = torch_rand_float(-0.05, 0.05,
                                       (len(env_ids), self.num_dof), device=self.device)
 
         self.dof_pos[env_ids] = self.default_dof_pos[env_ids] + 0.1 * \

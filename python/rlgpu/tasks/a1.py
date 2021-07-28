@@ -69,16 +69,15 @@ class A1(BaseTask):
         rot = self.cfg["env"]["baseInitState"]["rot"]
         v_lin = self.cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
-
         if self.terrain == "triangle_mesh":
             pos[-1] += 0.28
 
         state = pos + rot + v_lin + v_ang
+        self.base_init_state = state
 
         # sensor settings
         self.historical_step = self.cfg["env"]["sensor"]["historical_step"]
 
-        self.base_init_state = state
         self.refEnv = self.cfg["env"]["viewer"]["refEnv"]
 
         # default joint positions
@@ -198,17 +197,6 @@ class A1(BaseTask):
         self.gym.add_ground(self.sim, plane_params)
 
     def _create_triangle_mesh(self, env_ptr, env_id):
-        asset_options = gymapi.AssetOptions()
-        asset_options.fix_base_link = True
-
-        asset_root = "../../assets"
-        asset_file = "terrains/triangle_mesh/triangle_mesh.urdf"
-        asset_path = os.path.join(asset_root, asset_file)
-        asset_root = os.path.dirname(asset_path)
-        asset_file = os.path.basename(asset_path)
-
-        terrain_asset = self.gym.load_asset(
-            self.sim, asset_root, asset_file, asset_options)
 
         pose = gymapi.Transform()
         pose.p.x = 5.2
@@ -216,7 +204,7 @@ class A1(BaseTask):
         pose.p.z = 0.15
 
         self.gym.create_actor(
-            env_ptr, terrain_asset, pose, "tm", env_id, 2, 0)
+            env_ptr, self.terrain_asset, pose, "tm", env_id, 2, 0)
 
     def _create_boxes(self, env_ptr, env_id):
         box_options = gymapi.AssetOptions()
@@ -281,6 +269,19 @@ class A1(BaseTask):
         self.a1_handles = []
         self.box_handles = []
         self.envs = []
+
+        if self.terrain == "triangle_mesh":
+            terrain_asset_root = "../../assets"
+            terrain_asset_file = "terrains/triangle_mesh/triangle_mesh.urdf"
+            terrain_asset_path = os.path.join(terrain_asset_root, terrain_asset_file)
+            terrain_asset_root = os.path.dirname(terrain_asset_path)
+            terrain_asset_file = os.path.basename(terrain_asset_path)
+
+            terrain_asset_options = gymapi.AssetOptions()
+            terrain_asset_options.fix_base_link = True
+
+            self.terrain_asset = self.gym.load_asset(
+                self.sim, terrain_asset_root, terrain_asset_file, terrain_asset_options)
 
         for i in range(self.num_envs):
             # create env instance

@@ -126,7 +126,8 @@ class A1(BaseTask):
         self.gym.refresh_dof_force_tensor(self.sim)
 
         # create some wrapper tensors for different slices
-        self.root_states = gymtorch.wrap_tensor(actor_root_state)
+        self.root_states = gymtorch.wrap_tensor(
+            actor_root_state).view(self.num_envs, -1, 13)
         self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
         self.dof_pos = self.dof_state.view(
             self.num_envs, self.num_dof, 2)[..., 0]
@@ -160,11 +161,11 @@ class A1(BaseTask):
             angle = self.named_default_joint_angles[name]
 
             self.default_dof_pos[:, i] = angle
-        
+
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
-        self.initial_root_states[:] = to_torch(
+        self.initial_root_states[:, 0] = to_torch(
             self.base_init_state, device=self.device, requires_grad=False)
         self.gravity_vec = to_torch(
             get_axis_params(-1., self.up_axis_idx), device=self.device).repeat((self.num_envs, 1))
@@ -188,6 +189,21 @@ class A1(BaseTask):
         plane_params.static_friction = self.plane_static_friction
         plane_params.dynamic_friction = self.plane_dynamic_friction
         self.gym.add_ground(self.sim, plane_params)
+
+    def _create_boxes(self, env_ptr, env_id):
+        box_options = gymapi.AssetOptions()
+        box_options.fix_base_link = True
+        box_asset = self.gym.create_box(
+            self.sim, 0.05, 0.05, 0.05, box_options)
+        for i in range(50):
+            for j in range(50):
+                box_pose = gymapi.Transform()
+                box_pose.p.x = -7.5 + 0.2 * i
+                box_pose.p.y = -2 + 0.2 * j
+                box_pose.p.z = 0.05
+                box_handle = self.gym.create_actor(env_ptr,
+                                                   box_asset, box_pose, "box_{}_{}".format(i, j), env_id, 0, 0)
+                self.box_handles.append(box_handle)
 
     def _create_envs(self, num_envs, spacing, num_per_row):
         asset_root = "../../assets"
@@ -235,6 +251,7 @@ class A1(BaseTask):
         env_lower = gymapi.Vec3(-spacing, -spacing, 0.0)
         env_upper = gymapi.Vec3(spacing, spacing, spacing)
         self.a1_handles = []
+        self.box_handles = []
         self.envs = []
 
         for i in range(self.num_envs):
@@ -247,6 +264,7 @@ class A1(BaseTask):
             self.gym.enable_actor_dof_force_sensors(env_ptr, a1_handle)
             self.envs.append(env_ptr)
             self.a1_handles.append(a1_handle)
+            self._create_boxes(env_ptr, i)
 
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(
@@ -401,8 +419,8 @@ class A1(BaseTask):
         scale_params = rr_params["reward_scale"]
         for k, v in scale_params.items():
             v_range = v["range"]
-            self.rew_scales[k] = np.random.uniform(low=v_range[0], high=v_range[1]) * self.dt
-
+            self.rew_scales[k] = np.random.uniform(
+                low=v_range[0], high=v_range[1]) * self.dt
 
     def reset(self, env_ids):
         # Randomization can happen only at reset time, since it can reset actor positions on GPU
@@ -417,7 +435,9 @@ class A1(BaseTask):
         velocities = torch_rand_float(-0.1, 0.1,
                                       (len(env_ids), self.num_dof), device=self.device)
 
-        self.dof_pos[env_ids] = self.default_dof_pos[env_ids] + 0.1 * (torch.rand_like(self.default_dof_pos[env_ids], device=self.device) - 0.5)
+        self.dof_pos[env_ids] = self.default_dof_pos[env_ids] + 0.1 * \
+            (torch.rand_like(
+                self.default_dof_pos[env_ids], device=self.device) - 0.5)
         self.dof_vel[env_ids] = velocities
         # self.dof_vel[env_ids] = 0
 
@@ -449,7 +469,7 @@ class A1(BaseTask):
 
     def _update_viewer(self):
         if self.viewer is not None:
-            lookat = self.root_states[self.refEnv, 0:3]
+            lookat = self.root_states[self.refEnv, 0, 0:3]
             p = [_lookat - _camera_distance for _camera_distance,
                  _lookat in zip(self.camera_distance, lookat)]
             cam_pos = gymapi.Vec3(p[0], p[1], p[2])
@@ -480,9 +500,9 @@ def compute_a1_reward(
 ) -> Tuple[Tensor, Tensor]:  # (reward, reset, feet_in air, feet_air_time, episode sums)
 
     # prepare quantities (TODO: return from obs ?)
-    base_quat = root_states[:, 3:7]
-    base_lin_vel = quat_rotate_inverse(base_quat, root_states[:, 7:10])
-    base_ang_vel = quat_rotate_inverse(base_quat, root_states[:, 10:13])
+    base_quat = root_states[:, 0, 3:7]
+    base_lin_vel = quat_rotate_inverse(base_quat, root_states[:, 0, 7:10])
+    base_ang_vel = quat_rotate_inverse(base_quat, root_states[:, 0, 10:13])
 
     # velocity tracking reward
     lin_vel_error = torch.sum(torch.square(
@@ -530,12 +550,13 @@ def compute_a1_observations(root_states: Tensor,
                             ) -> Tensor:
 
     # base_position = root_states[:, 0:3]
-    base_quat = root_states[:, 3:7]
+    base_quat = root_states[:, 0, 3:7]
     base_lin_vel = quat_rotate_inverse(
-        base_quat, root_states[:, 7:10]) * lin_vel_scale
+        base_quat, root_states[:, 0, 7:10]) * lin_vel_scale
     base_ang_vel = quat_rotate_inverse(
-        base_quat, root_states[:, 10:13]) * ang_vel_scale
+        base_quat, root_states[:, 0, 10:13]) * ang_vel_scale
     projected_gravity = quat_rotate(base_quat, gravity_vec)
+
     dof_pos_scaled = dof_pos * dof_pos_scale
 
     commands_scaled = commands * \

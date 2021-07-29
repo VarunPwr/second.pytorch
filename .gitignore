@@ -3,6 +3,6 @@ docker/
 licenses/
 *.txt
 *.sh
-logs/
+logs*/
 __pycache__/
 *.pyc

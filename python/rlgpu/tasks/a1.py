@@ -43,6 +43,7 @@ class A1(BaseTask):
         self.rew_scales = {}
         self.rew_scales["linearVelocityXYRewardScale"] = self.cfg["env"]["learn"]["linearVelocityXYRewardScale"]
         self.rew_scales["angularVelocityZRewardScale"] = self.cfg["env"]["learn"]["angularVelocityZRewardScale"]
+        self.rew_scales["linearVelocityZRewardScale"] = self.cfg["env"]["learn"]["linearVelocityZRewardScale"]
         self.rew_scales["torqueRewardScale"] = self.cfg["env"]["learn"]["torqueRewardScale"]
         self.rew_scales["torqueSmoothingRewardScale"] = self.cfg["env"]["learn"]["torqueSmoothingRewardScale"]
 
@@ -556,6 +557,8 @@ def compute_a1_reward(
         rew_scales["linearVelocityXYRewardScale"]
     rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * \
         rew_scales["angularVelocityZRewardScale"]
+    # z velocity penalty
+    rew_z_vel = torch.square(base_lin_vel[:, 2]) * rew_scales["linearVelocityZRewardScale"]
 
     # torque penalty
     rew_torque = torch.sum(torch.square(torques), dim=1) * \
@@ -563,7 +566,7 @@ def compute_a1_reward(
     if last_torques is not None:
         rew_torque += torch.sum(torch.square(torques - last_torques),
                                 dim=1) * rew_scales["torqueSmoothingRewardScale"]
-    total_reward = rew_lin_vel_xy + rew_ang_vel_z + rew_torque
+    total_reward = rew_lin_vel_xy + rew_ang_vel_z + rew_torque + rew_z_vel
     total_reward = torch.clip(total_reward, 0., None)
     # reset agents
     reset = torch.norm(contact_forces[:, base_index, :], dim=1) > 1.

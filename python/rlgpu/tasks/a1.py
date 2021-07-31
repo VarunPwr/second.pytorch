@@ -83,6 +83,7 @@ class A1(BaseTask):
 
         # sensor settings
         self.historical_step = self.cfg["env"]["sensor"]["historical_step"]
+        self.use_sys_information = self.cfg["env"]["sensor"]["sys_id"]
 
         self.refEnv = self.cfg["env"]["viewer"]["refEnv"]
 
@@ -100,13 +101,14 @@ class A1(BaseTask):
 
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
-
+        
+        extra_info_len = 3 if self.use_sys_information else 0
         if self.diagonal_act:
-            self.cfg["env"]["numObservations"] = 18 * self.historical_step + 24
+            self.cfg["env"]["numObservations"] = 18 * self.historical_step + 24 + extra_info_len
             self.cfg["env"]["numActions"] = 6
         else:
             self.cfg["env"]["numObservations"] = 24 * \
-                (self.historical_step + 1)
+                (self.historical_step + 1) + extra_info_len
             self.cfg["env"]["numActions"] = 12
 
         self.cfg["device_type"] = device_type
@@ -162,10 +164,17 @@ class A1(BaseTask):
             self.torques_buf = torch.zeros(
                 (self.num_envs, self.historical_step, self.num_dof), device=self.device)
         self.commands = torch.zeros(
-            self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
-        self.commands_y = self.commands.view(self.num_envs, 3)[..., 1]
-        self.commands_x = self.commands.view(self.num_envs, 3)[..., 0]
-        self.commands_yaw = self.commands.view(self.num_envs, 3)[..., 2]
+            self.num_envs, 3 + extra_info_len, dtype=torch.float, device=self.device, requires_grad=False)
+        self.commands_y = self.commands.view(self.num_envs, 3 + extra_info_len)[..., 1]
+        self.commands_x = self.commands.view(self.num_envs, 3 + extra_info_len)[..., 0]
+        self.commands_yaw = self.commands.view(self.num_envs, 3 + extra_info_len)[..., 2]
+
+        if self.use_sys_information and self.terrain == "box":
+            # the size of box 
+            self.commands[..., -3] = 0.06
+            self.commands[..., -2] = 0.06
+            self.commands[..., -1] = 0.04
+
         self.default_dof_pos = torch.zeros_like(
             self.dof_pos, dtype=torch.float, device=self.device, requires_grad=False)
         for i in range(self.num_dof):
@@ -607,7 +616,7 @@ def compute_a1_observations(root_states: Tensor,
 
     dof_pos_scaled = dof_pos * dof_pos_scale
 
-    commands_scaled = commands * \
+    commands_scaled = commands[..., :3] * \
         torch.tensor([lin_vel_scale, lin_vel_scale, ang_vel_scale],
                      requires_grad=False, device=commands.device)
 
@@ -615,6 +624,7 @@ def compute_a1_observations(root_states: Tensor,
                      base_ang_vel,
                      projected_gravity,
                      commands_scaled,
+                     commands[..., 3:],
                      dof_pos_scaled,
                      dof_vel * dof_vel_scale,
                      actions

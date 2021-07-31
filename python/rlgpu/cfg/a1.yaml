@@ -1,5 +1,5 @@
 env:
-  numEnvs: 8192
+  numEnvs: 1
   envSpacing: 4.  # [m]
   terrain: "box"
   plane:
@@ -14,8 +14,8 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandVelocityRanges:
-    linear_x: [0.3, 0.8] # min max [m/s]
-    linear_y: [0., 0.0]   # min max [m/s]
+    linear_x: [0.3, 0.6] # min max [m/s]
+    linear_y: [-0.4, 0.4]   # min max [m/s]
     yaw: [-0.1, 0.1]          # min max [rad/s]
 
   control:
@@ -76,7 +76,7 @@ env:
   # sensor:
   sensor:
     historical_step: 4
-    sys_id: True
+    sys_id: False
 
 sim:
   substeps: 2

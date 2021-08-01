@@ -96,8 +96,8 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         self._initial_state_ratio_in_cycle = torch.zeros_like(
             self._initial_leg_state, device=self._device)
 
-        swing_indices = self._initial_leg_state == 0
-        not_swing_indices = self._initial_leg_state != 0
+        swing_indices = torch.nonzero(self._initial_leg_state == 0)
+        not_swing_indices = torch.nonzero(self._initial_leg_state != 0)
         self._initial_state_ratio_in_cycle[swing_indices] = 1 - \
             duty_factor[swing_indices]
         self._initial_state_ratio_in_cycle[not_swing_indices] = duty_factor[not_swing_indices]
@@ -170,21 +170,20 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         phase_in_full_cycle = torch.fmod(augmented_time,
                                          full_cycle_period) / full_cycle_period
         ratio = self._initial_state_ratio_in_cycle
-        indices = phase_in_full_cycle < ratio
-        non_indices = phase_in_full_cycle >= ratio
+        indices = torch.nonzero(phase_in_full_cycle < ratio)
+        non_indices = torch.nonzero(phase_in_full_cycle >= ratio)
         self._desired_leg_state[indices] = self._initial_leg_state[indices]
         self._normalized_phase[indices] = phase_in_full_cycle / ratio
 
         self._desired_leg_state[non_indices] = self._next_leg_state[indices]
-        self._normalized_phase[non_indices] = (phase_in_full_cycle -
-                                               ratio) / (1 - ratio)
+        self._normalized_phase[non_indices] = (phase_in_full_cycle - ratio) / (1 - ratio)
 
         self._leg_state = self._desired_leg_state
 
-        contact_detection_indices = self._normalized_phase > self._contact_detection_phase_threshold
+        contact_detection_indices = torch.nonzero(self._normalized_phase > self._contact_detection_phase_threshold)
 
-        early_contact_indices = self._leg_state == gait_generator.LegState.SWING and contact_state and contact_detection_indices
+        early_contact_indices = torch.nonzero(self._leg_state == gait_generator.LegState.SWING and contact_state and contact_detection_indices)
         self._leg_state[early_contact_indices] = gait_generator.LegState.EARLY_CONTACT
 
-        lost_contact_indices = self._leg_state == gait_generator.LegState.STANCE and not contact_state and contact_detection_indices
+        lost_contact_indices = torch.nonzero(self._leg_state == gait_generator.LegState.STANCE and not contact_state and contact_detection_indices)
         self._leg_state[lost_contact_indices] = gait_generator.LegState.LOSE_CONTACT

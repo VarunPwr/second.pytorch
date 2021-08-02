@@ -323,6 +323,11 @@ class A1(BaseTask):
             self.terrain_indices = to_torch(
                 self.terrain_indices, dtype=torch.long, device=self.device)
 
+        jt = self.gym.acquire_jacobian_tensor(self.sim, "a1")
+        self.jacobian_tensor = gymtorch.wrap_tensor(jt)
+
+        self.feet_dof_pos = self.dof_pos[..., self.feet_indices]
+
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
 

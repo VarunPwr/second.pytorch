@@ -24,10 +24,9 @@ class LocomotionController(object):
 
     def __init__(
         self,
+        robot_task,
         gait_generator,
         state_estimator,
-        num_envs,
-        device,
         swing_leg_controller,
         stance_leg_controller,
         clock,
@@ -43,8 +42,9 @@ class LocomotionController(object):
           stance_leg_controller: Generates motor actions for stance legs.
           clock: A real or fake clock source.
         """
-        self._device = device
-        self._num_envs = num_envs
+        self._robot_task = robot_task
+        self._device = self._robot_task.device
+        self._num_envs = self._robot_task.num_envs
         self._clock = clock
         self._reset_time = self._clock()
         self._time_since_reset = 0

@@ -13,7 +13,7 @@ from rlgpu.utils.torch_jit_utils import *
 from rlgpu.tasks.base.base_task import BaseTask
 from isaacgym import gymtorch
 from isaacgym import gymapi
-
+from pytorch3d.transforms import matrix_to_euler_angles, quaternion_to_matrix
 import torch
 from torch.tensor import Tensor
 from typing import Tuple, Dict
@@ -182,7 +182,19 @@ class A1(BaseTask):
             angle = self.named_default_joint_angles[name]
 
             self.default_dof_pos[:, i] = angle
-
+        self.num_legs = 4
+        self._com_offset = - \
+            torch.as_tensor([0.012731, 0.002186, 0.000515],
+                            device=self.device)
+        self._hip_offset = torch.as_tensor([[0.183, -0.047, 0.], [0.183, 0.047, 0.],
+                                            [-0.183, -0.047, 0.], [-0.183, 0.047, 0.]
+                                            ], device=self.device) + self._com_offset
+        self._default_hip_positions = torch.as_tensor([
+                [0.17, -0.14, 0],
+                [0.17, 0.14, 0],
+                [-0.17, -0.14, 0],
+                [-0.17, 0.14, 0],
+            ]).unsqueeze_(0).repeat(self.num_envs, 1)
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
@@ -291,7 +303,7 @@ class A1(BaseTask):
                 self.sim, terrain_asset_root, terrain_asset_file, terrain_asset_options)
 
         for i in range(self.num_envs):
-            # create env instance
+            # create env instances
             env_ptr = self.gym.create_env(
                 self.sim, env_lower, env_upper, num_per_row)
             a1_handle = self.gym.create_actor(
@@ -532,6 +544,53 @@ class A1(BaseTask):
             cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
             self.gym.viewer_camera_look_at(
                 self.viewer, None, cam_pos, cam_target)
+    
+    def _foot_position_in_hip_frame(angles, l_hip_sign=1):
+        theta_ab, theta_hip, theta_knee = angles[..., 0], angles[..., 1], angles[..., 2]
+        l_up = 0.2
+        l_low = 0.2
+        l_hip = 0.08505 * l_hip_sign
+        leg_distance = torch.sqrt(l_up**2 + l_low**2 + 2 * l_up * l_low * torch.cos(theta_knee))
+        eff_swing = theta_hip + theta_knee / 2
+
+        off_x_hip = -leg_distance * torch.sin(eff_swing)
+        off_z_hip = -leg_distance * torch.cos(eff_swing)
+        off_y_hip = l_hip
+
+        off_x = off_x_hip
+        off_y = torch.cos(theta_ab) * off_y_hip - torch.sin(theta_ab) * off_z_hip
+        off_z = torch.sin(theta_ab) * off_y_hip + torch.cos(theta_ab) * off_z_hip
+        return torch.stack([off_x, off_y, off_z], dim=-2)
+
+    def _footPositionsInBaseFrame(self):
+        """Get the robot's foot position in the base frame."""
+        angles = self.dof_pos
+        angles = angles.reshape(self._num_envs, 4, 3)
+        foot_positions = torch.zeros_like(angles, device=self.device)
+        for i in range(4):
+            foot_positions[:, i] = self._foot_position_in_hip_frame(angles[:, i], l_hip_sign=(-1)**(i + 1))
+        return foot_positions + self._hip_offset
+
+    def _getBaseRollPitchYaw(self):
+        """Get minitaur's base orientation in euler angle in the world frame.
+
+        Returns:
+        A tuple (roll, pitch, yaw) of the base in world frame.
+        """
+        base_quat = self.root_states[self.a1_indices, 3:7]
+        roll_pitch_yaw = matrix_to_euler_angles(quaternion_to_matrix(base_quat))
+        return roll_pitch_yaw
+
+    def _getBaseRollPitchYawRate(self):
+        quat = self.root_states[self.a1_indices, 3:7]
+        ang_vel = quat_rotate_inverse(
+            quat, self.root_states[self.a1_indices, 10:13])
+        return ang_vel
+    
+    def _getHipPositionsInBaseFrame(self):
+        return self._default_hip_positions
+
+        
 
 #####################################################################
 ###=========================jit functions=========================###

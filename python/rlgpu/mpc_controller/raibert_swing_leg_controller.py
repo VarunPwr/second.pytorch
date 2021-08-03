@@ -6,11 +6,13 @@ from __future__ import print_function
 
 import os
 import inspect
+
+from torch.functional import Tensor
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
 os.sys.path.insert(0, parentdir)
-
+from torch import Tensor
 from mpc_controller import leg_controller
 from mpc_controller import gait_generator as gait_generator_lib
 from typing import Any, Mapping, Sequence, Tuple
@@ -26,7 +28,7 @@ _KP = [0.03, 0.03, 0.03]
 _FOOT_CLEARANCE_M = 0.01
 
 
-def _gen_parabola(phase: float, start: float, mid: float, end: float) -> float:
+def _gen_parabola(phase: Tensor, start: Tensor, mid: Tensor, end: Tensor) -> Tensor:
     """Gets a point on a parabola y = a x^2 + b x + c.
 
     The Parabola is determined by three points (0, start), (0.5, mid), (1, end) in
@@ -52,8 +54,8 @@ def _gen_parabola(phase: float, start: float, mid: float, end: float) -> float:
     return coef_a * phase**2 + coef_b * phase + coef_c
 
 
-def _gen_swing_foot_trajectory(input_phase: float, start_pos: Sequence[float],
-                               end_pos: Sequence[float]) -> Tuple[float]:
+def _gen_swing_foot_trajectory(input_phase: Tensor, start_pos: Tensor,
+                               end_pos: Tensor) -> Tensor:
     """Generates the swing trajectory using a parabola.
 
     Args:
@@ -72,20 +74,19 @@ def _gen_swing_foot_trajectory(input_phase: float, start_pos: Sequence[float],
     # robust to perturbations to the body that may cause the swing foot to drop
     # onto the ground earlier than expected. This is a common practice similar
     # to the MIT cheetah and Marc Raibert's original controllers.
-    phase = input_phase
-    if input_phase <= 0.5:
-        phase = 0.8 * math.sin(input_phase * math.pi)
-    else:
-        phase = 0.8 + (input_phase - 0.5) * 0.4
-
-    x = (1 - phase) * start_pos[0] + phase * end_pos[0]
-    y = (1 - phase) * start_pos[1] + phase * end_pos[1]
+    phase = torch.zeros_like(input_phase, device=input_phase.device)
+    indices = torch.where(input_phase <= 0.5)
+    non_indices = torch.where(input_phase > 0.5)
+    phase[indices] = 0.8 * torch.sin(input_phase[indices] * math.pi)
+    phase[non_indices] = 0.8 + (input_phase[non_indices] - 0.5) * 0.4
+    
+    x = (1 - phase) * start_pos[..., 0] + phase * end_pos[..., 0]
+    y = (1 - phase) * start_pos[..., 1] + phase * end_pos[..., 1]
     max_clearance = 0.1
-    mid = max(end_pos[2], start_pos[2]) + max_clearance
-    z = _gen_parabola(phase, start_pos[2], mid, end_pos[2])
+    mid = max(end_pos[..., 2], start_pos[..., 2]) + max_clearance
+    z = _gen_parabola(phase, start_pos[..., 2], mid, end_pos[..., 2])
 
-    # PyType detects the wrong return type here.
-    return (x, y, z)  # pytype: disable=bad-return-type
+    return torch.stack([x, y, z], dim=-2)
 
 
 class RaibertSwingLegController(leg_controller.LegController):
@@ -99,10 +100,9 @@ class RaibertSwingLegController(leg_controller.LegController):
 
     def __init__(
         self,
-        device: str,
+        robot_task: Any,
         gait_generator: Any,
         state_estimator: Any,
-        num_envs: int,
         desired_speed: Tuple[float, float],
         desired_twisting_speed: float,
         desired_height: float,
@@ -120,8 +120,9 @@ class RaibertSwingLegController(leg_controller.LegController):
           foot_clearance: The foot clearance on the ground at the end of the swing
             cycle.
         """
-        self._device = device
-        self._num_envs = num_envs
+        self._robot_task = robot_task
+        self._device = self._robot_task.device
+        self._num_envs = self._robot_task.num_envs
         self._state_estimator = state_estimator
         self._gait_generator = gait_generator
         self._last_leg_state = gait_generator.desired_leg_state
@@ -133,7 +134,7 @@ class RaibertSwingLegController(leg_controller.LegController):
         self._joint_angles = None
         self._phase_switch_foot_local_position = None
         self.reset(0)
-
+    
     def reset(self, current_time: float) -> None:
         """Called during the start of a swing cycle.
 
@@ -142,9 +143,7 @@ class RaibertSwingLegController(leg_controller.LegController):
         """
         del current_time
         self._last_leg_state = self._gait_generator.desired_leg_state
-        self._phase_switch_foot_local_position = (
-            self._robot.GetFootPositionsInBaseFrame())
-        self._joint_angles = {}
+        self._phase_switch_foot_local_position = self._robot_task._footPositionsInBaseFrame()
 
     def update(self, current_time: float) -> None:
         """Called at each control step.
@@ -164,53 +163,26 @@ class RaibertSwingLegController(leg_controller.LegController):
 
         self._last_leg_state = copy.deepcopy(new_leg_state)
 
-    def get_action(self) -> Mapping[Any, Any]:
-        com_velocity = self._state_estimator.com_velocity_body_frame
-        com_velocity = np.array((com_velocity[0], com_velocity[1], 0))
+    def get_action(self):
+        com_velocity = copy.deepcopy(self._state_estimator.com_velocity_body_frame)
+        com_velocity[..., :2] = 0
 
-        _, _, yaw_dot = self._robot.GetBaseRollPitchYawRate()
-        hip_positions = self._robot.GetHipPositionsInBaseFrame()
+        _, _, yaw_dot = self._robot_task._getBaseRollPitchYawRate()
+        hip_positions = self._robot_task._getHipPositionsInBaseFrame()
 
-        for leg_id, leg_state in enumerate(self._gait_generator.leg_state):
-            if leg_state in (gait_generator_lib.LegState.STANCE,
-                             gait_generator_lib.LegState.EARLY_CONTACT):
-                continue
-
-            # For now we did not consider the body pitch/roll and all calculation is
-            # in the body frame. TODO(b/143378213): Calculate the foot_target_position
-            # in world frame and then project back to calculate the joint angles.
-            hip_offset = hip_positions[leg_id]
-            twisting_vector = np.array((-hip_offset[1], hip_offset[0], 0))
-            hip_horizontal_velocity = com_velocity + yaw_dot * twisting_vector
-            # print("Leg: {}, ComVel: {}, Yaw_dot: {}".format(leg_id, com_velocity,
-            #                                                 yaw_dot))
-            # print(hip_horizontal_velocity)
-            target_hip_horizontal_velocity = (
+        hip_offset = hip_positions
+        twisting_vector = torch.as_tensor([[-hip_offset[1], hip_offset[0], 0]], device=self._device).repeat(self._num_envs, 1)
+        hip_horizontal_velocity = com_velocity + yaw_dot * twisting_vector
+        target_hip_horizontal_velocity = (
                 self.desired_speed + self.desired_twisting_speed * twisting_vector)
-            foot_target_position = (
+        foot_target_position = (
                 hip_horizontal_velocity *
-                self._gait_generator.stance_duration[leg_id] / 2 - _KP *
+                self._gait_generator.stance_duration / 2 - torch.as_tensor([_KP], device=self._device).repeat(self._num_envs, 1) *
                 (target_hip_horizontal_velocity - hip_horizontal_velocity)
-            ) - self._desired_height + np.array((hip_offset[0], hip_offset[1], 0))
-            foot_position = _gen_swing_foot_trajectory(
-                self._gait_generator.normalized_phase[leg_id],
-                self._phase_switch_foot_local_position[leg_id], foot_target_position)
-            joint_ids, joint_angles = (
-                self._robot.ComputeMotorAnglesFromFootLocalPosition(
-                    leg_id, foot_position))
-            # Update the stored joint angles as needed.
-            for joint_id, joint_angle in zip(joint_ids, joint_angles):
-                self._joint_angles[joint_id] = (joint_angle, leg_id)
+            ) - self._desired_height + torch.as_tensor([[hip_offset[0], hip_offset[1], 0]], device=self._device).repeat(self._num_envs, 1)
+        foot_position = _gen_swing_foot_trajectory(
+                self._gait_generator.normalized_phase,
+                self._phase_switch_foot_local_position, foot_target_position)
+        target_leg_indices = torch.where(self._gait_generator.desired_leg_state == gait_generator_lib.LegState.SWING)
 
-        action = {}
-        kps = self._robot.GetMotorPositionGains()
-        kds = self._robot.GetMotorVelocityGains()
-        for joint_id, joint_angle_leg_id in self._joint_angles.items():
-            leg_id = joint_angle_leg_id[1]
-            if self._gait_generator.desired_leg_state[
-                    leg_id] == gait_generator_lib.LegState.SWING:
-                # This is a hybrid action for PD control.
-                action[joint_id] = (joint_angle_leg_id[0], kps[joint_id], 0,
-                                    kds[joint_id], 0)
-
-        return action
+        return foot_position, target_leg_indices

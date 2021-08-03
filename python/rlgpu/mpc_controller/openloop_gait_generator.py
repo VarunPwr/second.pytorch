@@ -25,8 +25,8 @@ A1_TROTTING = [
     gait_generator.LegState.SWING,
 ]
 
-_NOMINAL_STANCE_DURATION = [0.3, 0.3, 0.3, 0.3]
-_NOMINAL_DUTY_FACTOR = [0.5, 0.5, 0.5, 0.5]
+_NOMINAL_STANCE_DURATION = 0.3
+_NOMINAL_DUTY_FACTOR = 0.5
 _NOMINAL_CONTACT_DETECTION_PHASE = 0.1
 
 
@@ -44,8 +44,8 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         num_legs: int,
         num_envs: int,
         device: str,
-        stance_duration: Sequence[float] = _NOMINAL_STANCE_DURATION,
-        duty_factor: Sequence[float] = _NOMINAL_DUTY_FACTOR,
+        stance_duration: float = _NOMINAL_STANCE_DURATION,
+        duty_factor: float = _NOMINAL_DUTY_FACTOR,
         initial_leg_state: Sequence[gait_generator.LegState] = A1_TROTTING,
         initial_leg_phase: Sequence[float] = [0, 0, 0, 0],
         contact_detection_phase_threshold:

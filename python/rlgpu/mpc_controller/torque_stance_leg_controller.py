@@ -73,12 +73,6 @@ class TorqueStanceLegController(leg_controller.LegController):
         self._friction_coeffs = torch.as_tensor(
             [friction_coeffs], device=self._device).repeat(self.num_envs, 1)
 
-        self._com_offset = - \
-            torch.as_tensor([0.012731, 0.002186, 0.000515],
-                            device=self._device)
-        self._hip_offset = torch.as_tensor([[0.183, -0.047, 0.], [0.183, 0.047, 0.],
-                                            [-0.183, -0.047, 0.], [-0.183, 0.047, 0.]
-                                            ], device=self._device) + self._com_offset
         self._hip_offset = self._hip_offset.unsqueeze(0).repeat(self._num_envs)
         self._default_motor_directions = torch.as_tensor([[-1, -1, -1, -1, 1, 1, 1, 1]], device=self._device).repeat(self._num_envs, 1)
 
@@ -88,32 +82,6 @@ class TorqueStanceLegController(leg_controller.LegController):
     def update(self, current_time):
         del current_time
 
-    def _foot_position_in_hip_frame(angles, l_hip_sign=1):
-        theta_ab, theta_hip, theta_knee = angles[..., 0], angles[..., 1], angles[..., 2]
-        l_up = 0.2
-        l_low = 0.2
-        l_hip = 0.08505 * l_hip_sign
-        leg_distance = torch.sqrt(l_up**2 + l_low**2 + 2 * l_up * l_low * torch.cos(theta_knee))
-        eff_swing = theta_hip + theta_knee / 2
-
-        off_x_hip = -leg_distance * torch.sin(eff_swing)
-        off_z_hip = -leg_distance * torch.cos(eff_swing)
-        off_y_hip = l_hip
-
-        off_x = off_x_hip
-        off_y = torch.cos(theta_ab) * off_y_hip - torch.sin(theta_ab) * off_z_hip
-        off_z = torch.sin(theta_ab) * off_y_hip + torch.cos(theta_ab) * off_z_hip
-        return torch.stack([off_x, off_y, off_z], dim=-2)
-
-    def _footPositionsInBaseFrame(self):
-        """Get the robot's foot position in the base frame."""
-        angles = self._robot_task.dof_pos
-        angles = angles.reshape(self._num_envs, 4, 3)
-        foot_positions = torch.zeros_like(angles, device=self._device)
-        for i in range(4):
-            foot_positions[:, i] = self._foot_position_in_hip_frame(angles[:, i], l_hip_sign=(-1)**(i + 1))
-        return foot_positions + self._hip_offset
-
     def _estimate_robot_height(self, contacts: Tensor):
         res_desired_body_height = self._desired_body_height
 
@@ -122,20 +90,18 @@ class TorqueStanceLegController(leg_controller.LegController):
         base_orientation = self._robot_task.root_states[:, 3:7]
         rot_mat = quaternion_to_matrix(base_orientation)
 
-        foot_positions = self._footPositionsInBaseFrame()
+        foot_positions = self._robot_task._footPositionsInBaseFrame()
         foot_positions_world_frame = torch.bmm(
             rot_mat, foot_positions.transpose(-1, -2)).transpose(-1, -2)
-        # pylint: disable=unsubscriptable-object
         useful_heights = contacts * (-foot_positions_world_frame[..., 2])
 
         res_desired_body_height[contacts_indices] = useful_heights.sum(
             -1) / contacts.sum(-1)
         return res_desired_body_height
 
-    def MapContactForceToJointTorques(self, contact_force):
+    def mapContactForceToJointTorques(self, contact_force):
         jv = self._robot_task.jacobain_tensor
         all_motor_torques = torch.matmul(contact_force, jv)
-        motor_torques = {}
         motor_torques = all_motor_torques * self._default_motor_directions
         return motor_torques
 
@@ -144,15 +110,14 @@ class TorqueStanceLegController(leg_controller.LegController):
         contacts = self._gait_generator.desired_leg_state == gait_generator_lib.STANCE or self._gait_generator.desired_leg_state.EARLY_CONTACT
 
         robot_com_position = torch.cat(
-            [torch.zeros((self.num_envs, 2), device=self._device), self._estimate_robot_height(contacts)], dim=-1)
+            [torch.zeros((self.num_envs, 2), device=self._device), self._estimate_robot_height(contacts)], dim=-1).unsqueeze(0).repeat(self._num_envs, 1)
 
         robot_com_velocity = self._state_estimator.com_velocity_body_frame
-        robot_com_roll_pitch_yaw = np.array(self._robot.GetBaseRollPitchYaw())
-        robot_com_roll_pitch_yaw[2] = 0  # To prevent yaw drifting
-        robot_com_roll_pitch_yaw_rate = self._robot.GetBaseRollPitchYawRate()
-        robot_q = np.hstack((robot_com_position, robot_com_roll_pitch_yaw))
-        robot_dq = np.hstack(
-            (robot_com_velocity, robot_com_roll_pitch_yaw_rate))
+        robot_com_roll_pitch_yaw = self._robot_task._getBaseRollPitchYaw()
+        robot_com_roll_pitch_yaw[..., 2] = 0  # To prevent yaw drifting
+        robot_com_roll_pitch_yaw_rate = self._robot_task._getBaseRollPitchYawRate()
+        robot_q = torch.cat([robot_com_position, robot_com_roll_pitch_yaw], dim=-1)
+        robot_dq = torch.cat([robot_com_velocity, robot_com_roll_pitch_yaw_rate], dim=-1)
 
         # Desired q and dq
         desired_com_position = torch.as_tensor(
@@ -172,7 +137,8 @@ class TorqueStanceLegController(leg_controller.LegController):
         desired_ddq = torch.clamp(desired_ddq, MIN_DDQ, MAX_DDQ)
         contact_forces = qp_torque_optimizer.compute_contact_force(
             self._robot, desired_ddq, contacts=contacts)
+        
         # TODO: you are here. You should make the contact forces a Tensor
 
-        motor_torques = self.MapContactForceToJointTorques(contact_forces)
-        return torch.zeros_like(motor_torques, device=self._device), motor_torques, contact_forces
+        motor_torques = self.mapContactForceToJointTorques(contact_forces)
+        return motor_torques, contact_forces

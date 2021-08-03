@@ -86,7 +86,7 @@ class LocomotionController(object):
 
     def get_action(self):
         """Returns the control ouputs (e.g. positions/torques) for all motors."""
-        swing_action = self._swing_leg_controller.get_action()
+        swing_foot_position, swing_foot_indices = self._swing_leg_controller.get_action()
         stance_action, qp_sol = self._stance_leg_controller.get_action()
         action = []
         for joint_id in range(self._robot.num_motors):

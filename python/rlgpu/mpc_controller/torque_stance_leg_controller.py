@@ -19,9 +19,9 @@ from mpc_controller import leg_controller
 from mpc_controller import qp_torque_optimizer
 
 _FORCE_DIMENSION = 3
-KP = np.array((0., 0., 100., 100., 100., 0.))
-KD = np.array((40., 30., 10., 10., 10., 30.))
-MAX_DDQ = np.array((10., 10., 10., 20., 20., 20.))
+KP = torch.as_tensor((0., 0., 100., 100., 100., 0.))
+KD = torch.as_tensor((40., 30., 10., 10., 10., 30.))
+MAX_DDQ = torch.as_tensor((10., 10., 10., 20., 20., 20.))
 MIN_DDQ = -MAX_DDQ
 
 
@@ -74,7 +74,8 @@ class TorqueStanceLegController(leg_controller.LegController):
             [friction_coeffs], device=self._device).repeat(self.num_envs, 1)
 
         self._hip_offset = self._hip_offset.unsqueeze(0).repeat(self._num_envs)
-        self._default_motor_directions = torch.as_tensor([[-1, -1, -1, -1, 1, 1, 1, 1]], device=self._device).repeat(self._num_envs, 1)
+        self._default_motor_directions = torch.as_tensor(
+            [[-1, -1, -1, -1, 1, 1, 1, 1]], device=self._device).repeat(self._num_envs, 1)
 
     def reset(self, current_time):
         del current_time
@@ -116,8 +117,10 @@ class TorqueStanceLegController(leg_controller.LegController):
         robot_com_roll_pitch_yaw = self._robot_task._getBaseRollPitchYaw()
         robot_com_roll_pitch_yaw[..., 2] = 0  # To prevent yaw drifting
         robot_com_roll_pitch_yaw_rate = self._robot_task._getBaseRollPitchYawRate()
-        robot_q = torch.cat([robot_com_position, robot_com_roll_pitch_yaw], dim=-1)
-        robot_dq = torch.cat([robot_com_velocity, robot_com_roll_pitch_yaw_rate], dim=-1)
+        robot_q = torch.cat(
+            [robot_com_position, robot_com_roll_pitch_yaw], dim=-1)
+        robot_dq = torch.cat(
+            [robot_com_velocity, robot_com_roll_pitch_yaw_rate], dim=-1)
 
         # Desired q and dq
         desired_com_position = torch.as_tensor(
@@ -133,12 +136,12 @@ class TorqueStanceLegController(leg_controller.LegController):
         desired_dq = torch.cat(
             [desired_com_velocity, desired_com_angular_velocity], dim=-1)
         # Desired ddq
-        desired_ddq = KP * (desired_q - robot_q) + KD * (desired_dq - robot_dq)
-        desired_ddq = torch.clamp(desired_ddq, MIN_DDQ, MAX_DDQ)
+        desired_ddq = KP.unsqueeze(0).repeat(self._num_envs, 1) * (desired_q - robot_q) + \
+            KD.unsqueeze(0).repeat(self._num_envs, 1) * (desired_dq - robot_dq)
+        desired_ddq = torch.clamp(desired_ddq, MIN_DDQ.unsqueeze(0).repeat(
+            self._num_envs, 1), MAX_DDQ.unsqueeze(0).repeat(self._num_envs, 1))
         contact_forces = qp_torque_optimizer.compute_contact_force(
-            self._robot, desired_ddq, contacts=contacts)
-        
-        # TODO: you are here. You should make the contact forces a Tensor
+            self._robot_task, desired_ddq, contacts=contacts)
 
         motor_torques = self.mapContactForceToJointTorques(contact_forces)
         return motor_torques, contact_forces

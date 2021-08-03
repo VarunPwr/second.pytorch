@@ -1,22 +1,20 @@
 """Gait pattern planning module."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from typing import Any, Sequence
+from torch import Tensor
+import torch
+
 import os
 import inspect
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
 os.sys.path.insert(0, parentdir)
-from mpc_controller import gait_generator
-import logging
-import math
-import numpy as np
-import torch
-from torch import Tensor
-from typing import Any, Sequence
 
+
+from mpc_controller import gait_generator
 
 A1_TROTTING = [
     gait_generator.LegState.SWING,
@@ -176,14 +174,18 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         self._normalized_phase[indices] = phase_in_full_cycle / ratio
 
         self._desired_leg_state[non_indices] = self._next_leg_state[indices]
-        self._normalized_phase[non_indices] = (phase_in_full_cycle - ratio) / (1 - ratio)
+        self._normalized_phase[non_indices] = (
+            phase_in_full_cycle - ratio) / (1 - ratio)
 
         self._leg_state = self._desired_leg_state
 
-        contact_detection_indices = torch.nonzero(self._normalized_phase > self._contact_detection_phase_threshold)
+        contact_detection_indices = torch.nonzero(
+            self._normalized_phase > self._contact_detection_phase_threshold)
 
-        early_contact_indices = torch.nonzero(self._leg_state == gait_generator.LegState.SWING and contact_state and contact_detection_indices)
+        early_contact_indices = torch.nonzero(
+            self._leg_state == gait_generator.LegState.SWING and contact_state and contact_detection_indices)
         self._leg_state[early_contact_indices] = gait_generator.LegState.EARLY_CONTACT
 
-        lost_contact_indices = torch.nonzero(self._leg_state == gait_generator.LegState.STANCE and not contact_state and contact_detection_indices)
+        lost_contact_indices = torch.nonzero(
+            self._leg_state == gait_generator.LegState.STANCE and not contact_state and contact_detection_indices)
         self._leg_state[lost_contact_indices] = gait_generator.LegState.LOSE_CONTACT

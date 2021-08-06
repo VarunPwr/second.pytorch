@@ -135,25 +135,23 @@ class RaibertSwingLegController(leg_controller.LegController):
 
         self._joint_angles = None
         self._phase_switch_foot_local_position = None
-        self.reset(0)
+        self.reset()
 
-    def reset(self, current_time: float) -> None:
+    def reset(self):
         """Called during the start of a swing cycle.
 
         Args:
           current_time: The wall time in seconds.
         """
-        del current_time
         self._last_leg_state = self._gait_generator.desired_leg_state
         self._phase_switch_foot_local_position = self._robot_task._footPositionsInBaseFrame()
 
-    def update(self, current_time: float) -> None:
+    def update(self):
         """Called at each control step.
 
         Args:
           current_time: The wall time in seconds.
         """
-        del current_time
         new_leg_state = self._gait_generator.desired_leg_state
 
         # Detects phase switch for each leg so we can remember the feet position at

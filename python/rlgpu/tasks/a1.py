@@ -32,6 +32,9 @@ class A1(BaseTask):
         self.sim_params = sim_params
         self.physics_engine = physics_engine
 
+        # use RL or controller
+        self.use_controller = self.cfg["env"]["controller"]
+
         # normalization
         self.lin_vel_scale = self.cfg["env"]["learn"]["linearVelocityScale"]
         self.ang_vel_scale = self.cfg["env"]["learn"]["angularVelocityScale"]
@@ -101,15 +104,19 @@ class A1(BaseTask):
 
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
-        
+
         extra_info_len = 3 if self.use_sys_information else 0
         if self.diagonal_act:
-            self.cfg["env"]["numObservations"] = 18 * self.historical_step + 24 + extra_info_len
+            self.cfg["env"]["numObservations"] = 18 * \
+                self.historical_step + 24 + extra_info_len
             self.cfg["env"]["numActions"] = 6
         else:
             self.cfg["env"]["numObservations"] = 24 * \
                 (self.historical_step + 1) + extra_info_len
             self.cfg["env"]["numActions"] = 12
+
+        if self.use_controller:
+            self.cfg["env"]["numActions"] *= 2
 
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
@@ -165,12 +172,15 @@ class A1(BaseTask):
                 (self.num_envs, self.historical_step, self.num_dof), device=self.device)
         self.commands = torch.zeros(
             self.num_envs, 3 + extra_info_len, dtype=torch.float, device=self.device, requires_grad=False)
-        self.commands_y = self.commands.view(self.num_envs, 3 + extra_info_len)[..., 1]
-        self.commands_x = self.commands.view(self.num_envs, 3 + extra_info_len)[..., 0]
-        self.commands_yaw = self.commands.view(self.num_envs, 3 + extra_info_len)[..., 2]
+        self.commands_y = self.commands.view(
+            self.num_envs, 3 + extra_info_len)[..., 1]
+        self.commands_x = self.commands.view(
+            self.num_envs, 3 + extra_info_len)[..., 0]
+        self.commands_yaw = self.commands.view(
+            self.num_envs, 3 + extra_info_len)[..., 2]
 
         if self.use_sys_information and self.terrain == "box":
-            # the size of box 
+            # the size of box
             self.commands[..., -3] = 0.06
             self.commands[..., -2] = 0.06
             self.commands[..., -1] = 0.04
@@ -180,8 +190,8 @@ class A1(BaseTask):
         for i in range(self.num_dof):
             name = self.dof_names[i]
             angle = self.named_default_joint_angles[name]
-
             self.default_dof_pos[:, i] = angle
+
         self.num_legs = 4
         self._com_offset = - \
             torch.as_tensor([0.012731, 0.002186, 0.000515],
@@ -190,11 +200,11 @@ class A1(BaseTask):
                                             [-0.183, -0.047, 0.], [-0.183, 0.047, 0.]
                                             ], device=self.device) + self._com_offset
         self._default_hip_positions = torch.as_tensor([
-                [0.17, -0.14, 0],
-                [0.17, 0.14, 0],
-                [-0.17, -0.14, 0],
-                [-0.17, 0.14, 0],
-            ]).unsqueeze_(0).repeat(self.num_envs, 1)
+            [0.17, -0.14, 0],
+            [0.17, 0.14, 0],
+            [-0.17, -0.14, 0],
+            [-0.17, 0.14, 0],
+        ]).repeat(self.num_envs, 1)
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
@@ -205,6 +215,11 @@ class A1(BaseTask):
         self.actions = torch.zeros(self.num_envs, self.num_actions,
                                    dtype=torch.float, device=self.device, requires_grad=False)
         self.time_out_buf = torch.zeros_like(self.reset_buf)
+
+        jt = self.gym.acquire_jacobian_tensor(self.sim, "a1")
+        self.jacobian_tensor = gymtorch.wrap_tensor(jt)
+        self.feet_dof_pos = self.dof_pos[..., self.feet_indices]
+        
 
         self.reset(torch.arange(self.num_envs, device=self.device))
 
@@ -323,10 +338,10 @@ class A1(BaseTask):
 
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(
-                self.envs[0], self.a1_handles[0], feet_names[i])
+                self.envs[0], self.a1_handles[0], feet_names[i]) - 1
         for i in range(len(knee_names)):
             self.knee_indices[i] = self.gym.find_actor_rigid_body_handle(
-                self.envs[0], self.a1_handles[0], knee_names[i])
+                self.envs[0], self.a1_handles[0], knee_names[i]) - 1
         self.base_index = self.gym.find_actor_rigid_body_handle(
             self.envs[0], self.a1_handles[0], "trunk")
         self.a1_indices = to_torch(
@@ -335,10 +350,6 @@ class A1(BaseTask):
             self.terrain_indices = to_torch(
                 self.terrain_indices, dtype=torch.long, device=self.device)
 
-        jt = self.gym.acquire_jacobian_tensor(self.sim, "a1")
-        self.jacobian_tensor = gymtorch.wrap_tensor(jt)
-
-        self.feet_dof_pos = self.dof_pos[..., self.feet_indices]
 
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
@@ -347,7 +358,24 @@ class A1(BaseTask):
             self.actions_buf = torch.cat(
                 [self.actions_buf[:, :-1], self.actions.unsqueeze(1)], dim=1)
 
+    def controller_step(self, actions):
+        self.actions = actions.clone().to(self.device)
+        position_control, torque_control = torch.chunk(self.actions, 2, dim=-1)
+        self.gym.set_dof_position_target_tensor(
+            self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
+        self.gym.set_dof_actuation_force_tensor(
+            self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
+        for _ in range(self.control_freq_inv):
+            self.gym.simulate(self.sim)
+        self.render()
+        if self.device == 'cpu':
+            self.gym.fetch_results(self.sim, True)
+        self.post_physics_step()
+
     def step(self, actions):
+        if self.use_controller:
+            return self.controller_step(actions)
+
         if self.dr_randomizations.get('actions', None):
             actions = self.dr_randomizations['actions']['noise_lambda'](
                 actions)
@@ -544,13 +572,15 @@ class A1(BaseTask):
             cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
             self.gym.viewer_camera_look_at(
                 self.viewer, None, cam_pos, cam_target)
-    
-    def _foot_position_in_hip_frame(angles, l_hip_sign=1):
-        theta_ab, theta_hip, theta_knee = angles[..., 0], angles[..., 1], angles[..., 2]
+
+    def _foot_position_in_hip_frame(self, angles, l_hip_sign=1):
+        theta_ab, theta_hip, theta_knee = angles[...,
+                                                 0], angles[..., 1], angles[..., 2]
         l_up = 0.2
         l_low = 0.2
         l_hip = 0.08505 * l_hip_sign
-        leg_distance = torch.sqrt(l_up**2 + l_low**2 + 2 * l_up * l_low * torch.cos(theta_knee))
+        leg_distance = torch.sqrt(
+            l_up**2 + l_low**2 + 2 * l_up * l_low * torch.cos(theta_knee))
         eff_swing = theta_hip + theta_knee / 2
 
         off_x_hip = -leg_distance * torch.sin(eff_swing)
@@ -558,17 +588,20 @@ class A1(BaseTask):
         off_y_hip = l_hip
 
         off_x = off_x_hip
-        off_y = torch.cos(theta_ab) * off_y_hip - torch.sin(theta_ab) * off_z_hip
-        off_z = torch.sin(theta_ab) * off_y_hip + torch.cos(theta_ab) * off_z_hip
-        return torch.stack([off_x, off_y, off_z], dim=-2)
+        off_y = torch.cos(theta_ab) * off_y_hip - \
+            torch.sin(theta_ab) * off_z_hip
+        off_z = torch.sin(theta_ab) * off_y_hip + \
+            torch.cos(theta_ab) * off_z_hip
+        return torch.stack([off_x, off_y, off_z], dim=-1)
 
     def _footPositionsInBaseFrame(self):
         """Get the robot's foot position in the base frame."""
         angles = self.dof_pos
-        angles = angles.reshape(self._num_envs, 4, 3)
+        angles = angles.reshape(self.num_envs, 4, 3)
         foot_positions = torch.zeros_like(angles, device=self.device)
         for i in range(4):
-            foot_positions[:, i] = self._foot_position_in_hip_frame(angles[:, i], l_hip_sign=(-1)**(i + 1))
+            foot_positions[:, i] = self._foot_position_in_hip_frame(
+                angles[:, i], l_hip_sign=(-1)**(i + 1))
         return foot_positions + self._hip_offset
 
     def _getBaseRollPitchYaw(self):
@@ -578,7 +611,8 @@ class A1(BaseTask):
         A tuple (roll, pitch, yaw) of the base in world frame.
         """
         base_quat = self.root_states[self.a1_indices, 3:7]
-        roll_pitch_yaw = matrix_to_euler_angles(quaternion_to_matrix(base_quat))
+        roll_pitch_yaw = matrix_to_euler_angles(
+            quaternion_to_matrix(base_quat))
         return roll_pitch_yaw
 
     def _getBaseRollPitchYawRate(self):
@@ -586,11 +620,14 @@ class A1(BaseTask):
         ang_vel = quat_rotate_inverse(
             quat, self.root_states[self.a1_indices, 10:13])
         return ang_vel
-    
+
     def _getHipPositionsInBaseFrame(self):
         return self._default_hip_positions
 
-        
+    def _getContactFootState(self):
+        contact_forces = self.contact_forces[:, self.feet_indices].sum(-1)
+        contact_states = (contact_forces != 0)
+        return contact_states
 
 #####################################################################
 ###=========================jit functions=========================###
@@ -631,7 +668,8 @@ def compute_a1_reward(
     rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * \
         rew_scales["angularVelocityZRewardScale"]
     # z velocity penalty
-    rew_z_vel = torch.square(base_lin_vel[:, 2]) * rew_scales["linearVelocityZRewardScale"]
+    rew_z_vel = torch.square(
+        base_lin_vel[:, 2]) * rew_scales["linearVelocityZRewardScale"]
 
     # torque penalty
     rew_torque = torch.sum(torch.square(torques), dim=1) * \

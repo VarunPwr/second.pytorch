@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from typing import Any, Callable
 import numpy as np
+import time
 import os
 import inspect
 import torch
@@ -29,7 +30,6 @@ class LocomotionController(object):
         state_estimator,
         swing_leg_controller,
         stance_leg_controller,
-        clock,
     ):
         """Initializes the class.
 
@@ -45,9 +45,6 @@ class LocomotionController(object):
         self._robot_task = robot_task
         self._device = self._robot_task.device
         self._num_envs = self._robot_task.num_envs
-        self._clock = clock
-        self._reset_time = self._clock()
-        self._time_since_reset = 0
         self._gait_generator = gait_generator
         self._state_estimator = state_estimator
         self._swing_leg_controller = swing_leg_controller
@@ -70,31 +67,23 @@ class LocomotionController(object):
         return self._state_estimator
 
     def reset(self):
-        self._reset_time = self._clock()
-        self._time_since_reset = 0
-        self._gait_generator.reset(self._time_since_reset)
-        self._state_estimator.reset(self._time_since_reset)
-        self._swing_leg_controller.reset(self._time_since_reset)
-        self._stance_leg_controller.reset(self._time_since_reset)
+        self._gait_generator.reset()
+        self._state_estimator.reset()
+        self._swing_leg_controller.reset()
+        self._stance_leg_controller.reset()
 
     def update(self):
-        self._time_since_reset = self._clock() - self._reset_time
-        self._gait_generator.update(self._time_since_reset)
-        self._state_estimator.update(self._time_since_reset)
-        self._swing_leg_controller.update(self._time_since_reset)
-        self._stance_leg_controller.update(self._time_since_reset)
+        current_time = self._robot_task.progress_buf
+        self._gait_generator.update(current_time)
+        self._state_estimator.update()
+        self._swing_leg_controller.update()
+        self._stance_leg_controller.update()
 
     def get_action(self):
         """Returns the control ouputs (e.g. positions/torques) for all motors."""
         swing_foot_position, swing_foot_indices = self._swing_leg_controller.get_action()
-        stance_action, qp_sol = self._stance_leg_controller.get_action()
-        action = []
-        for joint_id in range(self._robot.num_motors):
-            if joint_id in swing_action:
-                action.extend(swing_action[joint_id])
-            else:
-                assert joint_id in stance_action
-                action.extend(stance_action[joint_id])
-        action = np.array(action, dtype=np.float32)
-
-        return action, dict(qp_sol=qp_sol)
+        motor_torque, qp_sol = self._stance_leg_controller.get_action()
+        position_control = torch.zeros_like(motor_torque, self._robot_task.device)
+        position_control[swing_foot_indices] = swing_foot_position[swing_foot_indices]
+        hybrid_control = torch.cat([position_control, motor_torque], dim=-1)
+        return hybrid_control, dict(qp_sol=qp_sol)

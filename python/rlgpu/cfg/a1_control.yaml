@@ -1,7 +1,7 @@
 env:
-  numEnvs: 1
+  numEnvs: 2
   envSpacing: 4.  # [m]
-  terrain: "box"
+  terrain: "plane"
   plane:
     staticFriction: 10.0  # [-]
     dynamicFriction: 10.0  # [-]
@@ -72,8 +72,7 @@ env:
     pos: [0, -2, 0.4]  # [m]
     lookat: [0.2, 0.2, -0.4]  # [m]
 
-  controller: False
-
+  controller: True
   # sensor:
   sensor:
     historical_step: 4

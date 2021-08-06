@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from typing import Any, Sequence
 from torch import Tensor
+from copy import deepcopy
 import torch
 
 import os
@@ -17,14 +18,14 @@ os.sys.path.insert(0, parentdir)
 from mpc_controller import gait_generator
 
 A1_TROTTING = [
-    gait_generator.LegState.SWING,
-    gait_generator.LegState.STANCE,
-    gait_generator.LegState.STANCE,
-    gait_generator.LegState.SWING,
+    0,
+    1,
+    1,
+    0,
 ]
 
 _NOMINAL_STANCE_DURATION = 0.3
-_NOMINAL_DUTY_FACTOR = 0.5
+_NOMINAL_DUTY_FACTOR = 0.6
 _NOMINAL_CONTACT_DETECTION_PHASE = 0.1
 
 
@@ -39,13 +40,11 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
 
     def __init__(
         self,
-        num_legs: int,
-        num_envs: int,
-        device: str,
+        robot_task: Any,
         stance_duration: float = _NOMINAL_STANCE_DURATION,
         duty_factor: float = _NOMINAL_DUTY_FACTOR,
-        initial_leg_state: Sequence[gait_generator.LegState] = A1_TROTTING,
-        initial_leg_phase: Sequence[float] = [0, 0, 0, 0],
+        initial_leg_state: Sequence[int] = A1_TROTTING,
+        initial_leg_phase: Sequence[float] = [0.9, 0, 0, 0.9],
         contact_detection_phase_threshold:
         float = _NOMINAL_CONTACT_DETECTION_PHASE,
     ):
@@ -66,15 +65,16 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
             detection when phase switches. For example, a swing foot at at the
             beginning of the gait cycle might be still on the ground.
         """
-        self._num_legs = num_legs
-        self._num_envs = num_envs
-        self._device = device
+        self._robot_task = robot_task
+        self._num_legs = self._robot_task.num_legs
+        self._num_envs = self._robot_task.num_envs
+        self._device = self._robot_task.device
 
         # make them into tensor, repeat for each env
         self._stance_duration = torch.as_tensor(
-            [stance_duration], device=self._device).repeat(self._num_envs, 1)
+            [stance_duration], device=self._device).repeat(self._num_envs, 4)
         self._duty_factor = torch.as_tensor(
-            [duty_factor], device=self._device).repeat(self._num_envs, 1)
+            [duty_factor], device=self._device).repeat(self._num_envs, 4)
         self._swing_duration = self._stance_duration / \
             self._duty_factor - self._stance_duration
         if len(initial_leg_phase) != self._num_legs:
@@ -94,11 +94,11 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         self._initial_state_ratio_in_cycle = torch.zeros_like(
             self._initial_leg_state, device=self._device)
 
-        swing_indices = torch.nonzero(self._initial_leg_state == 0)
-        not_swing_indices = torch.nonzero(self._initial_leg_state != 0)
-        self._initial_state_ratio_in_cycle[swing_indices] = 1 - \
-            duty_factor[swing_indices]
-        self._initial_state_ratio_in_cycle[not_swing_indices] = duty_factor[not_swing_indices]
+        swing_indices = torch.nonzero(self._initial_leg_state == 0, as_tuple=True)
+        not_swing_indices = torch.nonzero(self._initial_leg_state != 0, as_tuple=True)
+        # print(swing_indices)
+        self._initial_state_ratio_in_cycle[swing_indices] = 1 - duty_factor
+        self._initial_state_ratio_in_cycle[not_swing_indices] = duty_factor
 
         self._initial_state_ratio_in_cycle[swing_indices] = 1
         self._initial_state_ratio_in_cycle[not_swing_indices] = 0
@@ -116,8 +116,8 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         # The normalized phase within swing or stance duration.
         self._normalized_phase = torch.zeros(
             (self._num_envs, self._num_legs), device=self._device)
-        self._leg_state = list(self._initial_leg_state)
-        self._desired_leg_state = list(self._initial_leg_state)
+        self._leg_state = deepcopy(self._initial_leg_state)
+        self._desired_leg_state = deepcopy(self._initial_leg_state)
 
     @property
     def desired_leg_state(self) -> Tensor:
@@ -160,32 +160,28 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         """
         return self._normalized_phase
 
-    def update(self, current_time: Tensor, contact_state: Tensor):
-
+    def update(self, current_time: Tensor):
+        contact_state = self._robot_task._getContactFootState()
         full_cycle_period = self._stance_duration / self._duty_factor
-
-        augmented_time = current_time + self._initial_leg_phase * full_cycle_period
+        augmented_time = current_time.unsqueeze(-1) + self._initial_leg_phase * full_cycle_period
         phase_in_full_cycle = torch.fmod(augmented_time,
                                          full_cycle_period) / full_cycle_period
         ratio = self._initial_state_ratio_in_cycle
-        indices = torch.nonzero(phase_in_full_cycle < ratio)
-        non_indices = torch.nonzero(phase_in_full_cycle >= ratio)
+        indices = torch.nonzero(phase_in_full_cycle < ratio, as_tuple=True)
+        non_indices = torch.nonzero(phase_in_full_cycle >= ratio, as_tuple=True)
         self._desired_leg_state[indices] = self._initial_leg_state[indices]
-        self._normalized_phase[indices] = phase_in_full_cycle / ratio
-
+        self._normalized_phase[indices] = (phase_in_full_cycle / ratio)[indices]
         self._desired_leg_state[non_indices] = self._next_leg_state[indices]
-        self._normalized_phase[non_indices] = (
-            phase_in_full_cycle - ratio) / (1 - ratio)
-
+        self._normalized_phase[non_indices] = ((
+            phase_in_full_cycle - ratio) / (1 - ratio))[non_indices]
         self._leg_state = self._desired_leg_state
+        early_contact = torch.logical_and(torch.logical_and(self._normalized_phase > self._contact_detection_phase_threshold, torch.eq(self._leg_state, 0)), contact_state)
+        early_contact_indices = torch.stack(torch.nonzero(early_contact, as_tuple=True))
+        if early_contact_indices.shape[-1] > 0:
+            self._leg_state[early_contact_indices] = 2
 
-        contact_detection_indices = torch.nonzero(
-            self._normalized_phase > self._contact_detection_phase_threshold)
-
-        early_contact_indices = torch.nonzero(
-            self._leg_state == gait_generator.LegState.SWING and contact_state and contact_detection_indices)
-        self._leg_state[early_contact_indices] = gait_generator.LegState.EARLY_CONTACT
-
-        lost_contact_indices = torch.nonzero(
-            self._leg_state == gait_generator.LegState.STANCE and not contact_state and contact_detection_indices)
-        self._leg_state[lost_contact_indices] = gait_generator.LegState.LOSE_CONTACT
+        lost_contact = torch.logical_and(torch.logical_and(self._normalized_phase > self._contact_detection_phase_threshold, torch.eq(self._leg_state, 1)), (0 == contact_state))
+        lost_contact_indices = torch.stack(torch.nonzero(lost_contact, as_tuple=True))
+        if lost_contact_indices.shape[-1] > 0:
+            self._leg_state[lost_contact_indices] = 3
+            

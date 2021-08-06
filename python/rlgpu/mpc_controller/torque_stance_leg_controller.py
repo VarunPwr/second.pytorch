@@ -66,22 +66,20 @@ class TorqueStanceLegController(leg_controller.LegController):
         self._gait_generator = gait_generator
         self._state_estimator = state_estimator
         self.desired_speed = torch.as_tensor(
-            [desired_speed], device=self._device).repeat(self.num_envs, 1)
+            [desired_speed], device=self._device).repeat(self._num_envs, 1)
         self.desired_twisting_speed = desired_twisting_speed
         self._desired_body_height = desired_body_height
         self._num_legs = 4
         self._friction_coeffs = torch.as_tensor(
-            [friction_coeffs], device=self._device).repeat(self.num_envs, 1)
-
-        self._hip_offset = self._hip_offset.unsqueeze(0).repeat(self._num_envs)
+            [friction_coeffs], device=self._device).repeat(self._num_envs, 1)
         self._default_motor_directions = torch.as_tensor(
             [[-1, -1, -1, -1, 1, 1, 1, 1]], device=self._device).repeat(self._num_envs, 1)
 
-    def reset(self, current_time):
-        del current_time
+    def reset(self):
+        pass
 
-    def update(self, current_time):
-        del current_time
+    def update(self):
+        pass
 
     def _estimate_robot_height(self, contacts: Tensor):
         res_desired_body_height = self._desired_body_height
@@ -111,7 +109,7 @@ class TorqueStanceLegController(leg_controller.LegController):
         contacts = self._gait_generator.desired_leg_state == gait_generator_lib.STANCE or self._gait_generator.desired_leg_state.EARLY_CONTACT
 
         robot_com_position = torch.cat(
-            [torch.zeros((self.num_envs, 2), device=self._device), self._estimate_robot_height(contacts)], dim=-1).unsqueeze(0).repeat(self._num_envs, 1)
+            [torch.zeros((self._num_envs, 2), device=self._device), self._estimate_robot_height(contacts)], dim=-1).unsqueeze(0).repeat(self._num_envs, 1)
 
         robot_com_velocity = self._state_estimator.com_velocity_body_frame
         robot_com_roll_pitch_yaw = self._robot_task._getBaseRollPitchYaw()

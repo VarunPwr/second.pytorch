@@ -4,7 +4,6 @@ For details, please refer to section XX of this paper:
 https://arxiv.org/abs/2009.10019
 """
 
-import numpy as np
 import torch
 from qpth.qp import QPFunction
 from torch.autograd import Variable

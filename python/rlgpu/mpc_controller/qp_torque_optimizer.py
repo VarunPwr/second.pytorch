@@ -13,7 +13,6 @@ ACC_WEIGHT = torch.as_tensor([1., 1., 1., 10., 10, 1.])
 
 def compute_mass_matrix(num_envs, robot_mass, robot_inertia, foot_positions, device):
     rot_z = torch.eye(3, device=device).unsqueeze(0).repeat(num_envs, 1, 1)
-
     inv_mass = (torch.eye(3, device=device) / robot_mass).unsqueeze(0).repeat(num_envs, 1, 1)
     inv_inertia = torch.inverse(robot_inertia).unsqueeze(0).repeat(num_envs, 1, 1)
     mass_mat = torch.zeros((num_envs, 6, 12), device=device)

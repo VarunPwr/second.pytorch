@@ -360,10 +360,18 @@ class A1(BaseTask):
     def controller_step(self, actions):
         self.actions = actions.clone().to(self.device)
         position_control, torque_control = torch.chunk(self.actions, 2, dim=-1)
+        # self.gym.set_dof_position_target_tensor(
+        #     self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
+        # self.gym.set_dof_actuation_force_tensor(
+        #     self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
+        # self.gym.set_dof_position_target_tensor(
+        #     self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
+        # self.gym.set_dof_actuation_force_tensor(
+        #     self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
         self.gym.set_dof_position_target_tensor(
-            self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
+            self.sim, gymtorch.unwrap_tensor(torch.zeros_like(position_control)))
         self.gym.set_dof_actuation_force_tensor(
-            self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
+            self.sim, gymtorch.unwrap_tensor(torch.zeros_like(torque_control)))
         for _ in range(self.control_freq_inv):
             self.gym.simulate(self.sim)
         self.render()

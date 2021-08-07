@@ -87,7 +87,7 @@ class MovingWindowFilter(object):
             self._current_size += 1
         else:
             self._value_deque = torch.cat(
-                [self._value_deque[..., :-1], new_value], dim=-1)
+                [self._value_deque[..., :-1], new_value.unsqueeze(-1)], dim=-1)
 
 
 class COMVelocityEstimator(object):

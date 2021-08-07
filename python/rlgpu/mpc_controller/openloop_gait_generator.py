@@ -100,8 +100,8 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         self._initial_state_ratio_in_cycle[swing_indices] = 1 - duty_factor
         self._initial_state_ratio_in_cycle[not_swing_indices] = duty_factor
 
-        self._initial_state_ratio_in_cycle[swing_indices] = 1
-        self._initial_state_ratio_in_cycle[not_swing_indices] = 0
+        self._next_leg_state[swing_indices] = 1
+        self._next_leg_state[not_swing_indices] = 0
 
         self._contact_detection_phase_threshold = contact_detection_phase_threshold
 
@@ -171,16 +171,15 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         non_indices = torch.nonzero(phase_in_full_cycle >= ratio, as_tuple=True)
         self._desired_leg_state[indices] = self._initial_leg_state[indices]
         self._normalized_phase[indices] = (phase_in_full_cycle / ratio)[indices]
-        self._desired_leg_state[non_indices] = self._next_leg_state[indices]
+        self._desired_leg_state[non_indices] = self._next_leg_state[non_indices]
         self._normalized_phase[non_indices] = ((
             phase_in_full_cycle - ratio) / (1 - ratio))[non_indices]
         self._leg_state = self._desired_leg_state
         early_contact = torch.logical_and(torch.logical_and(self._normalized_phase > self._contact_detection_phase_threshold, torch.eq(self._leg_state, 0)), contact_state)
         early_contact_indices = torch.stack(torch.nonzero(early_contact, as_tuple=True))
         if early_contact_indices.shape[-1] > 0:
-            self._leg_state[early_contact_indices] = 2
-
+            self._leg_state[torch.nonzero(early_contact, as_tuple=True)] = 2
         lost_contact = torch.logical_and(torch.logical_and(self._normalized_phase > self._contact_detection_phase_threshold, torch.eq(self._leg_state, 1)), (0 == contact_state))
         lost_contact_indices = torch.stack(torch.nonzero(lost_contact, as_tuple=True))
         if lost_contact_indices.shape[-1] > 0:
-            self._leg_state[lost_contact_indices] = 3
+            self._leg_state[torch.nonzero(lost_contact, as_tuple=True)] = 3

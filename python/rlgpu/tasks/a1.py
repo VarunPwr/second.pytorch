@@ -218,9 +218,8 @@ class A1(BaseTask):
 
         jt = self.gym.acquire_jacobian_tensor(self.sim, "a1")
         self.jacobian_tensor = gymtorch.wrap_tensor(jt)
+        self.feet_jacobian_tensor = self.jacobian_tensor[:, self.feet_indices + 1]
         self.feet_dof_pos = self.dof_pos[..., self.feet_indices]
-        
-
         self.reset(torch.arange(self.num_envs, device=self.device))
 
     def create_sim(self):
@@ -466,6 +465,7 @@ class A1(BaseTask):
     def compute_observations(self):
         self.gym.refresh_dof_state_tensor(self.sim)  # done in step
         self.gym.refresh_actor_root_state_tensor(self.sim)
+        self.gym.refresh_jacobian_tensors(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
         self.gym.refresh_dof_force_tensor(self.sim)
 

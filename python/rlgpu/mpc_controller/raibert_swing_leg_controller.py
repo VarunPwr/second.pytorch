@@ -85,7 +85,7 @@ def _gen_swing_foot_trajectory(input_phase: Tensor, start_pos: Tensor,
     mid = torch.maximum(end_pos[..., 2], start_pos[..., 2]) + max_clearance
     z = _gen_parabola(phase, start_pos[..., 2], mid, end_pos[..., 2])
 
-    return torch.stack([x, y, z], dim=-2)
+    return torch.stack([x, y, z], dim=-1)
 
 
 class RaibertSwingLegController(leg_controller.LegController):

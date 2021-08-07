@@ -83,7 +83,7 @@ class LocomotionController(object):
         """Returns the control ouputs (e.g. positions/torques) for all motors."""
         swing_foot_position, swing_foot_indices = self._swing_leg_controller.get_action()
         motor_torque, qp_sol = self._stance_leg_controller.get_action()
-        position_control = torch.zeros_like(motor_torque, self._robot_task.device)
-        position_control[swing_foot_indices] = swing_foot_position[swing_foot_indices]
+        position_control = torch.zeros_like(motor_torque)
+        position_control[:, swing_foot_indices] = swing_foot_position.flatten(1)[:, swing_foot_indices]
         hybrid_control = torch.cat([position_control, motor_torque], dim=-1)
         return hybrid_control, dict(qp_sol=qp_sol)

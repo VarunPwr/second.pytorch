@@ -66,8 +66,7 @@ class TorqueStanceLegController(leg_controller.LegController):
         self._num_legs = 4
         self._friction_coeffs = torch.as_tensor(
             [friction_coeffs], device=self._device).repeat(self._num_envs, 1)
-        self._default_motor_directions = torch.as_tensor(
-            [[-1, -1, -1, -1, 1, 1, 1, 1]], device=self._device).repeat(self._num_envs, 1)
+        self._default_motor_directions = torch.ones((self._num_envs, 12), device=self._device)
         self.KP = torch.as_tensor((0., 0., 100., 100., 100., 0.), device=self._device).unsqueeze(
             0).repeat(self._num_envs, 1)
         self.KD = torch.as_tensor((40., 30., 10., 10., 10., 30.), device=self._device).unsqueeze(
@@ -99,10 +98,15 @@ class TorqueStanceLegController(leg_controller.LegController):
         return res_desired_body_height.sum(-1, keepdims=True) / contacts.sum(-1, keepdims=True)
 
     def mapContactForceToJointTorques(self, contact_force):
-        jv = self._robot_task.jacobian_tensor
-        # TODO: contact_force is [2,4,3], jv is [2, 13, 6, 18]
-        all_motor_torques = torch.matmul(contact_force, jv)
-        motor_torques = all_motor_torques * self._default_motor_directions
+        jt = self._robot_task.feet_jacobian_tensor
+        jv = jt[:, :, :3, 6:]
+        all_motor_torques = torch.bmm(contact_force.view(-1, 1, 3), jv.view(-1, 3, self._robot_task.num_dof)).view(
+            self._num_envs, self._num_legs, self._robot_task.num_dof)
+        motor_torques = []
+        for i in range(self._num_legs):
+            motor_torques.append(all_motor_torques[:, i, 4 * i: 4 * (i + 1)])
+        motor_torques = torch.cat(motor_torques, dim=-1)
+        motor_torques = motor_torques * self._default_motor_directions
         return motor_torques
 
     def get_action(self):
@@ -140,7 +144,8 @@ class TorqueStanceLegController(leg_controller.LegController):
         # Desired ddq
         desired_ddq = self.KP * (desired_q - robot_q) + \
             self.KD * (desired_dq - robot_dq)
-        desired_ddq = torch.minimum(torch.maximum(desired_ddq, self.MIN_DDQ), self.MAX_DDQ)
+        desired_ddq = torch.minimum(torch.maximum(
+            desired_ddq, self.MIN_DDQ), self.MAX_DDQ)
         contact_forces = qp_torque_optimizer.compute_contact_force(
             self._robot_task, desired_ddq, contacts=contacts)
 

@@ -8,21 +8,13 @@ from __future__ import print_function
 from typing import Any, Sequence, Tuple
 from torch import Tensor
 from pytorch3d.transforms import quaternion_to_matrix
-import numpy as np
 import torch
 from copy import deepcopy
 
 # import time
 
-from mpc_controller import gait_generator as gait_generator_lib
 from mpc_controller import leg_controller
 from mpc_controller import qp_torque_optimizer
-
-_FORCE_DIMENSION = 3
-KP = torch.as_tensor((0., 0., 100., 100., 100., 0.))
-KD = torch.as_tensor((40., 30., 10., 10., 10., 30.))
-MAX_DDQ = torch.as_tensor((10., 10., 10., 20., 20., 20.))
-MIN_DDQ = -MAX_DDQ
 
 
 class TorqueStanceLegController(leg_controller.LegController):
@@ -67,13 +59,22 @@ class TorqueStanceLegController(leg_controller.LegController):
         self._state_estimator = state_estimator
         self.desired_speed = torch.as_tensor(
             [desired_speed], device=self._device).repeat(self._num_envs, 1)
-        self.desired_twisting_speed = desired_twisting_speed
-        self._desired_body_height = desired_body_height
+        self.desired_twisting_speed = torch.as_tensor(
+            [desired_twisting_speed], device=self._device).repeat(self._num_envs, 1)
+        self._desired_body_height = torch.as_tensor(
+            [desired_body_height], device=self._device).repeat(self._num_envs, 1)
         self._num_legs = 4
         self._friction_coeffs = torch.as_tensor(
             [friction_coeffs], device=self._device).repeat(self._num_envs, 1)
         self._default_motor_directions = torch.as_tensor(
             [[-1, -1, -1, -1, 1, 1, 1, 1]], device=self._device).repeat(self._num_envs, 1)
+        self.KP = torch.as_tensor((0., 0., 100., 100., 100., 0.), device=self._device).unsqueeze(
+            0).repeat(self._num_envs, 1)
+        self.KD = torch.as_tensor((40., 30., 10., 10., 10., 30.), device=self._device).unsqueeze(
+            0).repeat(self._num_envs, 1)
+        self.MAX_DDQ = torch.as_tensor(
+            (10., 10., 10., 20., 20., 20.), device=self._device).unsqueeze(0).repeat(self._num_envs, 1)
+        self.MIN_DDQ = -self.MAX_DDQ
 
     def reset(self):
         pass
@@ -82,34 +83,35 @@ class TorqueStanceLegController(leg_controller.LegController):
         pass
 
     def _estimate_robot_height(self, contacts: Tensor):
+        contacts_indices = torch.stack(
+            torch.nonzero(contacts == 0, as_tuple=True))
+        if contacts_indices.shape[-1] == 0:
+            return self._desired_body_height
         res_desired_body_height = self._desired_body_height
-
-        contacts_indices = torch.nonzero(contacts == 0)
-
         base_orientation = self._robot_task.root_states[:, 3:7]
         rot_mat = quaternion_to_matrix(base_orientation)
 
         foot_positions = self._robot_task._footPositionsInBaseFrame()
         foot_positions_world_frame = torch.bmm(
             rot_mat, foot_positions.transpose(-1, -2)).transpose(-1, -2)
-        useful_heights = contacts * (-foot_positions_world_frame[..., 2])
-
-        res_desired_body_height[contacts_indices] = useful_heights.sum(
-            -1) / contacts.sum(-1)
-        return res_desired_body_height
+        res_desired_body_height = contacts * \
+            (-foot_positions_world_frame[..., 2])
+        return res_desired_body_height.sum(-1, keepdims=True) / contacts.sum(-1, keepdims=True)
 
     def mapContactForceToJointTorques(self, contact_force):
-        jv = self._robot_task.jacobain_tensor
+        jv = self._robot_task.jacobian_tensor
+        # TODO: contact_force is [2,4,3], jv is [2, 13, 6, 18]
         all_motor_torques = torch.matmul(contact_force, jv)
         motor_torques = all_motor_torques * self._default_motor_directions
         return motor_torques
 
     def get_action(self):
         """Computes the torque for stance legs."""
-        contacts = self._gait_generator.desired_leg_state == gait_generator_lib.STANCE or self._gait_generator.desired_leg_state.EARLY_CONTACT
+        contacts = torch.logical_or(
+            self._gait_generator.desired_leg_state == 1, self._gait_generator.desired_leg_state == 2)
 
         robot_com_position = torch.cat(
-            [torch.zeros((self._num_envs, 2), device=self._device), self._estimate_robot_height(contacts)], dim=-1).unsqueeze(0).repeat(self._num_envs, 1)
+            [torch.zeros((self._num_envs, 2), device=self._device), self._estimate_robot_height(contacts)], dim=-1)
 
         robot_com_velocity = self._state_estimator.com_velocity_body_frame
         robot_com_roll_pitch_yaw = self._robot_task._getBaseRollPitchYaw()
@@ -121,23 +123,24 @@ class TorqueStanceLegController(leg_controller.LegController):
             [robot_com_velocity, robot_com_roll_pitch_yaw_rate], dim=-1)
 
         # Desired q and dq
-        desired_com_position = torch.as_tensor(
-            [[0., 0., self._desired_body_height]], device=self._device).repeat(self._num_envs, 1)
-        desired_com_velocity = torch.as_tensor(
-            [[self.desired_speed[0], self.desired_speed[1], 0.]], device=self._device).repeat(self._num_envs, 1)
-        desired_com_roll_pitch_yaw = torch.as_tensor(
-            [[0., 0., 0.]], device=self._device).repeat(self._num_envs, 1)
-        desired_com_angular_velocity = torch.as_tensor(
-            [[0., 0., self.desired_twisting_speed]], device=self._device).repeat(self._num_envs, 1)
+        zeros_xy = torch.zeros((self._num_envs, 2), device=self._device)
+
+        desired_com_position = torch.cat(
+            [zeros_xy, self._desired_body_height], dim=-1)
+        desired_com_velocity = deepcopy(self.desired_speed)
+        desired_com_velocity[..., -1] = 0
+        desired_com_roll_pitch_yaw = torch.zeros(
+            (self._num_envs, 3), device=self._device)
+        desired_com_angular_velocity = torch.cat(
+            [zeros_xy, self.desired_twisting_speed], dim=-1)
         desired_q = torch.cat(
             [desired_com_position, desired_com_roll_pitch_yaw], dim=-1)
         desired_dq = torch.cat(
             [desired_com_velocity, desired_com_angular_velocity], dim=-1)
         # Desired ddq
-        desired_ddq = KP.unsqueeze(0).repeat(self._num_envs, 1) * (desired_q - robot_q) + \
-            KD.unsqueeze(0).repeat(self._num_envs, 1) * (desired_dq - robot_dq)
-        desired_ddq = torch.clamp(desired_ddq, MIN_DDQ.unsqueeze(0).repeat(
-            self._num_envs, 1), MAX_DDQ.unsqueeze(0).repeat(self._num_envs, 1))
+        desired_ddq = self.KP * (desired_q - robot_q) + \
+            self.KD * (desired_dq - robot_dq)
+        desired_ddq = torch.minimum(torch.maximum(desired_ddq, self.MIN_DDQ), self.MAX_DDQ)
         contact_forces = qp_torque_optimizer.compute_contact_force(
             self._robot_task, desired_ddq, contacts=contacts)
 

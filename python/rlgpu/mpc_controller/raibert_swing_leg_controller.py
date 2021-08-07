@@ -3,23 +3,21 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import torch
-import copy
-import math
-from typing import Any, Tuple
-
+from torch import Tensor
 import os
 import inspect
-
 from torch.functional import Tensor
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
 os.sys.path.insert(0, parentdir)
-
-from mpc_controller import gait_generator as gait_generator_lib
 from mpc_controller import leg_controller
-from torch import Tensor
+from mpc_controller import gait_generator as gait_generator_lib
+import torch
+import copy
+import math
+from typing import Any, Tuple
+
 
 
 # The position correction coefficients in Raibert's formula.
@@ -84,7 +82,7 @@ def _gen_swing_foot_trajectory(input_phase: Tensor, start_pos: Tensor,
     x = (1 - phase) * start_pos[..., 0] + phase * end_pos[..., 0]
     y = (1 - phase) * start_pos[..., 1] + phase * end_pos[..., 1]
     max_clearance = 0.1
-    mid = max(end_pos[..., 2], start_pos[..., 2]) + max_clearance
+    mid = torch.maximum(end_pos[..., 2], start_pos[..., 2]) + max_clearance
     z = _gen_parabola(phase, start_pos[..., 2], mid, end_pos[..., 2])
 
     return torch.stack([x, y, z], dim=-2)
@@ -168,24 +166,28 @@ class RaibertSwingLegController(leg_controller.LegController):
             self._state_estimator.com_velocity_body_frame)
         com_velocity[..., :2] = 0
 
-        _, _, yaw_dot = self._robot_task._getBaseRollPitchYawRate()
+        rpy_dot = self._robot_task._getBaseRollPitchYawRate()
+        _, _, yaw_dot = torch.chunk(rpy_dot, chunks=3, dim=-1)
         hip_positions = self._robot_task._getHipPositionsInBaseFrame()
 
         hip_offset = hip_positions
-        twisting_vector = torch.as_tensor(
-            [[-hip_offset[1], hip_offset[0], 0]], device=self._device).repeat(self._num_envs, 1)
-        hip_horizontal_velocity = com_velocity + yaw_dot * twisting_vector
+        twisting_vector = torch.stack(
+            [-hip_offset[:, 1], hip_offset[:, 0], torch.zeros_like(hip_offset[:, 0], device=self._device)], dim=-1).unsqueeze(0).repeat(self._num_envs, 1, 1)
+
+        hip_horizontal_velocity = com_velocity.unsqueeze(
+            1) + yaw_dot.unsqueeze(1) * twisting_vector
+
         target_hip_horizontal_velocity = (
-            self.desired_speed + self.desired_twisting_speed * twisting_vector)
+            self.desired_speed.unsqueeze(1) + self.desired_twisting_speed.unsqueeze(1) * twisting_vector)
         foot_target_position = (
             hip_horizontal_velocity *
-            self._gait_generator.stance_duration / 2 - torch.as_tensor([_KP], device=self._device).repeat(self._num_envs, 1) *
+            self._gait_generator.stance_duration.unsqueeze(-1) / 2 - torch.as_tensor([_KP], device=self._device).unsqueeze(1).repeat(self._num_envs, 4, 1) *
             (target_hip_horizontal_velocity - hip_horizontal_velocity)
-        ) - self._desired_height + torch.as_tensor([[hip_offset[0], hip_offset[1], 0]], device=self._device).repeat(self._num_envs, 1)
+        ) - self._desired_height.unsqueeze(1).repeat(1, 4, 1) + torch.stack(
+            [hip_offset[:, 0], hip_offset[:, 1], torch.zeros_like(hip_offset[:, 0], device=self._device)], dim=-1).unsqueeze(0).repeat(self._num_envs, 1, 1)
         foot_position = _gen_swing_foot_trajectory(
             self._gait_generator.normalized_phase,
             self._phase_switch_foot_local_position, foot_target_position)
-        target_leg_indices = torch.where(
-            self._gait_generator.desired_leg_state == gait_generator_lib.LegState.SWING)
-
+        target_leg_indices = torch.stack(torch.nonzero(
+            self._gait_generator.desired_leg_state == 0, as_tuple=True))
         return foot_position, target_leg_indices

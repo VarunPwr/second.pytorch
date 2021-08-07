@@ -9,7 +9,7 @@ from rlgpu.utils.torch_jit_utils import quat_rotate_inverse
 import torch
 from torch.tensor import Tensor
 from isaacgym import gymapi
-
+from pytorch3d.transforms import quaternion_apply
 
 _DEFAULT_WINDOW_SIZE = 20
 
@@ -150,10 +150,4 @@ class COMVelocityEstimator(object):
         vy = self._velocity_filter_y.calculate_average(base_lin_vel[..., 1])
         vz = self._velocity_filter_z.calculate_average(base_lin_vel[..., 2])
         self._com_velocity_world_frame = torch.stack([vx, vy, vz], dim=-1)
-
-        # TODO: write this as loop since isaac currently doesn't support batch transformation (try pytorch3d, etc)
-        pose = gymapi.Transform()
-
-        pose.r.x, pose.r.y, pose.r.z, pose.r.w = torch.chunk(base_quat, 4, dim=-1)
-        self._com_velocity_body_frame = pose.transform_vector(
-            self._com_velocity_world_frame)
+        self._com_velocity_body_frame = quaternion_apply(base_quat, self._com_velocity_world_frame)

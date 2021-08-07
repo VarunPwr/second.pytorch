@@ -7,7 +7,7 @@
 
 import numpy as np
 import os
-from numpy.core.numeric import indices
+from numpy.core.numeric import indices, roll
 
 from rlgpu.utils.torch_jit_utils import *
 from rlgpu.tasks.base.base_task import BaseTask
@@ -204,7 +204,7 @@ class A1(BaseTask):
             [0.17, 0.14, 0],
             [-0.17, -0.14, 0],
             [-0.17, 0.14, 0],
-        ]).repeat(self.num_envs, 1)
+        ], device=self.device)
         # initialize some data used later on
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
@@ -612,7 +612,7 @@ class A1(BaseTask):
         """
         base_quat = self.root_states[self.a1_indices, 3:7]
         roll_pitch_yaw = matrix_to_euler_angles(
-            quaternion_to_matrix(base_quat))
+            quaternion_to_matrix(base_quat), "XYZ")
         return roll_pitch_yaw
 
     def _getBaseRollPitchYawRate(self):

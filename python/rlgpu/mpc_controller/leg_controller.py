@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import abc
 from typing import Any
-
+import torch
 
 class LegController(object):
     """Generates the leg control signal."""
@@ -27,3 +27,9 @@ class LegController(object):
     def get_action(self) -> Any:
         """Gets the control signal e.g. torques/positions for the leg."""
         pass
+
+    def set_desired_speed_as_tensor(self, speed):
+        self.desired_speed = torch.as_tensor(speed, device=self._device).unsqueeze(0).repeat(self._num_envs, 1)
+
+    def set_desired_twisting_speed_as_tensor(self, speed):
+        self.desired_twisting_speed = torch.as_tensor(speed, device=self._device).unsqueeze(0).repeat(self._num_envs, 1)

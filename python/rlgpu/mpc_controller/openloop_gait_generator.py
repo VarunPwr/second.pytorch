@@ -184,4 +184,3 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         lost_contact_indices = torch.stack(torch.nonzero(lost_contact, as_tuple=True))
         if lost_contact_indices.shape[-1] > 0:
             self._leg_state[lost_contact_indices] = 3
-            

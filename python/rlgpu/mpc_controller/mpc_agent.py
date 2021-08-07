@@ -46,7 +46,7 @@ class MPCAgent():
         return speed[0:3], speed[3]
 
     def _update_controller_params(self, lin_speed, ang_speed):
-        self.controller.swing_leg_controller.desired_speed = lin_speed
-        self.controller.swing_leg_controller.desired_twisting_speed = ang_speed
-        self.controller.stance_leg_controller.desired_speed = lin_speed
-        self.controller.stance_leg_controller.desired_twisting_speed = ang_speed
+        self.controller.swing_leg_controller.set_desired_speed_as_tensor(lin_speed)
+        self.controller.swing_leg_controller.set_desired_twisting_speed_as_tensor(ang_speed)
+        self.controller.stance_leg_controller.set_desired_speed_as_tensor(lin_speed)
+        self.controller.stance_leg_controller.set_desired_twisting_speed_as_tensor(ang_speed)

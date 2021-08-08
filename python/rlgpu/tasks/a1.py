@@ -5,6 +5,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import enum
 import numpy as np
 import os
 from numpy.core.numeric import indices, roll
@@ -218,7 +219,6 @@ class A1(BaseTask):
 
         jt = self.gym.acquire_jacobian_tensor(self.sim, "a1")
         self.jacobian_tensor = gymtorch.wrap_tensor(jt)
-        self.feet_jacobian_tensor = self.jacobian_tensor[:, self.feet_indices + 1]
         self.feet_dof_pos = self.dof_pos[..., self.feet_indices]
         self.reset(torch.arange(self.num_envs, device=self.device))
 
@@ -349,7 +349,6 @@ class A1(BaseTask):
             self.terrain_indices = to_torch(
                 self.terrain_indices, dtype=torch.long, device=self.device)
 
-
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
 
@@ -360,20 +359,18 @@ class A1(BaseTask):
     def controller_step(self, actions):
         self.actions = actions.clone().to(self.device)
         position_control, torque_control = torch.chunk(self.actions, 2, dim=-1)
-        # self.gym.set_dof_position_target_tensor(
-        #     self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
-        # self.gym.set_dof_actuation_force_tensor(
-        #     self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
-        # self.gym.set_dof_position_target_tensor(
-        #     self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
-        # self.gym.set_dof_actuation_force_tensor(
-        #     self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
+        position_control += self.default_dof_pos
         self.gym.set_dof_position_target_tensor(
-            self.sim, gymtorch.unwrap_tensor(torch.zeros_like(position_control)))
+            self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
         self.gym.set_dof_actuation_force_tensor(
-            self.sim, gymtorch.unwrap_tensor(torch.zeros_like(torque_control)))
-        for _ in range(self.control_freq_inv):
-            self.gym.simulate(self.sim)
+            self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
+        # self.gym.set_dof_position_target_tensor(
+        #     self.sim, gymtorch.unwrap_tensor(torch.zeros_like(position_control)))
+        # self.gym.set_dof_actuation_force_tensor(
+        #     self.sim, gymtorch.unwrap_tensor(torch.zeros_like(torque_control)))
+        # for _ in range(self.control_freq_inv):
+        #     self.gym.simulate(self.sim)
+        self.gym.simulate(self.sim)
         self.render()
         if self.device == 'cpu':
             self.gym.fetch_results(self.sim, True)
@@ -605,12 +602,33 @@ class A1(BaseTask):
     def _footPositionsInBaseFrame(self):
         """Get the robot's foot position in the base frame."""
         angles = self.dof_pos
-        angles = angles.reshape(self.num_envs, 4, 3)
+        angles = angles.reshape(self.num_envs, self.num_legs, 3)
         foot_positions = torch.zeros_like(angles, device=self.device)
-        for i in range(4):
+        for i in range(self.num_legs):
             foot_positions[:, i] = self._foot_position_in_hip_frame(
                 angles[:, i], l_hip_sign=(-1)**(i + 1))
         return foot_positions + self._hip_offset
+
+    def _footPositionsToJointAngles(self, foot_positions):
+        # print("foot positions", foot_positions)
+        fjt = self.jacobian_tensor[:, :, :, 6:]
+        fjt = fjt[:, self.feet_indices + 1]
+        # solve damped least squares
+        fjt_T = torch.transpose(fjt, -1, -2)
+        feet_pos = self._footPositionsInBaseFrame()
+        feet_pos_err, feet_rot_err = torch.zeros_like(feet_pos), torch.zeros_like(feet_pos)
+        feet_pos_err = foot_positions - feet_pos
+        dof_err = torch.cat([feet_pos_err, feet_rot_err], dim=-1).unsqueeze_(-1)
+        d = 0.05  # damping term
+        lmbda = torch.eye(6).unsqueeze_(0).unsqueeze_(0).repeat(self.num_envs, 4, 1, 1).to(self.device) * (d ** 2)
+        u = (fjt_T @ torch.inverse(fjt @ fjt_T + lmbda) @ dof_err).squeeze(-1)
+        # u = (fjt_T @ dof_err).squeeze(-1)
+        delta_pos = []
+        for i in range(self.num_legs):
+            delta_pos.append(u[:, i, 4 * i: 4 * (i + 1)])
+        delta_pos = torch.cat(delta_pos, dim=-1)
+        pos_target = self.dof_pos + delta_pos
+        return pos_target
 
     def _getBaseRollPitchYaw(self):
         """Get minitaur's base orientation in euler angle in the world frame.

@@ -1,5 +1,5 @@
 env:
-  numEnvs: 2
+  numEnvs: 1
   envSpacing: 4.  # [m]
   terrain: "plane"
   plane:

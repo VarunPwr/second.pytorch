@@ -50,6 +50,8 @@ class LocomotionController(object):
         self._swing_leg_controller = swing_leg_controller
         self._stance_leg_controller = stance_leg_controller
 
+        self._default_position = self._robot_task.default_dof_pos
+
     @property
     def swing_leg_controller(self):
         return self._swing_leg_controller
@@ -73,7 +75,7 @@ class LocomotionController(object):
         self._stance_leg_controller.reset()
 
     def update(self):
-        current_time = self._robot_task.progress_buf
+        current_time = self._robot_task.progress_buf / 120
         self._gait_generator.update(current_time)
         self._state_estimator.update()
         self._swing_leg_controller.update()
@@ -81,9 +83,9 @@ class LocomotionController(object):
 
     def get_action(self):
         """Returns the control ouputs (e.g. positions/torques) for all motors."""
-        swing_foot_position, swing_foot_indices = self._swing_leg_controller.get_action()
+        target_joint_angles, swing_foot_indices, non_swing_foot_indices = self._swing_leg_controller.get_action()
         motor_torque, qp_sol = self._stance_leg_controller.get_action()
-        position_control = torch.zeros_like(motor_torque)
-        position_control[:, swing_foot_indices] = swing_foot_position.flatten(1)[:, swing_foot_indices]
+        # position_control = self._default_position
+        position_control = self._default_position * non_swing_foot_indices + target_joint_angles * swing_foot_indices - self._default_position
         hybrid_control = torch.cat([position_control, motor_torque], dim=-1)
         return hybrid_control, dict(qp_sol=qp_sol)

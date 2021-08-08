@@ -83,7 +83,7 @@ class TorqueStanceLegController(leg_controller.LegController):
 
     def _estimate_robot_height(self, contacts: Tensor):
         contacts_indices = torch.stack(
-            torch.nonzero(contacts == 0, as_tuple=True))
+            torch.nonzero(contacts == 1, as_tuple=True))
         if contacts_indices.shape[-1] == 0:
             return self._desired_body_height
         res_desired_body_height = self._desired_body_height
@@ -98,13 +98,13 @@ class TorqueStanceLegController(leg_controller.LegController):
         return res_desired_body_height.sum(-1, keepdims=True) / contacts.sum(-1, keepdims=True)
 
     def mapContactForceToJointTorques(self, contact_force):
-        jt = self._robot_task.feet_jacobian_tensor
-        jv = jt[:, :, :3, 6:]
+        jt = self._robot_task.jacobian_tensor
+        jv = jt[:, self._robot_task.feet_indices + 1, :3, 6:]
         all_motor_torques = torch.bmm(contact_force.view(-1, 1, 3), jv.view(-1, 3, self._robot_task.num_dof)).view(
             self._num_envs, self._num_legs, self._robot_task.num_dof)
         motor_torques = []
         for i in range(self._num_legs):
-            motor_torques.append(all_motor_torques[:, i, 4 * i: 4 * (i + 1)])
+            motor_torques.append(all_motor_torques[:, i, 3 * i: 3 * (i + 1)])
         motor_torques = torch.cat(motor_torques, dim=-1)
         motor_torques = motor_torques * self._default_motor_directions
         return motor_torques
@@ -125,7 +125,6 @@ class TorqueStanceLegController(leg_controller.LegController):
             [robot_com_position, robot_com_roll_pitch_yaw], dim=-1)
         robot_dq = torch.cat(
             [robot_com_velocity, robot_com_roll_pitch_yaw_rate], dim=-1)
-
         # Desired q and dq
         zeros_xy = torch.zeros((self._num_envs, 2), device=self._device)
 

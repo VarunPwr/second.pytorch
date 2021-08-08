@@ -24,8 +24,8 @@ A1_TROTTING = [
     0,
 ]
 
-_NOMINAL_STANCE_DURATION = 0.3
-_NOMINAL_DUTY_FACTOR = 0.6
+_NOMINAL_STANCE_DURATION = 0.032
+_NOMINAL_DUTY_FACTOR = 0.5
 _NOMINAL_CONTACT_DETECTION_PHASE = 0.1
 
 
@@ -94,14 +94,8 @@ class OpenloopGaitGenerator(gait_generator.GaitGenerator):
         self._initial_state_ratio_in_cycle = torch.zeros_like(
             self._initial_leg_state, device=self._device)
 
-        swing_indices = torch.nonzero(self._initial_leg_state == 0, as_tuple=True)
-        not_swing_indices = torch.nonzero(self._initial_leg_state != 0, as_tuple=True)
-        # print(swing_indices)
-        self._initial_state_ratio_in_cycle[swing_indices] = 1 - duty_factor
-        self._initial_state_ratio_in_cycle[not_swing_indices] = duty_factor
-
-        self._next_leg_state[swing_indices] = 1
-        self._next_leg_state[not_swing_indices] = 0
+        self._initial_state_ratio_in_cycle = ((1 - duty_factor) * (self._initial_leg_state == 0) + duty_factor * (self._initial_leg_state != 0)).float()
+        self._next_leg_state = (self._initial_leg_state == 0).long()
 
         self._contact_detection_phase_threshold = contact_detection_phase_threshold
 

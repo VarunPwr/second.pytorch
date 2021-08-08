@@ -74,11 +74,10 @@ def _gen_swing_foot_trajectory(input_phase: Tensor, start_pos: Tensor,
     # onto the ground earlier than expected. This is a common practice similar
     # to the MIT cheetah and Marc Raibert's original controllers.
     phase = torch.zeros_like(input_phase, device=input_phase.device)
-    indices = torch.where(input_phase <= 0.5)
-    non_indices = torch.where(input_phase > 0.5)
+    indices = torch.nonzero(input_phase <= 0.5, as_tuple=True)
+    non_indices = torch.nonzero(input_phase > 0.5, as_tuple=True)
     phase[indices] = 0.8 * torch.sin(input_phase[indices] * math.pi)
     phase[non_indices] = 0.8 + (input_phase[non_indices] - 0.5) * 0.4
-
     x = (1 - phase) * start_pos[..., 0] + phase * end_pos[..., 0]
     y = (1 - phase) * start_pos[..., 1] + phase * end_pos[..., 1]
     max_clearance = 0.1
@@ -185,9 +184,10 @@ class RaibertSwingLegController(leg_controller.LegController):
             (target_hip_horizontal_velocity - hip_horizontal_velocity)
         ) - self._desired_height.unsqueeze(1).repeat(1, 4, 1) + torch.stack(
             [hip_offset[:, 0], hip_offset[:, 1], torch.zeros_like(hip_offset[:, 0], device=self._device)], dim=-1).unsqueeze(0).repeat(self._num_envs, 1, 1)
-        foot_position = _gen_swing_foot_trajectory(
+        foot_positions = _gen_swing_foot_trajectory(
             self._gait_generator.normalized_phase,
             self._phase_switch_foot_local_position, foot_target_position)
-        target_leg_indices = torch.stack(torch.nonzero(
-            self._gait_generator.desired_leg_state == 0, as_tuple=True))
-        return foot_position, target_leg_indices
+        target_leg_indices = (self._gait_generator.desired_leg_state == 0).float()
+        non_target_leg_indices = (self._gait_generator.desired_leg_state != 0).float()
+        target_joint_angles = self._robot_task._footPositionsToJointAngles(foot_positions)
+        return target_joint_angles, target_leg_indices.repeat_interleave(3, dim=-1), non_target_leg_indices.repeat_interleave(3, dim=-1)

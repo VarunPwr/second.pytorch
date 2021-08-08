@@ -36,26 +36,23 @@ def compute_constraint_matrix(mpc_body_mass,
     num_envs = contacts.shape[0]
     f_min = f_min_ratio * mpc_body_mass * 9.81
     f_max = f_max_ratio * mpc_body_mass * 9.81
-
+    f_tensor = torch.as_tensor([f_min, -f_max, f_min, -f_max, f_min, -f_max, f_min, -f_max], device=device)
     A = torch.zeros((24, 12), device=device).unsqueeze(0).repeat(num_envs, 1, 1)
     lb = torch.zeros((24), device=device).unsqueeze(0).repeat(num_envs, 1)
     for leg_id in range(4):
         A[:, leg_id * 2, leg_id * 3 + 2] = 1
         A[:, leg_id * 2 + 1, leg_id * 3 + 2] = -1
-        contacts_indices = torch.nonzero(contacts[:, leg_id])
-        non_contacts_indices = torch.nonzero(contacts[:, leg_id] != 0)
-        if contacts_indices.shape[-1] > 0:
-            lb[contacts_indices, leg_id * 2], lb[contacts_indices,
-                                                 leg_id * 2 + 1] = f_min, -f_max
-        if non_contacts_indices.shape[-1] > 0:
-            lb[non_contacts_indices, leg_id] = -1e-7
-
+    contacts_flag = contacts.repeat_interleave(2, dim=-1)
+    contacts_indices_tensor = (contacts_flag == 0).float()
+    non_contacts_indices_tensor = (contacts_flag != 0).float()
+    _lb = contacts_indices_tensor * f_tensor + non_contacts_indices_tensor * (-1e-7)
+    for leg_id in range(4):
+        lb[:, 2 * leg_id] = _lb[:, 2 * leg_id]
+        lb[:, 2 * leg_id + 1] = _lb[:, 2 * leg_id + 1]
     # Friction constraints
     for leg_id in range(4):
         row_id = 8 + leg_id * 4
         col_id = leg_id * 3
-        lb[:, row_id:row_id + 4] = torch.as_tensor(
-            [0, 0, 0, 0], device=device).unsqueeze(0).repeat(num_envs, 1)
         A[:, row_id, col_id:col_id +
             3] = torch.as_tensor([1, 0, friction_coef], device=device).unsqueeze(0).repeat(num_envs, 1)
         A[:, row_id + 1, col_id:col_id +

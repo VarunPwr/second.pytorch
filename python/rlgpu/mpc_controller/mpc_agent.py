@@ -21,7 +21,7 @@ class MPCAgent():
             lin_speed, ang_speed = (0., 0., 0.), 0.
             self._update_controller_params(lin_speed, ang_speed)
             self.controller.update()
-            hybrid_action, _ = self.controller.get_action()
+            hybrid_action = self.controller.get_action()
 
             self.vec_env.step(hybrid_action)
 

@@ -66,14 +66,14 @@ def compute_constraint_matrix(mpc_body_mass,
 
 def compute_objective_matrix(mass_matrix, desired_acc, acc_weight, reg_weight, device):
     num_envs = mass_matrix.shape[0]
-    g = torch.as_tensor([0., 0., 9.8, 0., 0., 0.],
+    g = torch.as_tensor([0., 0., 9.81, 0., 0., 0.],
                         device=device).repeat(num_envs, 1)
     Q = torch.diag(acc_weight).unsqueeze(0).repeat(num_envs, 1, 1)
     R = (torch.ones((12, 12), device=device) * reg_weight).repeat(num_envs, 1, 1)
     quad_term = torch.bmm(
         torch.bmm(mass_matrix.transpose(-2, -1), Q), mass_matrix) + R
     linear_term = torch.bmm(
-        torch.bmm((g + desired_acc).unsqueeze(1), Q), mass_matrix)
+        torch.bmm((g + desired_acc).unsqueeze(1), Q), mass_matrix).squeeze(1)
     return quad_term, linear_term
 
 
@@ -99,5 +99,6 @@ def compute_contact_force(robot_task,
                                      friction_coef, f_min_ratio, f_max_ratio, device)
     G += 1e-4 * torch.eye(12).unsqueeze(0).repeat(num_envs, 1, 1).to(device)
     e = Variable(torch.Tensor()).to(device)
-    result = QPFunction(verbose=False)(G, -a.squeeze(1), -C, -b, e, e)
+    result = QPFunction(verbose=False)(G, -a, -C, -b, e, e)
     return -result.view((robot_task.num_envs, 4, 3))
+    # return -torch.ones((robot_task.num_envs, 4, 3), device=device)

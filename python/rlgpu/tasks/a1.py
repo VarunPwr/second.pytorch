@@ -364,6 +364,11 @@ class A1(BaseTask):
             self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
         self.gym.set_dof_actuation_force_tensor(
             self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
+        # self.gym.set_dof_position_target_tensor_indexed(
+        #     self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
+        # self.gym.set_dof_actuation_force_tensor_indexed(
+        #     self.sim, gymtorch.unwrap_tensor(torque_control.contiguous()))
+
         # self.gym.set_dof_position_target_tensor(
         #     self.sim, gymtorch.unwrap_tensor(torch.zeros_like(position_control)))
         # self.gym.set_dof_actuation_force_tensor(
@@ -625,7 +630,7 @@ class A1(BaseTask):
         # u = (fjt_T @ dof_err).squeeze(-1)
         delta_pos = []
         for i in range(self.num_legs):
-            delta_pos.append(u[:, i, 4 * i: 4 * (i + 1)])
+            delta_pos.append(u[:, i, 3 * i: 3 * (i + 1)])
         delta_pos = torch.cat(delta_pos, dim=-1)
         pos_target = self.dof_pos + delta_pos
         return pos_target

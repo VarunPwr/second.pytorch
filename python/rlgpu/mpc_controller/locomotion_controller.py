@@ -88,5 +88,6 @@ class LocomotionController(object):
         # motor_torque = torch.zeros_like(target_joint_angles)
         # position_control = self._default_position
         position_control = self._default_position * non_swing_foot_indices + target_joint_angles * swing_foot_indices - self._default_position
+        motor_torque = motor_torque * non_swing_foot_indices + torch.zeros_like(motor_torque) * swing_foot_indices
         hybrid_control = torch.cat([position_control, motor_torque], dim=-1)
         return hybrid_control

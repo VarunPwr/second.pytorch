@@ -99,14 +99,14 @@ class TorqueStanceLegController(leg_controller.LegController):
 
     def mapContactForceToJointTorques(self, contact_force):
         jt = self._robot_task.jacobian_tensor
-        jv = jt[:, self._robot_task.feet_indices + 1, :3, 6:]
-        all_motor_torques = torch.bmm(contact_force.view(-1, 1, 3), jv.view(-1, 3, self._robot_task.num_dof)).view(
-            self._num_envs, self._num_legs, self._robot_task.num_dof)
+        jv = jt[:, self._robot_task.feet_indices + 1, :3, :]
+        all_motor_torques = torch.bmm(contact_force.view(-1, 1, 3), jv.view(-1, 3, 18)).view(
+            self._num_envs, self._num_legs, 18)
+        all_motor_torques = all_motor_torques[..., 6:]
         motor_torques = []
         for i in range(self._num_legs):
             motor_torques.append(all_motor_torques[:, i, 3 * i: 3 * (i + 1)])
         motor_torques = torch.cat(motor_torques, dim=-1)
-        motor_torques = motor_torques * self._default_motor_directions
         return motor_torques
 
     def get_action(self):
@@ -119,7 +119,7 @@ class TorqueStanceLegController(leg_controller.LegController):
 
         robot_com_velocity = self._state_estimator.com_velocity_body_frame
         robot_com_roll_pitch_yaw = self._robot_task._getBaseRollPitchYaw()
-        robot_com_roll_pitch_yaw[..., 2] = 0  # To prevent yaw drifting
+        robot_com_roll_pitch_yaw[..., 2] = 0
         robot_com_roll_pitch_yaw_rate = self._robot_task._getBaseRollPitchYawRate()
         robot_q = torch.cat(
             [robot_com_position, robot_com_roll_pitch_yaw], dim=-1)

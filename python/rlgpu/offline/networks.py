@@ -1,8 +1,11 @@
 from typing import Any
+from qpth.qp import QPFunction
 import torch
+import torch.nn as nn
+from torch.autograd import Variable
 import pytorch_lightning as pl
 import torch.nn.functional as F
-
+from siren_pytorch import SirenNet
 
 def variable_hook(grad):
     print("the gradient of C is：", grad)
@@ -15,7 +18,7 @@ def mlp(
     output_activation=torch.nn.Identity,
     activation=torch.nn.ReLU,
     grad_hook=False,
-    dropout=0.1
+    dropout=0.0
 ):
     sizes = [input_size] + layer_sizes + [output_size]
     layers = []
@@ -52,7 +55,36 @@ class MLP(torch.nn.Module):
         return self.layers(x)
 
 
-NET_DICT = {"mlp": MLP}
+class OptNet(nn.Module):
+    def __init__(self, input_size, layer_sizes, output_size, nineq=200, neq=0, eps=1e-4, grad_hook=False):
+        super().__init__()
+        self.input_size = input_size
+        self.output_size = output_size
+        self.nineq = nineq
+        self.neq = neq
+        self.eps = eps
+
+        self.fc = mlp(input_size, layer_sizes, output_size, grad_hook=grad_hook)
+
+        self.M = nn.Parameter(torch.tril(torch.ones(output_size, output_size)))
+        self.L = nn.Parameter(torch.tril(torch.rand(output_size, output_size)))
+        self.G = nn.Parameter(torch.Tensor(nineq, output_size).uniform_(-1e-2, 1e-2))
+        self.z0 = nn.Parameter(torch.zeros(output_size))
+        self.s0 = nn.Parameter(torch.ones(nineq))
+
+    def forward(self, x):
+        x = self.fc(x)
+        L = self.M * self.L
+        Q = L.mm(L.t()) + self.eps * \
+            Variable(torch.eye(self.output_size)).to(x.device)
+        h = self.G.mv(self.z0) + self.s0
+        e = Variable(torch.Tensor()).to(x.device)
+        x = QPFunction(verbose=False)(Q, x, self.G, h, e, e)
+
+        return x
+
+
+NET_DICT = {"mlp": MLP, "optnet": OptNet, "siren": SirenNet}
 
 
 class PlNet(pl.LightningModule):
@@ -61,13 +93,22 @@ class PlNet(pl.LightningModule):
         super().__init__()
         self.input_size = input_size
         self.output_size = output_size
-
-        self.model = NET_DICT[network_type](
-            input_size=input_size,
-            layer_sizes=layer_sizes,
-            output_size=output_size,
-            grad_hook=grad_hook,
-        )
+        if network_type == "siren":
+            self.model = NET_DICT[network_type](
+                dim_in=input_size,
+                dim_hidden=layer_sizes[0],
+                dim_out=output_size,
+                num_layers = len(layer_sizes),
+                final_activation = nn.Identity(),
+                w0_initial=1.
+            )
+        else:
+            self.model = NET_DICT[network_type](
+                input_size=input_size,
+                layer_sizes=layer_sizes,
+                output_size=output_size,
+                grad_hook=grad_hook,
+            )
         # self.model.apply(weights_init)
 
     def forward(self, x):
@@ -79,27 +120,36 @@ class PlNet(pl.LightningModule):
         x, y = data[..., : self.input_size], data[..., self.input_size:]
         logits = self(x)
         policy_loss = F.mse_loss(logits, y)
-        return policy_loss
+        relative_error = (torch.abs(y - logits).mean(-1) /
+                          (1e-8 + torch.abs(y).mean(-1))).mean().detach()
+        return policy_loss, relative_error
 
     def training_step(self, batch: Any, batch_idx: int):
-        loss = self.step(batch, batch_idx)
+        loss, err = self.step(batch, batch_idx)
         self.log("train/loss", loss, on_step=True,
+                 on_epoch=True, sync_dist=True)
+
+        self.log("train/err", err, on_step=True,
                  on_epoch=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch: Any, batch_idx: int):
-        loss = self.step(batch, batch_idx)
+        loss, err = self.step(batch, batch_idx)
         self.log("val/loss", loss, on_step=True, on_epoch=True, sync_dist=True)
+        self.log("val/err", err, on_step=True,
+                 on_epoch=True, sync_dist=True)
         return loss
 
     def test_step(self, batch: Any, batch_idx: int):
-        loss = self.step(batch, batch_idx)
+        loss, err = self.step(batch, batch_idx)
         self.log("test/loss", loss, on_step=True,
+                 on_epoch=True, sync_dist=True)
+        self.log("test/err", err, on_step=True,
                  on_epoch=True, sync_dist=True)
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
         return {
             "optimizer": optimizer,
             "lr_scheduler": {

@@ -7,7 +7,7 @@ from torch.utils.data.dataset import random_split
 
 class TinyDataModule(pl.LightningDataModule):
 
-    def __init__(self, file_name, batch_size=128, input_dict=None, output_dict=None, num_workers=16):
+    def __init__(self, file_name, batch_size=128, input_dict=None, output_dict=None, num_workers=4):
         super().__init__()
         self.batch_size = batch_size
         self.input_dict = input_dict
@@ -29,20 +29,25 @@ class TinyDataModule(pl.LightningDataModule):
         for k, v in dict.items():
             if k in self.input_dict:
                 if len(np.shape(v)) == 1:
-                    v = np.unsqueeze(v, -1)
+                    v = np.expand_dims(v, -1)
                 elif len(np.shape(v)) == 3:
                     v = v.reshape(v.shape[0], v.shape[1] * v.shape[2])
                 self.tensor_data_dict["input"].append(torch.as_tensor(v))
             elif k in self.output_dict:
                 if len(np.shape(v)) == 1:
-                    v = np.unsqueeze(v, -1)
+                    v = np.expand_dims(v, -1)
                 elif len(np.shape(v)) == 3:
                     v = v.reshape(v.shape[0], v.shape[1] * v.shape[2])
                 self.tensor_data_dict["output"].append(torch.as_tensor(v))
+        
         self.tensor_data_dict["input"] = torch.cat(
             self.tensor_data_dict["input"], dim=-1)
         self.tensor_data_dict["output"] = torch.cat(
             self.tensor_data_dict["output"], dim=-1)
+        if "contact_forces" in self.output_dict or "torques" in self.output_dict:
+            mass = torch.ones((self.tensor_data_dict["input"].shape[0], 1)) * 108 / 9.81
+            grivaty = torch.ones((self.tensor_data_dict["input"].shape[0], 1)) * (-9.81)
+            self.tensor_data_dict["input"] = torch.cat([self.tensor_data_dict["input"], mass, grivaty], dim=-1)
 
     def setup(self, stage):
         self.test_set = TensorDataset(self.test_data)

@@ -18,11 +18,11 @@ output_dict = task_config["output_dict"]
 if args.use_additional_info:
     input_dict.extend(cfg["additional_info"])
 
-dm = TinyDataModule(file_name="mpc_data", batch_size=1024,
+dm = TinyDataModule(file_name="mpc_data_1m", batch_size=2048,
                     input_dict=input_dict, output_dict=output_dict)
 
 
-net = PlNet("mlp", dm.input_size, [200, 200], dm.output_size, grad_hook=False)
+net = PlNet("mlp", dm.input_size, [500, 500, 500], dm.output_size, grad_hook=False)
 
 if args.use_additional_info:
     logdir = os.path.join(args.logdir, args.task_name + '_additional_info')
@@ -31,5 +31,5 @@ else:
 
 tb_logger = pl_loggers.TensorBoardLogger(logdir)
 
-trainer = pl.Trainer(gpus=args.device, weights_summary="full", max_epochs=1000, logger=tb_logger)
+trainer = pl.Trainer(gpus=args.device, weights_summary="full", max_epochs=500, logger=tb_logger)
 trainer.fit(net, dm)

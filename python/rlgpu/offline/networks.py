@@ -13,9 +13,9 @@ def mlp(
     layer_sizes,
     output_size,
     output_activation=torch.nn.Identity,
-    activation=torch.nn.ELU,
+    activation=torch.nn.ReLU,
     grad_hook=False,
-    dropout=0.0
+    dropout=0.1
 ):
     sizes = [input_size] + layer_sizes + [output_size]
     layers = []
@@ -24,7 +24,7 @@ def mlp(
         layers += [torch.nn.Linear(sizes[i], sizes[i + 1]), act()]
         if grad_hook:
             layers[-2].weight.register_hook(variable_hook)
-        if dropout > 0:
+        if dropout > 0 and i < len(sizes) - 2:
             layers += [torch.nn.Dropout(dropout)]
 
     return torch.nn.Sequential(*layers)
@@ -102,10 +102,10 @@ class PlNet(pl.LightningModule):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
         return {
             "optimizer": optimizer,
-            # "lr_scheduler": {
-            #     "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, mode="min"),
-            #     "monitor": "val/loss",
-            # },
+            "lr_scheduler": {
+                "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, mode="min"),
+                "monitor": "val/loss",
+            },
         }
 
 

@@ -15,7 +15,7 @@ def mlp(
     output_activation=torch.nn.Identity,
     activation=torch.nn.ELU,
     grad_hook=False,
-    dropout=0.2
+    dropout=0.0
 ):
     sizes = [input_size] + layer_sizes + [output_size]
     layers = []
@@ -57,20 +57,16 @@ NET_DICT = {"mlp": MLP}
 
 class PlNet(pl.LightningModule):
     def __init__(
-        self, network_type, input_size, layer_sizes, output_size, dimension_size, grad_hook=False, layer_norm=False
-    ):
+            self, network_type, input_size, layer_sizes, output_size, grad_hook=False):
         super().__init__()
         self.input_size = input_size
         self.output_size = output_size
-        self.dimension_size = dimension_size
 
         self.model = NET_DICT[network_type](
             input_size=input_size,
             layer_sizes=layer_sizes,
             output_size=output_size,
-            dimension_size=dimension_size,
             grad_hook=grad_hook,
-            layer_norm=layer_norm,
         )
         # self.model.apply(weights_init)
 
@@ -79,45 +75,37 @@ class PlNet(pl.LightningModule):
         return logits
 
     def step(self, batch, _):
-        data = batch[0]
+        data = batch[0].float()
         x, y = data[..., : self.input_size], data[..., self.input_size:]
         logits = self(x)
-        policy_loss = F.cross_entropy(
-            logits, y.squeeze(1).long())
-        greedy_action = torch.argmax(logits, dim=-1)
-        acc = (greedy_action == y.squeeze(1)).sum() / x.shape[0]
-        return policy_loss, acc
+        policy_loss = F.mse_loss(logits, y)
+        return policy_loss
 
     def training_step(self, batch: Any, batch_idx: int):
-        loss, acc = self.step(batch, batch_idx)
+        loss = self.step(batch, batch_idx)
         self.log("train/loss", loss, on_step=True,
                  on_epoch=True, sync_dist=True)
-        self.log("train/acc", acc, on_step=True, on_epoch=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch: Any, batch_idx: int):
-        loss, acc = self.step(batch, batch_idx)
+        loss = self.step(batch, batch_idx)
         self.log("val/loss", loss, on_step=True, on_epoch=True, sync_dist=True)
-        self.log("val/acc", acc, on_step=True, on_epoch=True, sync_dist=True)
-        # print("best", best)
-        # print("worst", worst)
         return loss
 
     def test_step(self, batch: Any, batch_idx: int):
-        loss, acc = self.step(batch, batch_idx)
+        loss = self.step(batch, batch_idx)
         self.log("test/loss", loss, on_step=True,
                  on_epoch=True, sync_dist=True)
-        self.log("test/acc", acc, on_step=True, on_epoch=True, sync_dist=True)
         return loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
         return {
             "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, mode="max"),
-                "monitor": "val/acc",
-            },
+            # "lr_scheduler": {
+            #     "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, mode="min"),
+            #     "monitor": "val/loss",
+            # },
         }
 
 

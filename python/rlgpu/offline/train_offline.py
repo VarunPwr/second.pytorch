@@ -21,7 +21,7 @@ dm = TinyDataModule(file_name="mpc_data", batch_size=1024,
                     input_dict=input_dict, output_dict=output_dict)
 
 
-# net = PlNet("mlp", dm.state_size, [500, 500], 4 * 13 * 13, dimension_size=3, grad_hook=False)
+net = PlNet("mlp", dm.input_size, [500, 500], dm.output_size, grad_hook=False)
 
-# trainer = pl.Trainer(gpus=1, weights_summary="full", max_epochs=10000)
-# trainer.fit(net, dm)
+trainer = pl.Trainer(gpus=1, weights_summary="full", max_epochs=10000)
+trainer.fit(net, dm)

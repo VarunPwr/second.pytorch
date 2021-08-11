@@ -48,7 +48,10 @@ task:
   hybrid_control_with_phase:
     input_dict: ['joint_angles', 'leg_state', 'foot_contact_state', 'desired_com_velocity', 'desired_com_angular_velocity', 'com_rpy', 
 'com_rpy_rate', 'joint_velocity', 'base_vel', 'base_ori']
+    output_dict: ['target_joint_angles', 'target_torques']
 
   hybrid_control_without_phase:
     input_dict: ['joint_angles', 'foot_contact_state', 'desired_com_velocity', 'desired_com_angular_velocity', 'com_rpy', 
 'com_rpy_rate', 'joint_velocity', 'base_vel', 'base_ori']
+    output_dict: ['target_joint_angles', 'target_torques']
+    

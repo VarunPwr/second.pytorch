@@ -7,11 +7,12 @@ from torch.utils.data.dataset import random_split
 
 class TinyDataModule(pl.LightningDataModule):
 
-    def __init__(self, file_name, batch_size=128, input_dict=None, output_dict=None):
+    def __init__(self, file_name, batch_size=128, input_dict=None, output_dict=None, num_workers=16):
         super().__init__()
         self.batch_size = batch_size
         self.input_dict = input_dict
         self.output_dict = output_dict
+        self.num_workers = num_workers
         data_dict = np.load("{}.npy".format(file_name), allow_pickle=True).item()
         self.load_dict(data_dict)
         self.input_size = self.tensor_data_dict["input"].shape[-1]
@@ -50,10 +51,10 @@ class TinyDataModule(pl.LightningDataModule):
             train_data_full, [self.train_num, self.train_val_num - self.train_num])
 
     def train_dataloader(self):
-        return DataLoader(self.train_set, batch_size=self.batch_size)
+        return DataLoader(self.train_set, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True)
 
     def val_dataloader(self):
-        return DataLoader(self.val_set, batch_size=self.batch_size)
+        return DataLoader(self.val_set, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True)
 
     def test_dataloader(self):
-        return DataLoader(self.test_set, batch_size=self.batch_size)
+        return DataLoader(self.test_set, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True)

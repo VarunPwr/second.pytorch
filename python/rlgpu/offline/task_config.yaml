@@ -1,0 +1,54 @@
+dataset: ['target_joint_angles', 'joint_angles', 'leg_state', 'target_torques', 'contact_forces', 
+'foot_contact_state', 'desired_com_velocity', 'desired_com_angular_velocity', 'com_rpy', 
+'com_rpy_rate', 'joint_velocity', 'base_vel', 'base_ori']
+
+additional_info: ['duty_factor', 'stance_duration']
+
+task:
+  torques_from_commands_and_joint_angles:
+    input_dict: ['base_vel', 'base_ori', 'com_rpy', 'com_rpy_rate', 'desired_com_velocity', 'desired_com_angular_velocity', 'joint_angles']
+    output_dict: ['target_torques']
+
+  torques_from_commands_and_foot_contact_state:
+    input_dict: ['base_vel', 'base_ori', 'com_rpy', 'com_rpy_rate', 'desired_com_velocity', 'desired_com_angular_velocity', 'foot_contact_state']
+    output_dict: ['target_torques']
+
+  torques_from_commands_and_phase:
+    input_dict: ['base_vel', 'base_ori', 'com_rpy', 'com_rpy_rate', 'desired_com_velocity', 'desired_com_angular_velocity', 'leg_state']
+    output_dict: ['target_torques']
+
+  contact_forces_from_commands_and_joint_angles:
+    input_dict: ['base_vel', 'base_ori', 'com_rpy', 'com_rpy_rate', 'desired_com_velocity', 'desired_com_angular_velocity', 'joint_angles']
+    output_dict: ['contact_forces']
+
+  contact_forces_from_commands_and_foot_contact_state:
+    input_dict: ['base_vel', 'base_ori', 'com_rpy', 'com_rpy_rate', 'desired_com_velocity', 'desired_com_angular_velocity', 'foot_contact_state']
+    output_dict: ['contact_forces']
+
+  contact_forces_from_commands_and_phase:
+    input_dict: ['base_vel', 'base_ori', 'com_rpy', 'com_rpy_rate', 'desired_com_velocity', 'desired_com_angular_velocity', 'leg_state']
+    output_dict: ['contact_forces']
+
+  torques_from_contact_forces:
+    input_dict: ['contact_forces']
+    output_dict: ['target_torques']
+
+  position_control_from_joint_angles_and_phase:
+    input_dict: ['joint_angles', 'leg_state'] 
+    output_dict: ['target_joint_angles'] 
+  
+  position_control_from_joint_angles_and_contact_state:
+    input_dict: ['joint_angles', 'foot_contact_state'] 
+    output_dict: ['target_joint_angles'] 
+
+  position_control_from_joint_angles:
+    input_dict: ['joint_angles']
+    output_dict: ['target_joint_angles']
+
+  hybrid_control_with_phase:
+    input_dict: ['joint_angles', 'leg_state', 'foot_contact_state', 'desired_com_velocity', 'desired_com_angular_velocity', 'com_rpy', 
+'com_rpy_rate', 'joint_velocity', 'base_vel', 'base_ori']
+
+  hybrid_control_without_phase:
+    input_dict: ['joint_angles', 'foot_contact_state', 'desired_com_velocity', 'desired_com_angular_velocity', 'com_rpy', 
+'com_rpy_rate', 'joint_velocity', 'base_vel', 'base_ori']

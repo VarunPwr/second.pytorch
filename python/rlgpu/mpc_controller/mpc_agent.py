@@ -18,7 +18,7 @@ class MPCAgent():
             current_time = self.step_counter / 120.0
             lin_speed, ang_speed = self._generate_example_linear_angular_speed(
                 current_time)
-            lin_speed, ang_speed = (0., 0., 0.), 0.
+            # lin_speed, ang_speed = (0., 0., 0.), 0.
             self._update_controller_params(lin_speed, ang_speed)
             self.controller.update()
             hybrid_action = self.controller.get_action()

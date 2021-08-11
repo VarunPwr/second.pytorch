@@ -29,7 +29,7 @@ class LegController(object):
         pass
 
     def set_desired_speed_as_tensor(self, speed):
-        self.desired_speed = torch.as_tensor(speed, device=self._device).unsqueeze(0).repeat(self._num_envs, 1)
+        self.desired_speed = torch.as_tensor(speed, device=self._device).unsqueeze(0).repeat(self._num_envs, 1).float()
 
     def set_desired_twisting_speed_as_tensor(self, speed):
-        self.desired_twisting_speed = torch.as_tensor(speed, device=self._device).unsqueeze(0).repeat(self._num_envs, 1)
+        self.desired_twisting_speed = torch.as_tensor(speed, device=self._device).unsqueeze(0).repeat(self._num_envs, 1).float()

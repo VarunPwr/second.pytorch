@@ -148,4 +148,4 @@ class TorqueStanceLegController(leg_controller.LegController):
         contact_forces = qp_torque_optimizer.compute_contact_force(
             self._robot_task, desired_ddq, contacts=contacts)
         motor_torques = self.mapContactForceToJointTorques(contact_forces)
-        return motor_torques, contact_forces
+        return motor_torques / 100, contact_forces

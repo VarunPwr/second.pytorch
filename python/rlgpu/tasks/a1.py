@@ -360,6 +360,7 @@ class A1(BaseTask):
         self.actions = actions.clone().to(self.device)
         position_control, torque_control = torch.chunk(self.actions, 2, dim=-1)
         position_control += self.default_dof_pos
+        torque_control *= 100
         self.gym.set_dof_position_target_tensor(
             self.sim, gymtorch.unwrap_tensor(position_control.contiguous()))
         self.gym.set_dof_actuation_force_tensor(
@@ -376,6 +377,7 @@ class A1(BaseTask):
         # for _ in range(self.control_freq_inv):
         #     self.gym.simulate(self.sim)
         self.gym.simulate(self.sim)
+
         self.render()
         if self.device == 'cpu':
             self.gym.fetch_results(self.sim, True)

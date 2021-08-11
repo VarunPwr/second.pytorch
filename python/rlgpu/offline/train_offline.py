@@ -18,7 +18,7 @@ if args.use_additional_info:
     input_dict.extend(cfg["additional_info"])
 
 dm = TinyDataModule(file_name="mpc_data", batch_size=1024,
-                    input_dict=input(), output_dict=output_dict)
+                    input_dict=input_dict, output_dict=output_dict)
 
 
 # net = PlNet("mlp", dm.state_size, [500, 500], 4 * 13 * 13, dimension_size=3, grad_hook=False)

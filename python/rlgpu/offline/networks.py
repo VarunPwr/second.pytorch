@@ -6,6 +6,7 @@ from torch.autograd import Variable
 import pytorch_lightning as pl
 import torch.nn.functional as F
 from siren_pytorch import SirenNet
+from diff_gait import DifferentiableGaitLib
 
 def variable_hook(grad):
     print("the gradient of C is：", grad)
@@ -84,7 +85,29 @@ class OptNet(nn.Module):
         return x
 
 
-NET_DICT = {"mlp": MLP, "optnet": OptNet, "siren": SirenNet}
+
+class GaitNet(nn.Module):
+    def __init__(self, input_size,
+        layer_sizes,
+        output_size,
+        grad_hook=False, num_gaits=3, num_legs=4):
+        super().__init__()
+        self.num_gaits = num_gaits
+        self.num_legs = num_legs
+        self.gait_lib_dim = output_size // self.num_legs
+        self.lib = DifferentiableGaitLib(num_gaits=self.num_gaits, num_legs=num_legs, dim=self.gait_lib_dim)
+        self.fc = mlp(input_size, layer_sizes, self.num_gaits * self.num_legs, grad_hook=grad_hook)
+        # self.reisdual = mlp(input_size, layer_sizes, output_size, grad_hook=grad_hook)
+        self.scaling = nn.Linear(output_size, output_size)
+    
+    def forward(self, x):
+        logits = self.fc(x).view(-1, self.num_legs, self.num_gaits)
+        output = self.lib(logits)
+        # residual = self.reisdual(x)
+        # return output.flatten(1) + residual
+        return self.scaling(output.flatten(1))
+
+NET_DICT = {"mlp": MLP, "optnet": OptNet, "siren": SirenNet, "gaitnet": GaitNet}
 
 
 class PlNet(pl.LightningModule):
@@ -149,7 +172,7 @@ class PlNet(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
         return {
             "optimizer": optimizer,
             "lr_scheduler": {

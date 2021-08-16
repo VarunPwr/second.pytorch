@@ -5,12 +5,14 @@ import os
 
 from setuptools import setup, find_packages
 
+
 def collect_files(target_dir):
     file_list = []
-    for (root, dirs, files) in os.walk(target_dir,followlinks=True):
+    for (root, dirs, files) in os.walk(target_dir, followlinks=True):
         for filename in files:
             file_list.append(os.path.join('..', root, filename))
     return file_list
+
 
 def _do_setup():
     root_dir = os.path.dirname(os.path.realpath(__file__))
@@ -24,9 +26,11 @@ def _do_setup():
 
     package_files = []
     if sys.platform.startswith("win"):
-        package_files = package_files + collect_files("isaacgym/_bindings/windows-x86_64")
+        package_files = package_files + \
+            collect_files("isaacgym/_bindings/windows-x86_64")
     elif sys.platform.startswith("linux"):
-        package_files = package_files + collect_files("isaacgym/_bindings/linux-x86_64")
+        package_files = package_files + \
+            collect_files("isaacgym/_bindings/linux-x86_64")
 
     setup(name='isaacgym',
           version='1.0.preview2',
@@ -39,8 +43,8 @@ def _do_setup():
           package_data={
               "isaacgym": package_files
           },
-          python_requires='>=3.8,<3.9',
-          install_requires = [
+          python_requires='>=3.7,<3.9',
+          install_requires=[
               "torch>=1.8.0",
               "torchvision>=0.9.0",
               "numpy>=1.16.4",
@@ -52,6 +56,7 @@ def _do_setup():
               "ninja",
               f"rl_pytorch @ file://localhost{root_dir}/rlgpu/rl-pytorch",
           ],
-         )
+          )
+
 
 _do_setup()

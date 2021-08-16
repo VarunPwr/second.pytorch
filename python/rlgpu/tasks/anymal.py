@@ -45,9 +45,9 @@ class Anymal(BaseTask):
         self.randomize = self.cfg["task"]["randomize"]
 
         # command ranges
-        self.command_x_range = self.cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
-        self.command_y_range = self.cfg["env"]["randomCommandVelocityRanges"]["linear_y"]
-        self.command_yaw_range = self.cfg["env"]["randomCommandVelocityRanges"]["yaw"]
+        self.command_x_range = self.cfg["env"]["randomCommandRanges"]["linear_x"]
+        self.command_y_range = self.cfg["env"]["randomCommandRanges"]["linear_y"]
+        self.command_yaw_range = self.cfg["env"]["randomCommandRanges"]["yaw"]
 
         # plane params
         self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]

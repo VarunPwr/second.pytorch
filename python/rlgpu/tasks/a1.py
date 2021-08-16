@@ -63,10 +63,14 @@ class A1(BaseTask):
         self.randomize_reward = self.cfg["randomize_reward"]["randomize"]
         self.reward_randomization_params = self.cfg["randomize_reward"]["randomization_params"]
 
+        # commands
+        self.command_type = self.cfg["env"]["command"]
+        self.command_change_step = self.cfg["env"]["commandChangeStep"]
+
         # command ranges
-        self.command_x_range = self.cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
-        self.command_y_range = self.cfg["env"]["randomCommandVelocityRanges"]["linear_y"]
-        self.command_yaw_range = self.cfg["env"]["randomCommandVelocityRanges"]["yaw"]
+        self.command_x_range = self.cfg["env"]["randomCommandRanges"]["linear_x"]
+        self.command_y_range = self.cfg["env"]["randomCommandRanges"]["linear_y"]
+        self.command_yaw_range = self.cfg["env"]["randomCommandRanges"]["yaw"]
 
         # terrain
         self.terrain = self.cfg["env"]["terrain"]
@@ -152,6 +156,7 @@ class A1(BaseTask):
         # create some wrapper tensors for different slices
         self.root_states = gymtorch.wrap_tensor(
             actor_root_state).view(-1, 13)
+        self.last_root_states = torch.zeros_like(self.root_states)
         self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
         self.dof_pos = self.dof_state.view(
             self.num_envs, self.num_dof, 2)[..., 0]
@@ -359,7 +364,7 @@ class A1(BaseTask):
 
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
-
+        self.last_root_states = self.root_states.clone()
         if self.historical_step > 1:
             self.actions_buf = torch.cat(
                 [self.actions_buf[:, :-1], self.actions.unsqueeze(1)], dim=1)
@@ -434,8 +439,12 @@ class A1(BaseTask):
     def post_physics_step(self):
         self.progress_buf += 1
         env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
+        change_commmand_env_ids = (torch.fmod(
+            self.progress_buf, self.command_change_step) == 0).float().nonzero(as_tuple=False).squeeze(-1)
         if len(env_ids) > 0:
             self.reset(env_ids)
+        if len(change_commmand_env_ids) > 0:
+            self.reset_command(change_commmand_env_ids)
         self._update_viewer()
         if self.historical_step > 1:
             self.dof_pos_buf = torch.cat(
@@ -447,11 +456,18 @@ class A1(BaseTask):
         self.compute_reward(self.actions)
 
     def compute_reward(self, actions):
+        if self.command_type == "vel":
+            root_states = self.root_states
+            commands = self.commands
+        elif self.command_type == "acc":
+            root_states = self.root_states - self.last_root_states
+            commands = self.commands * self.control_freq_inv / 120
+        print(commands)
         if self.historical_step > 1:
             self.rew_buf[:], self.reset_buf[:] = compute_a1_reward(
                 # tensors
-                self.root_states,
-                self.commands,
+                root_states,
+                commands,
                 self.torques,
                 self.contact_forces,
                 self.knee_indices,
@@ -467,8 +483,8 @@ class A1(BaseTask):
         else:
             self.rew_buf[:], self.reset_buf[:] = compute_a1_reward(
                 # tensors
-                self.root_states,
-                self.commands,
+                root_states,
+                commands,
                 self.torques,
                 self.contact_forces,
                 self.knee_indices,
@@ -583,6 +599,21 @@ class A1(BaseTask):
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
 
+    def reset_command(self, env_ids):
+        # Randomization can happen only at reset time, since it can reset actor positions on GPU
+        if self.command_type == "vel":
+            self.commands_x[env_ids] = torch_rand_float(
+                self.command_x_range[0], self.command_x_range[1], (len(env_ids), 1), device=self.device).squeeze()
+            self.commands_y[env_ids] = torch_rand_float(
+                self.command_y_range[0], self.command_y_range[1], (len(env_ids), 1), device=self.device).squeeze()
+            self.commands_yaw[env_ids] = torch_rand_float(
+                self.command_yaw_range[0], self.command_yaw_range[1], (len(env_ids), 1), device=self.device).squeeze()
+
+        elif self.command_type == "acc":
+            self.commands_x[env_ids] = - self.commands_x[env_ids]
+            self.commands_y[env_ids] = - self.commands_y[env_ids]
+            self.commands_yaw[env_ids] = - self.commands_yaw[env_ids]
+
     def _update_viewer(self):
         if self.viewer is not None:
             lookat = self.root_states[self.a1_indices[self.refEnv], 0:3]
@@ -693,7 +724,7 @@ def compute_a1_reward(
     base_index: int,
     max_episode_length: int,
     last_torques: Tensor,
-    a1_indices: Tensor
+    a1_indices: Tensor,
 ) -> Tuple[Tensor, Tensor]:  # (reward, reset, feet_in air, feet_air_time, episode sums)
 
     # prepare quantities (TODO: return from obs ?)

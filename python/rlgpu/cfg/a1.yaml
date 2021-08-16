@@ -2,6 +2,8 @@ env:
   numEnvs: 1
   envSpacing: 4.  # [m]
   terrain: "box"
+  command: "vel"
+  commandChangeStep: 200
   plane:
     staticFriction: 10.0  # [-]
     dynamicFriction: 10.0  # [-]
@@ -13,7 +15,7 @@ env:
     vLinear: [0.0, 0.0, 0.0]  # x,y,z [m/s]
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
-  randomCommandVelocityRanges:
+  randomCommandRanges:
     linear_x: [0.3, 0.6] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [-0.1, 0.1]          # min max [rad/s]

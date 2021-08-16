@@ -16,6 +16,7 @@ from isaacgym import gymtorch
 from isaacgym import gymapi
 from pytorch3d.transforms import matrix_to_euler_angles, quaternion_to_matrix
 import torch
+from torch._C import device
 from torch.tensor import Tensor
 from typing import Tuple, Dict
 
@@ -42,6 +43,7 @@ class A1(BaseTask):
         self.dof_pos_scale = self.cfg["env"]["learn"]["dofPositionScale"]
         self.dof_vel_scale = self.cfg["env"]["learn"]["dofVelocityScale"]
         self.action_scale = self.cfg["env"]["control"]["actionScale"]
+        self.hip_action_scale = self.cfg["env"]["control"]["hipActionScale"]
 
         # reward scales
         self.rew_scales = {}
@@ -220,6 +222,12 @@ class A1(BaseTask):
         jt = self.gym.acquire_jacobian_tensor(self.sim, "a1")
         self.jacobian_tensor = gymtorch.wrap_tensor(jt)
         self.feet_dof_pos = self.dof_pos[..., self.feet_indices]
+        if self.diagonal_act:
+            self.action_scale = torch.as_tensor(
+                [self.hip_action_scale, self.action_scale, self.action_scale] * 2, device=self.device)
+        else:
+            self.action_scale = torch.as_tensor(
+                [self.hip_action_scale, self.action_scale, self.action_scale] * 4, device=self.device)
         self.reset(torch.arange(self.num_envs, device=self.device))
 
     def create_sim(self):
@@ -491,7 +499,7 @@ class A1(BaseTask):
                 dof_pos,
                 self.dof_vel,
                 self.gravity_vec,
-                self.action_scale * actions,
+                self.action_scale.repeat(self.historical_step) * actions,
                 # scales
                 self.lin_vel_scale,
                 self.ang_vel_scale,
@@ -623,11 +631,14 @@ class A1(BaseTask):
         # solve damped least squares
         fjt_T = torch.transpose(fjt, -1, -2)
         feet_pos = self._footPositionsInBaseFrame()
-        feet_pos_err, feet_rot_err = torch.zeros_like(feet_pos), torch.zeros_like(feet_pos)
+        feet_pos_err, feet_rot_err = torch.zeros_like(
+            feet_pos), torch.zeros_like(feet_pos)
         feet_pos_err = foot_positions - feet_pos
-        dof_err = torch.cat([feet_pos_err, feet_rot_err], dim=-1).unsqueeze_(-1)
+        dof_err = torch.cat([feet_pos_err, feet_rot_err],
+                            dim=-1).unsqueeze_(-1)
         d = 0.05  # damping term
-        lmbda = torch.eye(6).unsqueeze_(0).unsqueeze_(0).repeat(self.num_envs, 4, 1, 1).to(self.device) * (d ** 2)
+        lmbda = torch.eye(6).unsqueeze_(0).unsqueeze_(0).repeat(
+            self.num_envs, 4, 1, 1).to(self.device) * (d ** 2)
         u = (fjt_T @ torch.inverse(fjt @ fjt_T + lmbda) @ dof_err).squeeze(-1)
         # u = (fjt_T @ dof_err).squeeze(-1)
         delta_pos = []

@@ -1,7 +1,7 @@
 env:
   numEnvs: 1
   envSpacing: 4.  # [m]
-  terrain: "box"
+  terrain: "plane"
   plane:
     staticFriction: 10.0  # [-]
     dynamicFriction: 10.0  # [-]
@@ -131,7 +131,7 @@ task:
         rigid_shape_properties:
           friction: 
             num_buckets: 250
-            range: [0.7, 1.3]
+            range: [1.0, 2.0]
             operation: "scaling"
             distribution: "uniform"
 

@@ -21,7 +21,8 @@ if args.use_additional_info:
 dm = TinyDataModule(file_name="mpc_data", batch_size=1024,
                     input_dict=input_dict, output_dict=output_dict)
 
-net = PlNet("gaitnet", dm.input_size, [500, 500], dm.output_size, grad_hook=False)
+net = PlNet("mlp", dm.input_size, [
+            1000, 1000, 1000], dm.output_size, grad_hook=False, tanh_loss=args.tanh_loss)
 
 if args.use_additional_info:
     logdir = os.path.join(args.logdir, args.task_name + '_additional_info')
@@ -30,7 +31,8 @@ else:
 
 tb_logger = pl_loggers.TensorBoardLogger(logdir)
 
-trainer = pl.Trainer(gpus=args.device, weights_summary="full", max_epochs=500, logger=tb_logger, gradient_clip_val=0.5)
+trainer = pl.Trainer(gpus=args.device, weights_summary="full",
+                     max_epochs=500, logger=tb_logger, gradient_clip_val=0.5)
 # lr_finder = trainer.tuner.lr_find(trainer, net, num_training=100, max_lr=1e-2, min_lr=1e-6)
 
 # # Results can be found in

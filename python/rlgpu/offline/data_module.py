@@ -13,11 +13,13 @@ class TinyDataModule(pl.LightningDataModule):
         self.input_dict = input_dict
         self.output_dict = output_dict
         self.num_workers = num_workers
-        data_dict = np.load("{}.npy".format(file_name), allow_pickle=True).item()
+        data_dict = np.load("{}.npy".format(file_name),
+                            allow_pickle=True).item()
         self.load_dict(data_dict)
         self.input_size = self.tensor_data_dict["input"].shape[-1]
         self.output_size = self.tensor_data_dict["output"].shape[-1]
-        self.tensor_data = torch.cat([self.tensor_data_dict["input"], self.tensor_data_dict["output"]], dim=-1)
+        self.tensor_data = torch.cat(
+            [self.tensor_data_dict["input"], self.tensor_data_dict["output"]], dim=-1)
         self.total_num = self.tensor_data.shape[0]
         self.train_val_num = int(0.9 * self.total_num)
         self.train_num = int(0.7 * self.total_num)
@@ -39,15 +41,18 @@ class TinyDataModule(pl.LightningDataModule):
                 elif len(np.shape(v)) == 3:
                     v = v.reshape(v.shape[0], v.shape[1] * v.shape[2])
                 self.tensor_data_dict["output"].append(torch.as_tensor(v))
-        
+
         self.tensor_data_dict["input"] = torch.cat(
             self.tensor_data_dict["input"], dim=-1)
         self.tensor_data_dict["output"] = torch.cat(
             self.tensor_data_dict["output"], dim=-1)
-        if "contact_forces" in self.output_dict or "torques" in self.output_dict:
-            mass = torch.ones((self.tensor_data_dict["input"].shape[0], 1)) * 108 / 9.81
-            grivaty = torch.ones((self.tensor_data_dict["input"].shape[0], 1)) * (-9.81)
-            self.tensor_data_dict["input"] = torch.cat([self.tensor_data_dict["input"], mass, grivaty], dim=-1)
+        if "contact_forces" in self.output_dict or "target_torques" in self.output_dict:
+            mass = torch.ones(
+                (self.tensor_data_dict["input"].shape[0], 1)) * 108 / 9.81
+            grivaty = torch.ones(
+                (self.tensor_data_dict["input"].shape[0], 1)) * (-9.81)
+            self.tensor_data_dict["input"] = torch.cat(
+                [self.tensor_data_dict["input"], mass, grivaty], dim=-1)
 
     def setup(self, stage):
         self.test_set = TensorDataset(self.test_data)

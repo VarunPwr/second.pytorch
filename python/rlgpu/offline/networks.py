@@ -7,6 +7,8 @@ import pytorch_lightning as pl
 import torch.nn.functional as F
 from siren_pytorch import SirenNet
 from diff_gait import DifferentiableGaitLib
+from arithmetic import ArithmeticNet
+
 
 def variable_hook(grad):
     print("the gradient of C is：", grad)
@@ -17,20 +19,25 @@ def mlp(
     layer_sizes,
     output_size,
     output_activation=torch.nn.Identity,
-    activation=torch.nn.ReLU,
+    activation=torch.nn.Softsign,
     grad_hook=False,
-    dropout=0.0
+    dropout=0.0,
+    ln=False
 ):
     sizes = [input_size] + layer_sizes + [output_size]
     layers = []
+    if ln:
+        layers.append(nn.LayerNorm(input_size))
+    # layers.append(nn.LayerNorm(input_size))
     for i in range(len(sizes) - 1):
         act = activation if i < len(sizes) - 2 else output_activation
         layers += [torch.nn.Linear(sizes[i], sizes[i + 1]), act()]
+        if ln:
+            layers.append(torch.nn.LayerNorm(sizes[i + 1]))
         if grad_hook:
             layers[-2].weight.register_hook(variable_hook)
         if dropout > 0 and i < len(sizes) - 2:
             layers += [torch.nn.Dropout(dropout)]
-
     return torch.nn.Sequential(*layers)
 
 
@@ -41,6 +48,7 @@ class MLP(torch.nn.Module):
         layer_sizes,
         output_size,
         grad_hook=False,
+        ln=False
     ):
         super().__init__()
         self.input_size = input_size
@@ -50,6 +58,7 @@ class MLP(torch.nn.Module):
             layer_sizes=layer_sizes,
             output_size=output_size,
             grad_hook=grad_hook,
+            ln=ln
         )
 
     def forward(self, x):
@@ -57,7 +66,7 @@ class MLP(torch.nn.Module):
 
 
 class OptNet(nn.Module):
-    def __init__(self, input_size, layer_sizes, output_size, nineq=200, neq=0, eps=1e-4, grad_hook=False):
+    def __init__(self, input_size, layer_sizes, output_size, nineq=200, neq=0, eps=1e-4, grad_hook=False, ln=False):
         super().__init__()
         self.input_size = input_size
         self.output_size = output_size
@@ -65,11 +74,13 @@ class OptNet(nn.Module):
         self.neq = neq
         self.eps = eps
 
-        self.fc = mlp(input_size, layer_sizes, output_size, grad_hook=grad_hook)
+        self.fc = mlp(input_size, layer_sizes,
+                      output_size, grad_hook=grad_hook)
 
         self.M = nn.Parameter(torch.tril(torch.ones(output_size, output_size)))
         self.L = nn.Parameter(torch.tril(torch.rand(output_size, output_size)))
-        self.G = nn.Parameter(torch.Tensor(nineq, output_size).uniform_(-1e-2, 1e-2))
+        self.G = nn.Parameter(torch.Tensor(
+            nineq, output_size).uniform_(-1e-2, 1e-2))
         self.z0 = nn.Parameter(torch.zeros(output_size))
         self.s0 = nn.Parameter(torch.ones(nineq))
 
@@ -85,35 +96,39 @@ class OptNet(nn.Module):
         return x
 
 
-
 class GaitNet(nn.Module):
     def __init__(self, input_size,
-        layer_sizes,
-        output_size,
-        grad_hook=False, num_gaits=3, num_legs=4):
+                 layer_sizes,
+                 output_size,
+                 grad_hook=False, num_gaits=3, num_legs=4, ln=False):
         super().__init__()
         self.num_gaits = num_gaits
         self.num_legs = num_legs
         self.gait_lib_dim = output_size // self.num_legs
-        self.lib = DifferentiableGaitLib(num_gaits=self.num_gaits, num_legs=num_legs, dim=self.gait_lib_dim)
-        self.fc = mlp(input_size, layer_sizes, self.num_gaits * self.num_legs, grad_hook=grad_hook)
-        # self.reisdual = mlp(input_size, layer_sizes, output_size, grad_hook=grad_hook)
+        self.lib = DifferentiableGaitLib(
+            num_gaits=self.num_gaits, num_legs=num_legs, dim=self.gait_lib_dim)
+        self.fc = mlp(input_size, layer_sizes, self.num_gaits *
+                      self.num_legs, grad_hook=grad_hook)
+        self.residual = mlp(input_size, layer_sizes,
+                            output_size, grad_hook=grad_hook)
         self.scaling = nn.Linear(output_size, output_size)
-    
+
     def forward(self, x):
         logits = self.fc(x).view(-1, self.num_legs, self.num_gaits)
         output = self.lib(logits)
-        # residual = self.reisdual(x)
         # return output.flatten(1) + residual
-        return self.scaling(output.flatten(1))
+        return self.scaling(output.flatten(1)) + self.residual(x)
 
-NET_DICT = {"mlp": MLP, "optnet": OptNet, "siren": SirenNet, "gaitnet": GaitNet}
+
+NET_DICT = {"mlp": MLP, "optnet": OptNet, "siren": SirenNet,
+            "gaitnet": GaitNet, "arithmetic": ArithmeticNet}
 
 
 class PlNet(pl.LightningModule):
     def __init__(
-            self, network_type, input_size, layer_sizes, output_size, grad_hook=False):
+            self, network_type, input_size, layer_sizes, output_size, grad_hook=False, ln=False, tanh_loss=False):
         super().__init__()
+
         self.input_size = input_size
         self.output_size = output_size
         if network_type == "siren":
@@ -121,8 +136,8 @@ class PlNet(pl.LightningModule):
                 dim_in=input_size,
                 dim_hidden=layer_sizes[0],
                 dim_out=output_size,
-                num_layers = len(layer_sizes),
-                final_activation = nn.Identity(),
+                num_layers=len(layer_sizes),
+                final_activation=nn.Identity(),
                 w0_initial=1.
             )
         else:
@@ -131,7 +146,9 @@ class PlNet(pl.LightningModule):
                 layer_sizes=layer_sizes,
                 output_size=output_size,
                 grad_hook=grad_hook,
+                ln=ln
             )
+        self.tanh_loss = tanh_loss
         # self.model.apply(weights_init)
 
     def forward(self, x):
@@ -142,9 +159,14 @@ class PlNet(pl.LightningModule):
         data = batch[0].float()
         x, y = data[..., : self.input_size], data[..., self.input_size:]
         logits = self(x)
+
+        relative_error = (torch.abs(y - logits) /
+                          (1e-4 + torch.abs(y))).mean().detach()
+
+        if self.tanh_loss:
+            logits = torch.tanh(logits)
+            y = torch.tanh(y)
         policy_loss = F.mse_loss(logits, y)
-        relative_error = (torch.abs(y - logits).mean(-1) /
-                          (1e-8 + torch.abs(y).mean(-1))).mean().detach()
         return policy_loss, relative_error
 
     def training_step(self, batch: Any, batch_idx: int):
@@ -172,7 +194,8 @@ class PlNet(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
+        optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=1e-3, weight_decay=1e-8)
         return {
             "optimizer": optimizer,
             "lr_scheduler": {

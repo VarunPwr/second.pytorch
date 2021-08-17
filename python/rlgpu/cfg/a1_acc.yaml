@@ -56,6 +56,7 @@ env:
     linearVelocityZRewardScale: -0.02
     torqueRewardScale: -0.000025 
     torqueSmoothingRewardScale: 0. 
+    contactForceRewardScale: -0.002
 
     # normalization
     linearVelocityScale: 2.0

@@ -816,7 +816,7 @@ def compute_a1_observations(root_states: Tensor,
                      dof_pos_scaled,
                      dof_vel * dof_vel_scale,
                      actions,
-                     contact_forces[a1_indices]
+                     contact_forces,
                      ), dim=-1)
 
     return obs

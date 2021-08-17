@@ -16,17 +16,17 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.3, 0.6] # min max [m/s]
+    linear_x: [0.0, 0.6] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [-0.1, 0.1]          # min max [rad/s]
 
   control:
     # PD Drive parameters:
-    stiffness: 40.0  # [N*m/rad]
+    stiffness: 30.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
-    actionScale: 0.5
+    actionScale: 0.2
     hipActionScale: 0.05
-    controlFrequencyInv: 2  # 60 Hz
+    controlFrequencyInv: 4  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
     FL_upper: 0.9    # [rad]
@@ -54,7 +54,7 @@ env:
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
     linearVelocityZRewardScale: -0.02
-    torqueRewardScale: -0.000025 
+    torqueRewardScale: -0.00001 
     torqueSmoothingRewardScale: 0. 
 
     # normalization
@@ -83,7 +83,7 @@ env:
     sys_id: False
 
 sim:
-  substeps: 2
+  substeps: 1
   gravity: [0., 0. ,-9.81]  # [m/s^2]
   up_axis: 1  # 0 is y, 1 is z
 

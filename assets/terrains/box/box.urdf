@@ -5,13 +5,13 @@
     <visual>
       <origin xyz="-0.4 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -24,13 +24,13 @@
     <visual>
       <origin xyz="-0.4 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -43,13 +43,13 @@
     <visual>
       <origin xyz="-0.4 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -62,13 +62,13 @@
     <visual>
       <origin xyz="-0.4 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -81,13 +81,13 @@
     <visual>
       <origin xyz="-0.4 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -100,13 +100,13 @@
     <visual>
       <origin xyz="-0.4 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -119,13 +119,13 @@
     <visual>
       <origin xyz="-0.4 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -138,13 +138,13 @@
     <visual>
       <origin xyz="-0.4 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -157,13 +157,13 @@
     <visual>
       <origin xyz="-0.4 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -176,13 +176,13 @@
     <visual>
       <origin xyz="-0.4 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.4 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -195,13 +195,13 @@
     <visual>
       <origin xyz="-0.2 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -214,13 +214,13 @@
     <visual>
       <origin xyz="-0.2 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -233,13 +233,13 @@
     <visual>
       <origin xyz="-0.2 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -252,13 +252,13 @@
     <visual>
       <origin xyz="-0.2 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -271,13 +271,13 @@
     <visual>
       <origin xyz="-0.2 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -290,13 +290,13 @@
     <visual>
       <origin xyz="-0.2 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -309,13 +309,13 @@
     <visual>
       <origin xyz="-0.2 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -328,13 +328,13 @@
     <visual>
       <origin xyz="-0.2 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -347,13 +347,13 @@
     <visual>
       <origin xyz="-0.2 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -366,13 +366,13 @@
     <visual>
       <origin xyz="-0.2 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="-0.2 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -385,13 +385,13 @@
     <visual>
       <origin xyz="0.0 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -404,13 +404,13 @@
     <visual>
       <origin xyz="0.0 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -423,13 +423,13 @@
     <visual>
       <origin xyz="0.0 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -442,13 +442,13 @@
     <visual>
       <origin xyz="0.0 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -461,13 +461,13 @@
     <visual>
       <origin xyz="0.0 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -480,13 +480,13 @@
     <visual>
       <origin xyz="0.0 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -499,13 +499,13 @@
     <visual>
       <origin xyz="0.0 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -518,13 +518,13 @@
     <visual>
       <origin xyz="0.0 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -537,13 +537,13 @@
     <visual>
       <origin xyz="0.0 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -556,13 +556,13 @@
     <visual>
       <origin xyz="0.0 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.0 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -575,13 +575,13 @@
     <visual>
       <origin xyz="0.20000000000000007 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -594,13 +594,13 @@
     <visual>
       <origin xyz="0.20000000000000007 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -613,13 +613,13 @@
     <visual>
       <origin xyz="0.20000000000000007 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -632,13 +632,13 @@
     <visual>
       <origin xyz="0.20000000000000007 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -651,13 +651,13 @@
     <visual>
       <origin xyz="0.20000000000000007 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -670,13 +670,13 @@
     <visual>
       <origin xyz="0.20000000000000007 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -689,13 +689,13 @@
     <visual>
       <origin xyz="0.20000000000000007 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -708,13 +708,13 @@
     <visual>
       <origin xyz="0.20000000000000007 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -727,13 +727,13 @@
     <visual>
       <origin xyz="0.20000000000000007 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -746,13 +746,13 @@
     <visual>
       <origin xyz="0.20000000000000007 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.20000000000000007 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -765,13 +765,13 @@
     <visual>
       <origin xyz="0.4 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -784,13 +784,13 @@
     <visual>
       <origin xyz="0.4 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -803,13 +803,13 @@
     <visual>
       <origin xyz="0.4 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -822,13 +822,13 @@
     <visual>
       <origin xyz="0.4 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -841,13 +841,13 @@
     <visual>
       <origin xyz="0.4 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -860,13 +860,13 @@
     <visual>
       <origin xyz="0.4 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -879,13 +879,13 @@
     <visual>
       <origin xyz="0.4 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -898,13 +898,13 @@
     <visual>
       <origin xyz="0.4 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -917,13 +917,13 @@
     <visual>
       <origin xyz="0.4 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -936,13 +936,13 @@
     <visual>
       <origin xyz="0.4 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.4 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -955,13 +955,13 @@
     <visual>
       <origin xyz="0.6 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -974,13 +974,13 @@
     <visual>
       <origin xyz="0.6 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -993,13 +993,13 @@
     <visual>
       <origin xyz="0.6 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1012,13 +1012,13 @@
     <visual>
       <origin xyz="0.6 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1031,13 +1031,13 @@
     <visual>
       <origin xyz="0.6 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1050,13 +1050,13 @@
     <visual>
       <origin xyz="0.6 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1069,13 +1069,13 @@
     <visual>
       <origin xyz="0.6 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1088,13 +1088,13 @@
     <visual>
       <origin xyz="0.6 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1107,13 +1107,13 @@
     <visual>
       <origin xyz="0.6 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1126,13 +1126,13 @@
     <visual>
       <origin xyz="0.6 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.6 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1145,13 +1145,13 @@
     <visual>
       <origin xyz="0.8000000000000002 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1164,13 +1164,13 @@
     <visual>
       <origin xyz="0.8000000000000002 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1183,13 +1183,13 @@
     <visual>
       <origin xyz="0.8000000000000002 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1202,13 +1202,13 @@
     <visual>
       <origin xyz="0.8000000000000002 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1221,13 +1221,13 @@
     <visual>
       <origin xyz="0.8000000000000002 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1240,13 +1240,13 @@
     <visual>
       <origin xyz="0.8000000000000002 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1259,13 +1259,13 @@
     <visual>
       <origin xyz="0.8000000000000002 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1278,13 +1278,13 @@
     <visual>
       <origin xyz="0.8000000000000002 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1297,13 +1297,13 @@
     <visual>
       <origin xyz="0.8000000000000002 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1316,13 +1316,13 @@
     <visual>
       <origin xyz="0.8000000000000002 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.8000000000000002 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1335,13 +1335,13 @@
     <visual>
       <origin xyz="1.0 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1354,13 +1354,13 @@
     <visual>
       <origin xyz="1.0 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1373,13 +1373,13 @@
     <visual>
       <origin xyz="1.0 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1392,13 +1392,13 @@
     <visual>
       <origin xyz="1.0 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1411,13 +1411,13 @@
     <visual>
       <origin xyz="1.0 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1430,13 +1430,13 @@
     <visual>
       <origin xyz="1.0 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1449,13 +1449,13 @@
     <visual>
       <origin xyz="1.0 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1468,13 +1468,13 @@
     <visual>
       <origin xyz="1.0 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1487,13 +1487,13 @@
     <visual>
       <origin xyz="1.0 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1506,13 +1506,13 @@
     <visual>
       <origin xyz="1.0 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.0 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1525,13 +1525,13 @@
     <visual>
       <origin xyz="1.2000000000000002 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1544,13 +1544,13 @@
     <visual>
       <origin xyz="1.2000000000000002 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1563,13 +1563,13 @@
     <visual>
       <origin xyz="1.2000000000000002 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1582,13 +1582,13 @@
     <visual>
       <origin xyz="1.2000000000000002 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1601,13 +1601,13 @@
     <visual>
       <origin xyz="1.2000000000000002 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1620,13 +1620,13 @@
     <visual>
       <origin xyz="1.2000000000000002 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1639,13 +1639,13 @@
     <visual>
       <origin xyz="1.2000000000000002 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1658,13 +1658,13 @@
     <visual>
       <origin xyz="1.2000000000000002 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1677,13 +1677,13 @@
     <visual>
       <origin xyz="1.2000000000000002 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1696,13 +1696,13 @@
     <visual>
       <origin xyz="1.2000000000000002 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.2000000000000002 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1715,13 +1715,13 @@
     <visual>
       <origin xyz="1.4 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1734,13 +1734,13 @@
     <visual>
       <origin xyz="1.4 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1753,13 +1753,13 @@
     <visual>
       <origin xyz="1.4 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1772,13 +1772,13 @@
     <visual>
       <origin xyz="1.4 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1791,13 +1791,13 @@
     <visual>
       <origin xyz="1.4 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1810,13 +1810,13 @@
     <visual>
       <origin xyz="1.4 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1829,13 +1829,13 @@
     <visual>
       <origin xyz="1.4 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1848,13 +1848,13 @@
     <visual>
       <origin xyz="1.4 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1867,13 +1867,13 @@
     <visual>
       <origin xyz="1.4 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1886,13 +1886,13 @@
     <visual>
       <origin xyz="1.4 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.4 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1905,13 +1905,13 @@
     <visual>
       <origin xyz="1.6 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1924,13 +1924,13 @@
     <visual>
       <origin xyz="1.6 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1943,13 +1943,13 @@
     <visual>
       <origin xyz="1.6 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1962,13 +1962,13 @@
     <visual>
       <origin xyz="1.6 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -1981,13 +1981,13 @@
     <visual>
       <origin xyz="1.6 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2000,13 +2000,13 @@
     <visual>
       <origin xyz="1.6 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2019,13 +2019,13 @@
     <visual>
       <origin xyz="1.6 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2038,13 +2038,13 @@
     <visual>
       <origin xyz="1.6 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2057,13 +2057,13 @@
     <visual>
       <origin xyz="1.6 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2076,13 +2076,13 @@
     <visual>
       <origin xyz="1.6 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.6 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2095,13 +2095,13 @@
     <visual>
       <origin xyz="1.8000000000000003 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2114,13 +2114,13 @@
     <visual>
       <origin xyz="1.8000000000000003 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2133,13 +2133,13 @@
     <visual>
       <origin xyz="1.8000000000000003 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2152,13 +2152,13 @@
     <visual>
       <origin xyz="1.8000000000000003 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2171,13 +2171,13 @@
     <visual>
       <origin xyz="1.8000000000000003 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2190,13 +2190,13 @@
     <visual>
       <origin xyz="1.8000000000000003 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2209,13 +2209,13 @@
     <visual>
       <origin xyz="1.8000000000000003 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2228,13 +2228,13 @@
     <visual>
       <origin xyz="1.8000000000000003 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2247,13 +2247,13 @@
     <visual>
       <origin xyz="1.8000000000000003 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2266,13 +2266,13 @@
     <visual>
       <origin xyz="1.8000000000000003 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="1.8000000000000003 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2285,13 +2285,13 @@
     <visual>
       <origin xyz="2.0000000000000004 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2304,13 +2304,13 @@
     <visual>
       <origin xyz="2.0000000000000004 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2323,13 +2323,13 @@
     <visual>
       <origin xyz="2.0000000000000004 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2342,13 +2342,13 @@
     <visual>
       <origin xyz="2.0000000000000004 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2361,13 +2361,13 @@
     <visual>
       <origin xyz="2.0000000000000004 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2380,13 +2380,13 @@
     <visual>
       <origin xyz="2.0000000000000004 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2399,13 +2399,13 @@
     <visual>
       <origin xyz="2.0000000000000004 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2418,13 +2418,13 @@
     <visual>
       <origin xyz="2.0000000000000004 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2437,13 +2437,13 @@
     <visual>
       <origin xyz="2.0000000000000004 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2456,13 +2456,13 @@
     <visual>
       <origin xyz="2.0000000000000004 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.0000000000000004 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2475,13 +2475,13 @@
     <visual>
       <origin xyz="2.2 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2494,13 +2494,13 @@
     <visual>
       <origin xyz="2.2 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2513,13 +2513,13 @@
     <visual>
       <origin xyz="2.2 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2532,13 +2532,13 @@
     <visual>
       <origin xyz="2.2 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2551,13 +2551,13 @@
     <visual>
       <origin xyz="2.2 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2570,13 +2570,13 @@
     <visual>
       <origin xyz="2.2 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2589,13 +2589,13 @@
     <visual>
       <origin xyz="2.2 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2608,13 +2608,13 @@
     <visual>
       <origin xyz="2.2 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2627,13 +2627,13 @@
     <visual>
       <origin xyz="2.2 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2646,13 +2646,13 @@
     <visual>
       <origin xyz="2.2 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.2 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2665,13 +2665,13 @@
     <visual>
       <origin xyz="2.4000000000000004 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2684,13 +2684,13 @@
     <visual>
       <origin xyz="2.4000000000000004 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2703,13 +2703,13 @@
     <visual>
       <origin xyz="2.4000000000000004 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2722,13 +2722,13 @@
     <visual>
       <origin xyz="2.4000000000000004 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2741,13 +2741,13 @@
     <visual>
       <origin xyz="2.4000000000000004 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2760,13 +2760,13 @@
     <visual>
       <origin xyz="2.4000000000000004 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2779,13 +2779,13 @@
     <visual>
       <origin xyz="2.4000000000000004 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2798,13 +2798,13 @@
     <visual>
       <origin xyz="2.4000000000000004 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2817,13 +2817,13 @@
     <visual>
       <origin xyz="2.4000000000000004 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2836,13 +2836,13 @@
     <visual>
       <origin xyz="2.4000000000000004 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.4000000000000004 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2855,13 +2855,13 @@
     <visual>
       <origin xyz="2.6 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2874,13 +2874,13 @@
     <visual>
       <origin xyz="2.6 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2893,13 +2893,13 @@
     <visual>
       <origin xyz="2.6 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2912,13 +2912,13 @@
     <visual>
       <origin xyz="2.6 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2931,13 +2931,13 @@
     <visual>
       <origin xyz="2.6 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2950,13 +2950,13 @@
     <visual>
       <origin xyz="2.6 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2969,13 +2969,13 @@
     <visual>
       <origin xyz="2.6 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -2988,13 +2988,13 @@
     <visual>
       <origin xyz="2.6 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3007,13 +3007,13 @@
     <visual>
       <origin xyz="2.6 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3026,13 +3026,13 @@
     <visual>
       <origin xyz="2.6 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.6 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3045,13 +3045,13 @@
     <visual>
       <origin xyz="2.8000000000000003 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3064,13 +3064,13 @@
     <visual>
       <origin xyz="2.8000000000000003 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3083,13 +3083,13 @@
     <visual>
       <origin xyz="2.8000000000000003 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3102,13 +3102,13 @@
     <visual>
       <origin xyz="2.8000000000000003 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3121,13 +3121,13 @@
     <visual>
       <origin xyz="2.8000000000000003 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3140,13 +3140,13 @@
     <visual>
       <origin xyz="2.8000000000000003 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3159,13 +3159,13 @@
     <visual>
       <origin xyz="2.8000000000000003 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3178,13 +3178,13 @@
     <visual>
       <origin xyz="2.8000000000000003 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3197,13 +3197,13 @@
     <visual>
       <origin xyz="2.8000000000000003 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3216,13 +3216,13 @@
     <visual>
       <origin xyz="2.8000000000000003 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="2.8000000000000003 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3235,13 +3235,13 @@
     <visual>
       <origin xyz="3.0000000000000004 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3254,13 +3254,13 @@
     <visual>
       <origin xyz="3.0000000000000004 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3273,13 +3273,13 @@
     <visual>
       <origin xyz="3.0000000000000004 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3292,13 +3292,13 @@
     <visual>
       <origin xyz="3.0000000000000004 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3311,13 +3311,13 @@
     <visual>
       <origin xyz="3.0000000000000004 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3330,13 +3330,13 @@
     <visual>
       <origin xyz="3.0000000000000004 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3349,13 +3349,13 @@
     <visual>
       <origin xyz="3.0000000000000004 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3368,13 +3368,13 @@
     <visual>
       <origin xyz="3.0000000000000004 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3387,13 +3387,13 @@
     <visual>
       <origin xyz="3.0000000000000004 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3406,13 +3406,13 @@
     <visual>
       <origin xyz="3.0000000000000004 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.0000000000000004 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3425,13 +3425,13 @@
     <visual>
       <origin xyz="3.2 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3444,13 +3444,13 @@
     <visual>
       <origin xyz="3.2 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3463,13 +3463,13 @@
     <visual>
       <origin xyz="3.2 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3482,13 +3482,13 @@
     <visual>
       <origin xyz="3.2 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3501,13 +3501,13 @@
     <visual>
       <origin xyz="3.2 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3520,13 +3520,13 @@
     <visual>
       <origin xyz="3.2 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3539,13 +3539,13 @@
     <visual>
       <origin xyz="3.2 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3558,13 +3558,13 @@
     <visual>
       <origin xyz="3.2 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3577,13 +3577,13 @@
     <visual>
       <origin xyz="3.2 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3596,13 +3596,13 @@
     <visual>
       <origin xyz="3.2 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.2 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3615,13 +3615,13 @@
     <visual>
       <origin xyz="3.4000000000000004 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 -1.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3634,13 +3634,13 @@
     <visual>
       <origin xyz="3.4000000000000004 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 -0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3653,13 +3653,13 @@
     <visual>
       <origin xyz="3.4000000000000004 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 -0.6 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3672,13 +3672,13 @@
     <visual>
       <origin xyz="3.4000000000000004 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 -0.3999999999999999 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3691,13 +3691,13 @@
     <visual>
       <origin xyz="3.4000000000000004 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 -0.19999999999999996 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3710,13 +3710,13 @@
     <visual>
       <origin xyz="3.4000000000000004 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 0.0 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3729,13 +3729,13 @@
     <visual>
       <origin xyz="3.4000000000000004 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 0.20000000000000018 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3748,13 +3748,13 @@
     <visual>
       <origin xyz="3.4000000000000004 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 0.40000000000000013 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3767,13 +3767,13 @@
     <visual>
       <origin xyz="3.4000000000000004 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 0.6000000000000001 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />
@@ -3786,13 +3786,13 @@
     <visual>
       <origin xyz="3.4000000000000004 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="3.4000000000000004 0.8 0.05" />
       <geometry>
-        <box size="0.06 0.06 0.04" />
+        <box size="0.06 0.06 0.06" />
       </geometry>
       <material name="white">
         <color rgba="0.5 0.5 0.5 1.0" />

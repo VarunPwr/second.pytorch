@@ -52,6 +52,7 @@ class A1(BaseTask):
         self.rew_scales["linearVelocityZRewardScale"] = self.cfg["env"]["learn"]["linearVelocityZRewardScale"]
         self.rew_scales["torqueRewardScale"] = self.cfg["env"]["learn"]["torqueRewardScale"]
         self.rew_scales["torqueSmoothingRewardScale"] = self.cfg["env"]["learn"]["torqueSmoothingRewardScale"]
+        self.rew_scales["contactForceRewardScale"] = self.cfg["env"]["learn"]["contactForceRewardScale"]
 
         # use diagonal action
         self.diagonal_act = self.cfg["env"]["learn"]["diagonal_act"]
@@ -115,11 +116,11 @@ class A1(BaseTask):
         extra_info_len = 3 if self.use_sys_information else 0
         if self.diagonal_act:
             self.cfg["env"]["numObservations"] = 18 * \
-                self.historical_step + 24 + extra_info_len
+                self.historical_step + 24 + extra_info_len + 12
             self.cfg["env"]["numActions"] = 6
         else:
             self.cfg["env"]["numObservations"] = 24 * \
-                (self.historical_step + 1) + extra_info_len
+                (self.historical_step + 1) + extra_info_len + 12
             self.cfg["env"]["numActions"] = 12
 
         if self.use_controller:
@@ -291,7 +292,9 @@ class A1(BaseTask):
 
         body_names = self.gym.get_asset_rigid_body_names(a1_asset)
         self.dof_names = self.gym.get_asset_dof_names(a1_asset)
-        feet_names = [s for s in body_names if "lower" in s]
+        feet_names = [(i, s) for i, s in enumerate(body_names) if "lower" in s]
+        self.feet_indices_in_bodies = torch.as_tensor(
+            [fn[0] for fn in feet_names], device=self.device)
         self.feet_indices = torch.zeros(
             len(feet_names), dtype=torch.long, device=self.device, requires_grad=False)
         knee_names = [s for s in body_names if "upper" in s]
@@ -350,7 +353,7 @@ class A1(BaseTask):
 
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(
-                self.envs[0], self.a1_handles[0], feet_names[i]) - 1
+                self.envs[0], self.a1_handles[0], feet_names[i][1]) - 1
         for i in range(len(knee_names)):
             self.knee_indices[i] = self.gym.find_actor_rigid_body_handle(
                 self.envs[0], self.a1_handles[0], knee_names[i]) - 1
@@ -503,7 +506,8 @@ class A1(BaseTask):
         self.gym.refresh_jacobian_tensors(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
         self.gym.refresh_dof_force_tensor(self.sim)
-
+        contact_forces = (
+            self.contact_forces[:, self.feet_indices_in_bodies]).flatten(1)
         if self.historical_step > 1:
             dof_pos = (self.dof_pos_buf -
                        self.default_dof_pos.unsqueeze(1)).view(self.num_envs, -1)
@@ -520,7 +524,8 @@ class A1(BaseTask):
                 self.ang_vel_scale,
                 self.dof_pos_scale,
                 self.dof_vel_scale,
-                self.a1_indices
+                self.a1_indices,
+                contact_forces,
             )
         else:
             self.obs_buf[:] = compute_a1_observations(  # tensors
@@ -535,7 +540,8 @@ class A1(BaseTask):
                 self.ang_vel_scale,
                 self.dof_pos_scale,
                 self.dof_vel_scale,
-                self.a1_indices
+                self.a1_indices,
+                contact_forces,
             )
 
     def apply_reward_randomizations(self, rr_params):
@@ -751,7 +757,12 @@ def compute_a1_reward(
     if last_torques is not None:
         rew_torque += torch.sum(torch.square(torques - last_torques),
                                 dim=1) * rew_scales["torqueSmoothingRewardScale"]
-    total_reward = rew_lin_vel_xy + rew_ang_vel_z + rew_torque + rew_z_vel
+
+    # contact force penalty
+    rew_contact_force = torch.norm(contact_forces.flatten(
+        1), dim=1) * rew_scales["contactForceRewardScale"]
+    total_reward = rew_lin_vel_xy + rew_ang_vel_z + \
+        rew_torque + rew_z_vel + rew_contact_force
     total_reward = torch.clip(total_reward, 0., None)
     # reset agents
     reset = torch.norm(contact_forces[:, base_index, :], dim=1) > 1.
@@ -779,7 +790,8 @@ def compute_a1_observations(root_states: Tensor,
                             ang_vel_scale: float,
                             dof_pos_scale: float,
                             dof_vel_scale: float,
-                            a1_indices: Tensor
+                            a1_indices: Tensor,
+                            contact_forces: Tensor
                             ) -> Tensor:
 
     # base_position = root_states[:, 0:3]
@@ -803,7 +815,8 @@ def compute_a1_observations(root_states: Tensor,
                      commands[..., 3:],
                      dof_pos_scaled,
                      dof_vel * dof_vel_scale,
-                     actions
+                     actions,
+                     contact_forces[a1_indices]
                      ), dim=-1)
 
     return obs

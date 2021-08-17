@@ -24,7 +24,7 @@ env:
     # PD Drive parameters:
     stiffness: 30.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
-    actionScale: 0.2
+    actionScale: 0.3
     hipActionScale: 0.05
     controlFrequencyInv: 4  # 60 Hz
 
@@ -118,7 +118,7 @@ task:
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [40., 80.]
+            range: [20., 80.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

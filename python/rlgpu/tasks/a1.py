@@ -23,6 +23,7 @@ from typing import Tuple, Dict
 terrain_init_pos = {
     "triangle_mesh": [5.2, 0, 0.05],
     "box": [0, 0, 0],
+    "box_dense": [0, 0, 0],
 }
 
 

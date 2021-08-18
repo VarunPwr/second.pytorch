@@ -1,7 +1,7 @@
 env:
   numEnvs: 2
   envSpacing: 4.  # [m]
-  terrain: "box"
+  terrain: "box_dense"
   command: "vel"
   commandChangeStep: 200
   plane:
@@ -25,7 +25,7 @@ env:
     stiffness: 30.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
     actionScale: 0.4
-    hipActionScale: 0.1
+    hipActionScale: 0.15
     controlFrequencyInv: 4  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
@@ -53,10 +53,10 @@ env:
     # rewards
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
-    linearVelocityZRewardScale: -0.02
-    torqueRewardScale: -0.00001 
-    torqueSmoothingRewardScale: 0. 
-    contactForceRewardScale: -0.002
+    linearVelocityZRewardScale: -0.2
+    torqueRewardScale: -0.000025 
+    torqueSmoothingRewardScale: -0.001 
+    contactForceRewardScale: -0.01
 
     # normalization
     linearVelocityScale: 2.0
@@ -119,7 +119,7 @@ task:
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [20., 60.]
+            range: [20., 40.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

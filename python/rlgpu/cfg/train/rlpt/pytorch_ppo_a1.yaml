@@ -7,8 +7,8 @@ seed: -1
 clip_observations: 1000.0
 clip_actions: 4.0
 policy: # only works for MlpPolicy right now
-  vf_hid_sizes: [256, 256, 256]
-  pi_hid_sizes: [256, 256, 256]
+  vf_hid_sizes: [256, 256, 64]
+  pi_hid_sizes: [256, 256, 64]
   activation: elu # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
 learn:
   agent_name: a1_ppo
@@ -22,14 +22,14 @@ learn:
 
   # training params
   cliprange: 0.2
-  ent_coef: 0.001
-  nsteps: 50
+  ent_coef: 0.0
+  nsteps: 24
   noptepochs: 8
   nminibatches: 4 # this is per agent
-  optim_stepsize: 2.e-3
+  optim_stepsize: 8.e-3
   schedule: adaptive # could be adaptive, linear or fixed
   gamma: 0.99
   lam: 0.95
-  init_noise_std: 0.8
+  init_noise_std: 0.75
   desired_kl: 0.01
   log_interval: 1

@@ -89,6 +89,8 @@ class A1(BaseTask):
         v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
         if self.terrain == "triangle_mesh":
             pos[-1] += 0.52
+        elif self.terrain == "box_dense":
+            pos[-1] += 0.1
 
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state

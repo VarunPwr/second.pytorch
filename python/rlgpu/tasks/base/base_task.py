@@ -132,7 +132,7 @@ class BaseTask():
         self.pre_physics_step(actions)
 
         # step physics and render each frame
-        for i in range(self.control_freq_inv):
+        for _ in range(self.control_freq_inv):
             self.render()
             self.gym.simulate(self.sim)
 

@@ -5,11 +5,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import enum
 import numpy as np
 import os
 from numpy.core.numeric import indices, roll
-
+from PIL import Image as im
 from rlgpu.utils.torch_jit_utils import *
 from rlgpu.tasks.base.base_task import BaseTask
 from isaacgym import gymtorch
@@ -45,7 +44,8 @@ class A1(BaseTask):
         self.dof_vel_scale = self.cfg["env"]["learn"]["dofVelocityScale"]
         self.action_scale = self.cfg["env"]["control"]["actionScale"]
         self.hip_action_scale = self.cfg["env"]["control"]["hipActionScale"]
-
+        self.get_image = True
+        self.frame_count = 0
         # reward scales
         self.rew_scales = {}
         self.rew_scales["linearVelocityXYRewardScale"] = self.cfg["env"]["learn"]["linearVelocityXYRewardScale"]
@@ -156,7 +156,6 @@ class A1(BaseTask):
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
         self.gym.refresh_dof_force_tensor(self.sim)
-
         # create some wrapper tensors for different slices
         self.root_states = gymtorch.wrap_tensor(
             actor_root_state).view(-1, 13)
@@ -319,6 +318,9 @@ class A1(BaseTask):
         self.terrain_indices = []
         self.box_handles = []
         self.envs = []
+        if self.get_image:
+            self.camera_handles = []
+            self.depth_image = []
 
         if self.terrain != "plane":
             terrain_asset_root = "../../assets"
@@ -353,6 +355,22 @@ class A1(BaseTask):
                 terrain_idx = self.gym.get_actor_index(
                     env_ptr, terrain_handle, gymapi.DOMAIN_SIM)
                 self.terrain_indices.append(terrain_idx)
+
+            if self.get_image:
+                camera_properties = gymapi.CameraProperties()
+                camera_properties.width = 360
+                camera_properties.height = 240
+                camera_properties.enable_tensors = True
+                head_camera = self.gym.create_camera_sensor(
+                    env_ptr, camera_properties)
+                camera_offset = gymapi.Vec3(0.4, 0, 0)
+                camera_rotation = gymapi.Quat.from_axis_angle(
+                    gymapi.Vec3(0, 1, 0), np.deg2rad(20))
+                body_handle = self.gym.get_actor_rigid_body_handle(
+                    env_ptr, a1_handle, 0)
+                self.gym.attach_camera_to_body(head_camera, env_ptr, body_handle, gymapi.Transform(
+                    camera_offset, camera_rotation), gymapi.FOLLOW_TRANSFORM)
+                self.camera_handles.append(head_camera)
 
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(
@@ -459,6 +477,7 @@ class A1(BaseTask):
                 [self.torques_buf[:, :-1], self.torques.unsqueeze(1)], dim=1)
 
         self.compute_observations()
+        self.render_image(0)
         self.compute_reward(self.actions)
 
     def compute_reward(self, actions):
@@ -606,6 +625,33 @@ class A1(BaseTask):
             self.torques_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
+
+    def render_image(self, env_ids):
+        # output image and then write it to disk using Pillow
+        # communicate physics to graphics system
+        self.gym.step_graphics(self.sim)
+
+        # render the camera sensors
+        self.gym.render_all_camera_sensors(self.sim)
+
+        depth_image = self.gym.get_camera_image_gpu_tensor(
+            self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_DEPTH)
+        depth_image = gymtorch.wrap_tensor(depth_image)
+        # -inf implies no depth value, set it to zero. output will be black.
+        depth_image[torch.isneginf(depth_image)] = 0
+
+        # clamp depth image to 10 meters to make output image human friendly
+        depth_image[depth_image < -10] = -10
+
+        # flip the direction so near-objects are light and far objects are dark
+        normalized_depth = -255.0 * \
+            (depth_image / torch.min(depth_image + 1e-4))
+        normalized_depth = normalized_depth.cpu().numpy()
+        normalized_depth_image = im.fromarray(normalized_depth.astype(np.uint8), mode="L")
+        normalized_depth_image.save("output_images/depth_{}.png".format(self.frame_count))
+        self.gym.write_camera_image_to_file(self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_COLOR, "output_images/rgb_{}.png".format(self.frame_count))
+        self.frame_count += 1
+
 
     def reset_command(self, env_ids):
         # Randomization can happen only at reset time, since it can reset actor positions on GPU

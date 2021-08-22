@@ -223,7 +223,6 @@ while True:
                 # Here we retrieve a depth image, normalize it to be visible in an
                 # output image and then write it to disk using Pillow
                 depth_image = gym.get_camera_image(sim, envs[i], camera_handles[i][j], gymapi.IMAGE_DEPTH)
-
                 # -inf implies no depth value, set it to zero. output will be black.
                 depth_image[depth_image == -np.inf] = 0
 

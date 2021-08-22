@@ -10,3 +10,5 @@ lightning_logs*/
 *.npy
 vis*/
 *.ckpt
+examples/
+*images/

@@ -16,6 +16,7 @@ from rlgpu.tasks.shadow_hand import ShadowHand
 from rlgpu.tasks.ingenuity import Ingenuity
 from rlgpu.tasks.anymal import Anymal
 from rlgpu.tasks.a1 import A1
+from rlgpu.tasks.xarm_bimanual import XarmBimanual as Xarm
 from rlgpu.tasks.base.vec_task import VecTaskCPU, VecTaskGPU, VecTaskPython
 
 from rlgpu.utils.config import warn_task_name

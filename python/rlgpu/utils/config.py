@@ -25,7 +25,7 @@ def set_np_formatting():
 
 def warn_task_name():
     raise Exception(
-        "Unrecognized task!\nTask should be one of: [BallBalance, Cartpole, CartpoleYUp, Ant, Humanoid, Anymal, A1, FrankaCabinet, Quadcopter, ShadowHand, ShadowHandLSTM, ShadowHandFFOpenAI, ShadowHandFFOpenAITest, ShadowHandOpenAI, ShadowHandOpenAITest, Ingenuity]")
+        "Unrecognized task!\nTask should be one of: [BallBalance, Cartpole, CartpoleYUp, Ant, Humanoid, Anymal, A1, FrankaCabinet, Quadcopter, ShadowHand, ShadowHandLSTM, ShadowHandFFOpenAI, ShadowHandFFOpenAITest, ShadowHandOpenAI, ShadowHandOpenAITest, Ingenuity, Xarm]")
 
 
 def set_seed(seed, torch_deterministic=False):
@@ -96,6 +96,8 @@ def retrieve_cfg(args, use_rlg_config=False):
             # Testing the asymmetric LSTM policy with OpenAI observations
             args.task = "ShadowHand"
             return os.path.join(args.logdir, "shadow_hand"), "cfg/train/rlg/rlg_shadow_hand_asymm_lstm.yaml", "cfg/shadow_hand_test.yaml"
+        elif args.task == "Xarm":
+            return os.path.join(args.logdir, "xarm"), "cfg/train/rlg/rlg_xarm_bimanual.yaml", "cfg/xarm_bimanual.yaml"
         elif args.task == "Ingenuity":
             return os.path.join(args.logdir, "ingenuity"), "cfg/train/rlg/rlg_ingenuity.yaml", "cfg/ingenuity.yaml"
         else:
@@ -127,6 +129,8 @@ def retrieve_cfg(args, use_rlg_config=False):
         elif args.task == "ShadowHandFFOpenAITest":
             args.task = "ShadowHand"
             return os.path.join(args.logdir, "shadow_hand"), "cfg/train/rlpt/pytorch_ppo_shadow_hand.yaml", "cfg/shadow_hand_test.yaml"
+        elif args.task == "Xarm":
+            return os.path.join(args.logdir, "xarm_bimanual"), "cfg/train/rlpt/pytorch_ppo_xarm_bimanual.yaml", "cfg/xarm_bimanual.yaml"
         elif args.task == "Ingenuity":
             return os.path.join(args.logdir, "ingenuity"), "cfg/train/rlpt/pytorch_ppo_ingenuity.yaml", "cfg/ingenuity.yaml"
         else:
@@ -277,7 +281,7 @@ def get_args(benchmark=False, use_rlg_config=False):
         {"name": "--horovod", "action": "store_true", "default": False,
             "help": "Use horovod for multi-gpu training, have effect only with rl_games RL library"},
         {"name": "--task", "type": str, "default": "Humanoid",
-            "help": "Can be BallBalance, Cartpole, CartpoleYUp, Ant, Humanoid, Anymal, FrankaCabinet, Quadcopter, ShadowHand, Ingenuity"},
+            "help": "Can be BallBalance, Cartpole, CartpoleYUp, Ant, Humanoid, Anymal, FrankaCabinet, Quadcopter, ShadowHand, Ingenuity, Xarm"},
         {"name": "--task_type", "type": str,
             "default": "Python", "help": "Choose Python or C++"},
         {"name": "--rl_device", "type": str, "default": "cuda:0",

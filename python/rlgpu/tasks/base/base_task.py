@@ -35,7 +35,7 @@ class BaseTask():
 
         # double check!
         self.graphics_device_id = self.device_id
-        if enable_camera_sensors == False and self.headless == True:
+        if enable_camera_sensors == False and self.headless == True and not self.get_image:
             self.graphics_device_id = -1
 
         self.num_envs = cfg["env"]["numEnvs"]
@@ -117,7 +117,8 @@ class BaseTask():
         return 1
 
     def create_sim(self, compute_device, graphics_device, physics_engine, sim_params):
-        sim = self.gym.create_sim(compute_device, graphics_device, physics_engine, sim_params)
+        sim = self.gym.create_sim(
+            compute_device, graphics_device, physics_engine, sim_params)
         if sim is None:
             print("*** Failed to create sim")
             quit()
@@ -126,7 +127,8 @@ class BaseTask():
 
     def step(self, actions):
         if self.dr_randomizations.get('actions', None):
-            actions = self.dr_randomizations['actions']['noise_lambda'](actions)
+            actions = self.dr_randomizations['actions']['noise_lambda'](
+                actions)
 
         # apply actions
         self.pre_physics_step(actions)
@@ -144,7 +146,8 @@ class BaseTask():
         self.post_physics_step()
 
         if self.dr_randomizations.get('observations', None):
-            self.obs_buf = self.dr_randomizations['observations']['noise_lambda'](self.obs_buf)
+            self.obs_buf = self.dr_randomizations['observations']['noise_lambda'](
+                self.obs_buf)
 
     def get_states(self):
         return self.states_buf
@@ -212,8 +215,8 @@ class BaseTask():
                             highs.append(lo_hi[1])
         return params, names, lows, highs
 
-
     # Apply randomizations only on resets, due to current PhysX limitations
+
     def apply_randomizations(self, dr_params):
         # If we don't have a randomization frequency, randomize every step
         rand_freq = dr_params.get("frequency", 1)
@@ -227,10 +230,13 @@ class BaseTask():
             do_nonenv_randomize = True
             env_ids = list(range(self.num_envs))
         else:
-            do_nonenv_randomize = (self.last_step - self.last_rand_step) >= rand_freq
-            rand_envs = torch.where(self.randomize_buf >= rand_freq, torch.ones_like(self.randomize_buf), torch.zeros_like(self.randomize_buf))
+            do_nonenv_randomize = (
+                self.last_step - self.last_rand_step) >= rand_freq
+            rand_envs = torch.where(self.randomize_buf >= rand_freq, torch.ones_like(
+                self.randomize_buf), torch.zeros_like(self.randomize_buf))
             rand_envs = torch.logical_and(rand_envs, self.reset_buf)
-            env_ids = torch.nonzero(rand_envs, as_tuple=False).squeeze(-1).tolist()
+            env_ids = torch.nonzero(
+                rand_envs, as_tuple=False).squeeze(-1).tolist()
             self.randomize_buf[rand_envs] = 0
 
         if do_nonenv_randomize:
@@ -262,7 +268,8 @@ class BaseTask():
 
                 if dist == 'gaussian':
                     mu, var = dr_params[nonphysical_param]["range"]
-                    mu_corr, var_corr = dr_params[nonphysical_param].get("range_correlated", [0., 0.])
+                    mu_corr, var_corr = dr_params[nonphysical_param].get(
+                        "range_correlated", [0., 0.])
 
                     if op_type == 'additive':
                         mu *= sched_scaling
@@ -288,11 +295,13 @@ class BaseTask():
                         return op(
                             tensor, corr + torch.randn_like(tensor) * params['var'] + params['mu'])
 
-                    self.dr_randomizations[nonphysical_param] = {'mu': mu, 'var': var, 'mu_corr': mu_corr, 'var_corr': var_corr, 'noise_lambda': noise_lambda}
+                    self.dr_randomizations[nonphysical_param] = {
+                        'mu': mu, 'var': var, 'mu_corr': mu_corr, 'var_corr': var_corr, 'noise_lambda': noise_lambda}
 
                 elif dist == 'uniform':
                     lo, hi = dr_params[nonphysical_param]["range"]
-                    lo_corr, hi_corr = dr_params[nonphysical_param].get("range_correlated", [0., 0.])
+                    lo_corr, hi_corr = dr_params[nonphysical_param].get(
+                        "range_correlated", [0., 0.])
 
                     if op_type == 'additive':
                         lo *= sched_scaling
@@ -302,8 +311,10 @@ class BaseTask():
                     elif op_type == 'scaling':
                         lo = lo * sched_scaling + 1.0 * (1.0 - sched_scaling)
                         hi = hi * sched_scaling + 1.0 * (1.0 - sched_scaling)
-                        lo_corr = lo_corr * sched_scaling + 1.0 * (1.0 - sched_scaling)
-                        hi_corr = hi_corr * sched_scaling + 1.0 * (1.0 - sched_scaling)
+                        lo_corr = lo_corr * sched_scaling + \
+                            1.0 * (1.0 - sched_scaling)
+                        hi_corr = hi_corr * sched_scaling + \
+                            1.0 * (1.0 - sched_scaling)
 
                     def noise_lambda(tensor, param_name=nonphysical_param):
                         params = self.dr_randomizations[param_name]
@@ -311,10 +322,13 @@ class BaseTask():
                         if corr is None:
                             corr = torch.randn_like(tensor)
                             params['corr'] = corr
-                        corr = corr * (params['hi_corr'] - params['lo_corr']) + params['lo_corr']
+                        corr = corr * \
+                            (params['hi_corr'] - params['lo_corr']) + \
+                            params['lo_corr']
                         return op(tensor, corr + torch.rand_like(tensor) * (params['hi'] - params['lo']) + params['lo'])
 
-                    self.dr_randomizations[nonphysical_param] = {'lo': lo, 'hi': hi, 'lo_corr': lo_corr, 'hi_corr': hi_corr, 'noise_lambda': noise_lambda}
+                    self.dr_randomizations[nonphysical_param] = {
+                        'lo': lo, 'hi': hi, 'lo_corr': lo_corr, 'hi_corr': hi_corr, 'noise_lambda': noise_lambda}
 
         if "sim_params" in dr_params and do_nonenv_randomize:
             prop_attrs = dr_params["sim_params"]

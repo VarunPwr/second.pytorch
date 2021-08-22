@@ -629,8 +629,10 @@ class A1(BaseTask):
     def render_image(self, env_ids):
         # output image and then write it to disk using Pillow
         # communicate physics to graphics system
-        self.gym.step_graphics(self.sim)
-
+        if self.headless:
+            self.gym.step_graphics(self.sim)
+            self.gym.fetch_results(self.sim, True)
+            self.gym.sync_frame_time(self.sim)
         # render the camera sensors
         self.gym.render_all_camera_sensors(self.sim)
 
@@ -647,11 +649,13 @@ class A1(BaseTask):
         normalized_depth = -255.0 * \
             (depth_image / torch.min(depth_image + 1e-4))
         normalized_depth = normalized_depth.cpu().numpy()
-        normalized_depth_image = im.fromarray(normalized_depth.astype(np.uint8), mode="L")
-        normalized_depth_image.save("output_images/depth_{}.png".format(self.frame_count))
-        self.gym.write_camera_image_to_file(self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_COLOR, "output_images/rgb_{}.png".format(self.frame_count))
+        normalized_depth_image = im.fromarray(
+            normalized_depth.astype(np.uint8), mode="L")
+        normalized_depth_image.save(
+            "output_images/depth_{}.png".format(self.frame_count))
+        self.gym.write_camera_image_to_file(
+            self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_COLOR, "output_images/rgb_{}.png".format(self.frame_count))
         self.frame_count += 1
-
 
     def reset_command(self, env_ids):
         # Randomization can happen only at reset time, since it can reset actor positions on GPU

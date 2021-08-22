@@ -44,7 +44,15 @@ class A1(BaseTask):
         self.dof_vel_scale = self.cfg["env"]["learn"]["dofVelocityScale"]
         self.action_scale = self.cfg["env"]["control"]["actionScale"]
         self.hip_action_scale = self.cfg["env"]["control"]["hipActionScale"]
-        self.get_image = True
+        self.get_image = self.cfg["env"]["vision"]["get_image"]
+        if self.get_image:
+            # vision-guided mode
+            self.frame_stack = self.cfg["env"]["vision"]["frame_stack"]
+            self.vision_update_freq = self.cfg["env"]["vision"]["update_freq"]
+            self.image_type = self.cfg["env"]["vision"]["image_type"]
+            self.width = self.cfg["env"]["vision"]["width"]
+            self.height = self.cfg["env"]["vision"]["height"]
+
         self.frame_count = 0
         # reward scales
         self.rew_scales = {}
@@ -125,9 +133,25 @@ class A1(BaseTask):
             self.cfg["env"]["numObservations"] = 24 * \
                 (self.historical_step + 1) + extra_info_len + 12
             self.cfg["env"]["numActions"] = 12
-
+        self.state_obs_size = self.cfg["env"]["numObservations"]
         if self.use_controller:
             self.cfg["env"]["numActions"] *= 2
+
+        if self.get_image:
+            if self.image_type == "depth":
+                image_obs_size = self.width * \
+                    self.height * self.frame_stack
+            elif self.image_type == "rgb":
+                image_obs_size = self.width * \
+                    self.height * self.frame_stack * 3
+            elif self.image_type == "rgbd":
+                image_obs_size = self.width * \
+                    self.height * self.frame_stack * 4
+            else:
+                raise NotImplementedError
+
+            self.cfg["env"]["numObservations"] += image_obs_size
+            self.image_obs_size = image_obs_size
 
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
@@ -181,6 +205,24 @@ class A1(BaseTask):
                     (self.num_envs, self.historical_step, self.num_dof), device=self.device)
             self.torques_buf = torch.zeros(
                 (self.num_envs, self.historical_step, self.num_dof), device=self.device)
+
+        if self.get_image:
+            if self.frame_stack > 1:
+                if self.image_type == "depth":
+                    self.image_buf = torch.zeros(
+                        (self.num_envs, self.frame_stack, self.width * self.height), device=self.device
+                    )
+                elif self.image_type == "rgb":
+                    self.image_buf = torch.zeros(
+                        (self.num_envs, self.frame_stack, self.width * self.height * 3), device=self.device
+                    )
+                elif self.image_type == "rgbd":
+                    self.image_buf = torch.zeros(
+                        (self.num_envs, self.frame_stack, self.width * self.height * 4), device=self.device
+                    )
+                else:
+                    raise NotImplementedError
+
         self.commands = torch.zeros(
             self.num_envs, 3 + extra_info_len, dtype=torch.float, device=self.device, requires_grad=False)
         self.commands_y = self.commands.view(
@@ -358,8 +400,8 @@ class A1(BaseTask):
 
             if self.get_image:
                 camera_properties = gymapi.CameraProperties()
-                camera_properties.width = 360
-                camera_properties.height = 240
+                camera_properties.width = self.width
+                camera_properties.height = self.height
                 camera_properties.enable_tensors = True
                 head_camera = self.gym.create_camera_sensor(
                     env_ptr, camera_properties)
@@ -477,7 +519,18 @@ class A1(BaseTask):
                 [self.torques_buf[:, :-1], self.torques.unsqueeze(1)], dim=1)
 
         self.compute_observations()
-        self.render_image(0)
+        if self.get_image:
+            if self.headless:
+                self.gym.step_graphics(self.sim)
+                self.gym.fetch_results(self.sim, True)
+                self.gym.sync_frame_time(self.sim)
+                # render the camera sensors
+                self.gym.render_all_camera_sensors(self.sim)
+            image_vectors = torch.stack(
+                [self.update_image(i) for i in range(self.num_envs)], dim=0)
+            self.image_buf = torch.cat(
+                [self.image_buf[:, :-1], image_vectors.unsqueeze(1)], dim=1)
+            self.obs_buf[:, self.state_obs_size:] = self.image_buf.flatten(1)
         self.compute_reward(self.actions)
 
     def compute_reward(self, actions):
@@ -534,7 +587,7 @@ class A1(BaseTask):
             dof_pos = (self.dof_pos_buf -
                        self.default_dof_pos.unsqueeze(1)).view(self.num_envs, -1)
             actions = self.actions_buf.view(self.num_envs, -1)
-            self.obs_buf[:] = compute_a1_observations(  # tensors
+            self.obs_buf[:, :self.state_obs_size] = compute_a1_observations(  # tensors
                 self.root_states,
                 self.commands,
                 dof_pos,
@@ -550,7 +603,7 @@ class A1(BaseTask):
                 contact_forces,
             )
         else:
-            self.obs_buf[:] = compute_a1_observations(  # tensors
+            self.obs_buf[:, :self.state_obs_size] = compute_a1_observations(  # tensors
                 self.root_states,
                 self.commands,
                 self.dof_pos - self.default_dof_pos,
@@ -626,36 +679,45 @@ class A1(BaseTask):
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
 
-    def render_image(self, env_ids):
+    def update_image(self, env_ids):
         # output image and then write it to disk using Pillow
         # communicate physics to graphics system
-        if self.headless:
-            self.gym.step_graphics(self.sim)
-            self.gym.fetch_results(self.sim, True)
-            self.gym.sync_frame_time(self.sim)
-        # render the camera sensors
-        self.gym.render_all_camera_sensors(self.sim)
+        image_vec = []
+        if self.image_type != "rgb":
+            depth_image = self.gym.get_camera_image_gpu_tensor(
+                self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_DEPTH)
+            depth_image = gymtorch.wrap_tensor(depth_image)
+            # -inf implies no depth value, set it to zero. output will be black.
+            depth_image[torch.isneginf(depth_image)] = 0
 
-        depth_image = self.gym.get_camera_image_gpu_tensor(
-            self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_DEPTH)
-        depth_image = gymtorch.wrap_tensor(depth_image)
-        # -inf implies no depth value, set it to zero. output will be black.
-        depth_image[torch.isneginf(depth_image)] = 0
+            # clamp depth image to 10 meters to make output image human friendly
+            depth_image[depth_image < -10] = -10
 
-        # clamp depth image to 10 meters to make output image human friendly
-        depth_image[depth_image < -10] = -10
+            depth_image = (depth_image - torch.min(depth_image)) / \
+                (torch.max(depth_image) - torch.min(depth_image) + 1e-6)
+            image_vec.append(depth_image.unsqueeze(0))
 
-        # flip the direction so near-objects are light and far objects are dark
-        normalized_depth = -255.0 * \
-            (depth_image / torch.min(depth_image + 1e-4))
-        normalized_depth = normalized_depth.cpu().numpy()
-        normalized_depth_image = im.fromarray(
-            normalized_depth.astype(np.uint8), mode="L")
-        normalized_depth_image.save(
-            "output_images/depth_{}.png".format(self.frame_count))
-        self.gym.write_camera_image_to_file(
-            self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_COLOR, "output_images/rgb_{}.png".format(self.frame_count))
-        self.frame_count += 1
+        if self.image_type != "depth":
+            rgba_image = self.gym.get_camera_image_gpu_tensor(
+                self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_COLOR)
+            rgb_image = gymtorch.wrap_tensor(rgba_image)[:3].float()
+            rgb_image = rgba_image / 255.
+
+            image_vec.append(rgb_image)
+
+        image_vec = torch.cat(image_vec, dim=0).flatten()
+        return image_vec
+        # # flip the direction so near-objects are light and far objects are dark
+        # normalized_depth = -255.0 * \
+        #     (depth_image / torch.min(depth_image + 1e-4))
+        # normalized_depth = normalized_depth.cpu().numpy()
+        # normalized_depth_image = im.fromarray(
+        #     normalized_depth.astype(np.uint8), mode="L")
+        # normalized_depth_image.save(
+        #     "output_images/depth_{}.png".format(self.frame_count))
+        # self.gym.write_camera_image_to_file(
+        #     self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_COLOR, "output_images/rgb_{}.png".format(self.frame_count))
+        # self.frame_count += 1
 
     def reset_command(self, env_ids):
         # Randomization can happen only at reset time, since it can reset actor positions on GPU

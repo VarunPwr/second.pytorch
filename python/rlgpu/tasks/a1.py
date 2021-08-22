@@ -363,7 +363,7 @@ class A1(BaseTask):
                 camera_properties.enable_tensors = True
                 head_camera = self.gym.create_camera_sensor(
                     env_ptr, camera_properties)
-                camera_offset = gymapi.Vec3(0.4, 0, 0)
+                camera_offset = gymapi.Vec3(0.3, 0, 0)
                 camera_rotation = gymapi.Quat.from_axis_angle(
                     gymapi.Vec3(0, 1, 0), np.deg2rad(20))
                 body_handle = self.gym.get_actor_rigid_body_handle(

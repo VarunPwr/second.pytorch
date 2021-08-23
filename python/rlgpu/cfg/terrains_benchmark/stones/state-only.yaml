@@ -1,5 +1,5 @@
 env:
-  numEnvs: 2048
+  numEnvs: 1
   envSpacing: 4.  # [m]
   terrain: "stones"
   command: "vel"

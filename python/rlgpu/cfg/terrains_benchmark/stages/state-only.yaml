@@ -1,9 +1,9 @@
 env:
-  numEnvs: 8192
+  numEnvs: 2048
   envSpacing: 4.  # [m]
-  terrain: "stones"
+  terrain: "stages"
   command: "vel"
-  commandChangeStep: 200
+  commandChangeStep: 500
 
   vision:
     get_image: False
@@ -25,9 +25,9 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.0, 0.6] # min max [m/s]
-    linear_y: [0., 0.]   # min max [m/s]
-    yaw: [-0.1, 0.1]          # min max [rad/s]
+    linear_x: [0.2, 0.4] # min max [m/s]
+    linear_y: [-0.1, 0.1]   # min max [m/s]
+    yaw: [0., 0.]          # min max [rad/s]
 
   control:
     # PD Drive parameters:

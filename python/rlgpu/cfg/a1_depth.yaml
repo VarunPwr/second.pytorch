@@ -6,7 +6,7 @@ env:
   commandChangeStep: 200
 
   vision:
-    get_image: False
+    get_image: True
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
     update_freq: 1 # how many control steps do we update the image buffer

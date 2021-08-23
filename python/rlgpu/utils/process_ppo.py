@@ -4,15 +4,14 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-
-from rl_pytorch.ppo import PPO, ActorCritic
+from rl_pytorch.ppo import PPO, ActorCritic, get_encoder
 
 
 def process_ppo(args, env, cfg_train, logdir):
     learn_cfg = cfg_train["learn"]
     is_testing = learn_cfg["test"]
     chkpt = learn_cfg["resume"]
-
+    encoder_type = cfg_train["policy"]["encoder_type"]
     # Override resume and testing flags if they are passed as parameters.
     if not is_testing:
         is_testing = args.test
@@ -22,6 +21,7 @@ def process_ppo(args, env, cfg_train, logdir):
     """Set up the PPO system for training or inferencing."""
     ppo = PPO(vec_env=env,
               actor_critic_class=ActorCritic,
+              encoder=get_encoder(encoder_type),
               num_transitions_per_env=learn_cfg["nsteps"],
               num_learning_epochs=learn_cfg["noptepochs"],
               num_mini_batches=learn_cfg["nminibatches"],
@@ -33,7 +33,8 @@ def process_ppo(args, env, cfg_train, logdir):
               entropy_coef=learn_cfg["ent_coef"],
               learning_rate=learn_cfg["optim_stepsize"],
               max_grad_norm=learn_cfg.get("max_grad_norm", 2.0),
-              use_clipped_value_loss=learn_cfg.get("use_clipped_value_loss", False),
+              use_clipped_value_loss=learn_cfg.get(
+                  "use_clipped_value_loss", False),
               schedule=learn_cfg.get("schedule", "fixed"),
               desired_kl=learn_cfg.get("desired_kl", None),
               model_cfg=cfg_train["policy"],

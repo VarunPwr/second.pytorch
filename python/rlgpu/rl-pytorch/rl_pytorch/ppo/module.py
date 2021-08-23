@@ -7,7 +7,7 @@ from torch.distributions import MultivariateNormal
 
 class ActorCritic(nn.Module):
 
-    def __init__(self, obs_shape, states_shape, actions_shape, initial_std, model_cfg, asymmetric=False):
+    def __init__(self, encoder, obs_shape, states_shape, actions_shape, initial_std, model_cfg, asymmetric=False):
         super(ActorCritic, self).__init__()
 
         self.asymmetric = asymmetric
@@ -20,31 +20,47 @@ class ActorCritic(nn.Module):
             actor_hidden_dim = model_cfg['pi_hid_sizes']
             critic_hidden_dim = model_cfg['vf_hid_sizes']
             activation = get_activation(model_cfg['activation'])
-
+        if encoder is not None:
+            self.encoder = encoder(model_cfg['encoder_params'])
         # Policy
-        actor_layers = []
-        actor_layers.append(nn.Linear(*obs_shape, actor_hidden_dim[0]))
+            actor_layers = [self.encoder]
+            actor_layers.append(
+                nn.Linear(self.encoder.hidden_states_shape, actor_hidden_dim[0]))
+        else:
+            actor_layers = []
+            actor_layers.append(nn.Linear(*obs_shape, actor_hidden_dim[0]))
         actor_layers.append(activation)
         for l in range(len(actor_hidden_dim)):
             if l == len(actor_hidden_dim) - 1:
-                actor_layers.append(nn.Linear(actor_hidden_dim[l], *actions_shape))
+                actor_layers.append(
+                    nn.Linear(actor_hidden_dim[l], *actions_shape))
             else:
-                actor_layers.append(nn.Linear(actor_hidden_dim[l], actor_hidden_dim[l + 1]))
+                actor_layers.append(
+                    nn.Linear(actor_hidden_dim[l], actor_hidden_dim[l + 1]))
                 actor_layers.append(activation)
         self.actor = nn.Sequential(*actor_layers)
 
         # Value function
         critic_layers = []
         if self.asymmetric:
-            critic_layers.append(nn.Linear(*states_shape, critic_hidden_dim[0]))
+            critic_layers.append(
+                nn.Linear(*states_shape, critic_hidden_dim[0]))
         else:
-            critic_layers.append(nn.Linear(*obs_shape, critic_hidden_dim[0]))
+            if encoder is not None:
+                critic_layers.append(self.encoder)
+                critic_layers.append(
+                    nn.Linear(self.encoder.hidden_states_shape, critic_hidden_dim[0]))
+            else:
+                critic_layers = []
+                critic_layers.append(
+                    nn.Linear(*obs_shape, critic_hidden_dim[0]))
         critic_layers.append(activation)
         for l in range(len(critic_hidden_dim)):
             if l == len(critic_hidden_dim) - 1:
                 critic_layers.append(nn.Linear(critic_hidden_dim[l], 1))
             else:
-                critic_layers.append(nn.Linear(critic_hidden_dim[l], critic_hidden_dim[l + 1]))
+                critic_layers.append(
+                    nn.Linear(critic_hidden_dim[l], critic_hidden_dim[l + 1]))
                 critic_layers.append(activation)
         self.critic = nn.Sequential(*critic_layers)
 
@@ -52,7 +68,8 @@ class ActorCritic(nn.Module):
         print(self.critic)
 
         # Action noise
-        self.log_std = nn.Parameter(np.log(initial_std) * torch.ones(*actions_shape))
+        self.log_std = nn.Parameter(
+            np.log(initial_std) * torch.ones(*actions_shape))
 
         # Initialize the weights like in stable baselines
         actor_weights = [np.sqrt(2)] * len(actor_hidden_dim)
@@ -61,11 +78,21 @@ class ActorCritic(nn.Module):
         critic_weights.append(1.0)
         self.init_weights(self.actor, actor_weights)
         self.init_weights(self.critic, critic_weights)
+        if self.encoder is not None:
+            self.apply(self.init_visual_weights)
 
     @staticmethod
     def init_weights(sequential, scales):
         [torch.nn.init.orthogonal_(module.weight, gain=scales[idx]) for idx, module in
          enumerate(mod for mod in sequential if isinstance(mod, nn.Linear))]
+
+    @staticmethod
+    def init_visual_weights(m):
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+            gain = nn.init.calculate_gain('relu')
+            nn.init.orthogonal_(m.weight.data, gain)
+            if hasattr(m.bias, 'data'):
+                m.bias.data.fill_(0.0)
 
     def forward(self):
         raise NotImplementedError

@@ -518,19 +518,20 @@ class A1(BaseTask):
             self.torques_buf = torch.cat(
                 [self.torques_buf[:, :-1], self.torques.unsqueeze(1)], dim=1)
 
-        self.compute_observations()
         if self.get_image:
             if self.headless:
                 self.gym.step_graphics(self.sim)
                 self.gym.fetch_results(self.sim, True)
                 self.gym.sync_frame_time(self.sim)
                 # render the camera sensors
-                self.gym.render_all_camera_sensors(self.sim)
+            self.gym.render_all_camera_sensors(self.sim)
             image_vectors = torch.stack(
                 [self.update_image(i) for i in range(self.num_envs)], dim=0)
             self.image_buf = torch.cat(
-                [self.image_buf[:, :-1], image_vectors.unsqueeze(1)], dim=1)
+                [image_vectors.unsqueeze(1), self.image_buf[:, :-1]], dim=1)
             self.obs_buf[:, self.state_obs_size:] = self.image_buf.flatten(1)
+
+        self.compute_observations()
         self.compute_reward(self.actions)
 
     def compute_reward(self, actions):
@@ -687,14 +688,15 @@ class A1(BaseTask):
             depth_image = self.gym.get_camera_image_gpu_tensor(
                 self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_DEPTH)
             depth_image = gymtorch.wrap_tensor(depth_image)
+
             # -inf implies no depth value, set it to zero. output will be black.
             depth_image[torch.isneginf(depth_image)] = 0
 
             # clamp depth image to 10 meters to make output image human friendly
             depth_image[depth_image < -10] = -10
 
-            depth_image = (depth_image - torch.min(depth_image)) / \
-                (torch.max(depth_image) - torch.min(depth_image) + 1e-6)
+            # depth_image = (depth_image - torch.min(depth_image)) / \
+            #     (torch.max(depth_image) - torch.min(depth_image) + 1e-6)
             image_vec.append(depth_image.unsqueeze(0))
 
         if self.image_type != "depth":
@@ -706,7 +708,6 @@ class A1(BaseTask):
             image_vec.append(rgb_image)
 
         image_vec = torch.cat(image_vec, dim=0).flatten()
-        return image_vec
         # # flip the direction so near-objects are light and far objects are dark
         # normalized_depth = -255.0 * \
         #     (depth_image / torch.min(depth_image + 1e-4))
@@ -718,6 +719,7 @@ class A1(BaseTask):
         # self.gym.write_camera_image_to_file(
         #     self.sim, self.envs[env_ids], self.camera_handles[env_ids], gymapi.IMAGE_COLOR, "output_images/rgb_{}.png".format(self.frame_count))
         # self.frame_count += 1
+        return image_vec
 
     def reset_command(self, env_ids):
         # Randomization can happen only at reset time, since it can reset actor positions on GPU

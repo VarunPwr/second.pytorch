@@ -1,18 +1,18 @@
-# Important Note
-# This code is subject to the NDA between the Robotic Systems Lab (ETH Zurich) and NVIDIA.
-# Under no circumstances should it be made available publicly.
-# For any questions, contact David Hoeller (dhoeller@nvidia.com)
-
 seed: -1
 clip_observations: 1000.0
 clip_actions: 4.0
 policy: # only works for MlpPolicy right now
-  vf_hid_sizes: [256, 256, 64]
-  pi_hid_sizes: [256, 256, 64]
+  vf_hid_sizes: [512, 256, 64]
+  pi_hid_sizes: [512, 256, 64]
   activation: elu # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
-  encoder_type: "mlp"
+  encoder_type: "nature"
+  encoder_params:
+    in_channels: 4
+    visual_dim: 16384
+    state_dim: 132
+    hidden_dims: [256]
 learn:
-  agent_name: a1_ppo
+  agent_name: a1_visual_ppo
   test: False
   resume: 0
   save_interval: 50 # check for potential saves every this many iterations

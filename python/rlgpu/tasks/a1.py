@@ -23,6 +23,9 @@ terrain_init_pos = {
     "triangle_mesh": [5.2, 0, 0.05],
     "box": [0, 0, 0],
     "box_dense": [0, 0, 0],
+    "obstacles": [0, 0, 0],
+    "stages": [0, 0, 0],
+    "stones": [0, 0, 0],
 }
 
 
@@ -99,7 +102,11 @@ class A1(BaseTask):
             pos[-1] += 0.52
         elif self.terrain == "box_dense":
             pos[-1] += 0.1
-
+        elif self.terrain == "stages":
+            pos[-1] += 0.3
+        elif self.terrain == "stones":
+            pos[0] -= 0.6
+            pos[-1] += 0.3
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
 

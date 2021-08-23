@@ -1,7 +1,7 @@
 env:
   numEnvs: 2
   envSpacing: 4.  # [m]
-  terrain: "box_dense"
+  terrain: "stones"
   command: "vel"
   commandChangeStep: 200
 
@@ -82,6 +82,7 @@ env:
   # viewer cam:
   viewer:
     refEnv: 0
+    # pos: [10, -5, 4]  # [m]
     pos: [0, -2, 0.4]  # [m]
     lookat: [0.2, 0.2, -0.4]  # [m]
 

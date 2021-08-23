@@ -78,7 +78,7 @@ class ActorCritic(nn.Module):
         critic_weights.append(1.0)
         self.init_weights(self.actor, actor_weights)
         self.init_weights(self.critic, critic_weights)
-        if self.encoder is not None:
+        if encoder is not None:
             self.apply(self.init_visual_weights)
 
     @staticmethod

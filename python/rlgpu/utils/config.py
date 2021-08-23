@@ -234,7 +234,7 @@ def parse_sim_params(args, cfg, cfg_train):
     # initialize sim
     sim_params = gymapi.SimParams()
     # sim_params.dt = 1. / 60.
-    sim_params.dt = 1. / 120.
+    sim_params.dt = 1. / 400.
     sim_params.num_client_threads = args.slices
 
     if args.physics_engine == gymapi.SIM_FLEX:

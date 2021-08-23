@@ -1,7 +1,7 @@
 env:
   numEnvs: 2
   envSpacing: 4.  # [m]
-  terrain: "box_dense"
+  terrain: "box"
   command: "vel"
   commandChangeStep: 200
 
@@ -33,9 +33,9 @@ env:
     # PD Drive parameters:
     stiffness: 30.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
-    actionScale: 0.4
+    actionScale: 0.5
     hipActionScale: 0.15
-    controlFrequencyInv: 4  # 60 Hz
+    controlFrequencyInv: 8  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
     FL_upper: 0.9    # [rad]
@@ -64,7 +64,7 @@ env:
     angularVelocityZRewardScale: 1.0
     linearVelocityZRewardScale: -0.2
     torqueRewardScale: -0.000025 
-    torqueSmoothingRewardScale: -0.001 
+    torqueSmoothingRewardScale: -0.0001 
     contactForceRewardScale: -0.01
 
     # normalization
@@ -122,13 +122,13 @@ task:
       a1:
         dof_properties:
           damping: 
-            range: [0.3, 0.8]
+            range: [0.3, 0.6]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [20., 40.]
+            range: [30., 60.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

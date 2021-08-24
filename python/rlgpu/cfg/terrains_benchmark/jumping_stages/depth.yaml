@@ -130,7 +130,7 @@ task:
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [80., 110.]
+            range: [80., 100.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

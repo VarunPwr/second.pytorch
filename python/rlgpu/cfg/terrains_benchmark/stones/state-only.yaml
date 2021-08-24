@@ -1,5 +1,5 @@
 env:
-  numEnvs: 1
+  numEnvs: 2048
   envSpacing: 4.  # [m]
   terrain: "stones"
   command: "vel"
@@ -123,13 +123,13 @@ task:
       a1:
         dof_properties:
           damping: 
-            range: [0.2, 0.4]
+            range: [0.2, 0.5]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [40., 80.]
+            range: [50., 100.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

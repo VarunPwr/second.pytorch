@@ -1,9 +1,18 @@
 env:
-  numEnvs: 1
+  numEnvs: 256
   envSpacing: 4.  # [m]
-  terrain: "plane"
+  terrain: "stones"
   command: "vel"
-  commandChangeStep: 200
+  commandChangeStep: 500
+
+  vision:
+    get_image: True
+    image_type: "depth" # depth, rgb, rgbd
+    frame_stack: 4
+    update_freq: 1 # how many control steps do we update the image buffer
+    width: 64
+    height: 64
+
   plane:
     staticFriction: 10.0  # [-]
     dynamicFriction: 10.0  # [-]
@@ -16,16 +25,17 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.3, 0.6] # min max [m/s]
-    linear_y: [-0.4, 0.4]   # min max [m/s]
-    yaw: [-0.1, 0.1]          # min max [rad/s]
+    linear_x: [0.3, 0.5] # min max [m/s]
+    linear_y: [0., 0.]   # min max [m/s]
+    yaw: [0., 0.]             # min max [rad/s]
 
   control:
     # PD Drive parameters:
-    stiffness: 60.0  # [N*m/rad]
+    stiffness: 30.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
-    actionScale: 0.4
-    controlFrequencyInv: 2  # 60 Hz
+    actionScale: 0.3
+    hipActionScale: 0.15
+    controlFrequencyInv: 4  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
     FL_upper: 0.9    # [rad]
@@ -52,9 +62,10 @@ env:
     # rewards
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
-    linearVelocityZRewardScale: -0.02
+    linearVelocityZRewardScale: -0.2
     torqueRewardScale: -0.000025 
-    torqueSmoothingRewardScale: 0. 
+    torqueSmoothingRewardScale: -0.00001 
+    contactForceRewardScale: 0.
 
     # normalization
     linearVelocityScale: 2.0
@@ -71,10 +82,12 @@ env:
   # viewer cam:
   viewer:
     refEnv: 0
+    # pos: [10, -5, 4]  # [m]
     pos: [0, -2, 0.4]  # [m]
     lookat: [0.2, 0.2, -0.4]  # [m]
 
-  controller: True
+  controller: False
+
   # sensor:
   sensor:
     historical_step: 4
@@ -110,7 +123,7 @@ task:
       a1:
         dof_properties:
           damping: 
-            range: [0.3, 0.8]
+            range: [0.2, 0.5]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

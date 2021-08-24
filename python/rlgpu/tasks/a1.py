@@ -55,6 +55,7 @@ class A1(BaseTask):
             self.image_type = self.cfg["env"]["vision"]["image_type"]
             self.width = self.cfg["env"]["vision"]["width"]
             self.height = self.cfg["env"]["vision"]["height"]
+            self.camera_angle = self.cfg["env"]["vision"]["camera_angle"]
 
         self.frame_count = 0
         # reward scales
@@ -414,7 +415,7 @@ class A1(BaseTask):
                     env_ptr, camera_properties)
                 camera_offset = gymapi.Vec3(0.3, 0, 0)
                 camera_rotation = gymapi.Quat.from_axis_angle(
-                    gymapi.Vec3(0, 1, 0), np.deg2rad(20))
+                    gymapi.Vec3(0, 1, 0), np.deg2rad(self.camera_angle))
                 body_handle = self.gym.get_actor_rigid_body_handle(
                     env_ptr, a1_handle, 0)
                 self.gym.attach_camera_to_body(head_camera, env_ptr, body_handle, gymapi.Transform(

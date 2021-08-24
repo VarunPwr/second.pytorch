@@ -20,12 +20,14 @@ from torch.tensor import Tensor
 from typing import Tuple, Dict
 
 terrain_init_pos = {
-    "triangle_mesh": [5.2, 0, 0.05],
+    "triangle_mesh": [5.2, 0, 0.3],
     "box": [0, 0, 0],
     "box_dense": [0, 0, 0],
     "obstacles": [0, 0, 0],
     "stages": [0, 0, 0],
     "stones": [0, 0, 0],
+    "jumping_stages": [0, 0, 0],
+    "sparse_stones": [0, 0, 0],
 }
 
 
@@ -107,6 +109,12 @@ class A1(BaseTask):
             pos[-1] += 0.3
         elif self.terrain == "stones":
             pos[0] -= 0.6
+            pos[-1] += 0.3
+        elif self.terrain == "jumping_stages":
+            pos[0] -= 0.9
+            pos[-1] += 0.3
+        elif self.terrain == "sparse_stones":
+            pos[0] -= 0.9
             pos[-1] += 0.3
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
@@ -538,7 +546,8 @@ class A1(BaseTask):
                 [self.update_image(i) for i in range(self.num_envs)], dim=0)
             self.image_buf = torch.cat(
                 [image_vectors.unsqueeze(1), self.image_buf[:, :-1]], dim=1)
-        self.obs_buf[:, self.state_obs_size:] = self.image_buf.flatten(1)
+        if self.get_image:
+            self.obs_buf[:, self.state_obs_size:] = self.image_buf.flatten(1)
 
         self.compute_observations()
         self.compute_reward(self.actions)

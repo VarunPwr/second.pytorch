@@ -20,13 +20,14 @@ from torch.tensor import Tensor
 from typing import Tuple, Dict
 
 terrain_init_pos = {
-    "triangle_mesh": [5.2, 0, 0.05],
+    "triangle_mesh": [5.2, 0, 0.3],
     "box": [0, 0, 0],
     "box_dense": [0, 0, 0],
     "obstacles": [0, 0, 0],
     "stages": [0, 0, 0],
     "stones": [0, 0, 0],
     "jumping_stages": [0, 0, 0],
+    "sparse_stones": [0, 0, 0],
 }
 
 
@@ -110,6 +111,9 @@ class A1(BaseTask):
             pos[0] -= 0.6
             pos[-1] += 0.3
         elif self.terrain == "jumping_stages":
+            pos[0] -= 0.9
+            pos[-1] += 0.3
+        elif self.terrain == "sparse_stones":
             pos[0] -= 0.9
             pos[-1] += 0.3
         state = pos + rot + v_lin + v_ang

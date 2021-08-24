@@ -1,17 +1,18 @@
 env:
-  numEnvs: 1
+  numEnvs: 256
   envSpacing: 4.  # [m]
   terrain: "sparse_stones"
   command: "vel"
   commandChangeStep: 500
 
   vision:
-    get_image: False
+    get_image: True
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
     update_freq: 4 # how many control steps do we update the image buffer
     width: 64
     height: 64
+    camera_angle: 30
 
   plane:
     staticFriction: 10.0  # [-]
@@ -25,9 +26,9 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.0, 0.6] # min max [m/s]
+    linear_x: [0.4, 0.5] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
-    yaw: [-0.1, 0.1]          # min max [rad/s]
+    yaw: [0., 0.]             # min max [rad/s]
 
   control:
     # PD Drive parameters:

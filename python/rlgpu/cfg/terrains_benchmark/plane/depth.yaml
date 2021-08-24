@@ -8,7 +8,7 @@ env:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
-    update_freq: 1 # how many control steps do we update the image buffer
+    update_freq: 4 # how many control steps do we update the image buffer
     width: 64
     height: 64
 

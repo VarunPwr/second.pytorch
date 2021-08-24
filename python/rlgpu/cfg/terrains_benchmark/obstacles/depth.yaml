@@ -63,7 +63,7 @@ env:
     # rewards
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 0.0
-    linearVelocityZRewardScale: -0.2
+    linearVelocityZRewardScale: -0.8
     torqueRewardScale: -0.000025 
     torqueSmoothingRewardScale: -0.00001 
     contactForceRewardScale: 0.

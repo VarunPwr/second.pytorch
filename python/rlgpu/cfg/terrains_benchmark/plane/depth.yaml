@@ -11,6 +11,7 @@ env:
     update_freq: 4 # how many control steps do we update the image buffer
     width: 64
     height: 64
+    camera_angle: 0
 
   plane:
     staticFriction: 10.0  # [-]

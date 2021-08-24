@@ -123,13 +123,13 @@ task:
       a1:
         dof_properties:
           damping: 
-            range: [0.2, 0.5]
+            range: [0.2, 0.4]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [50., 100.]
+            range: [80., 110.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

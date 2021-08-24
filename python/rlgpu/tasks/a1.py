@@ -510,6 +510,7 @@ class A1(BaseTask):
                 self.obs_buf)
 
     def post_physics_step(self):
+        self.frame_count += 1
         self.progress_buf += 1
         env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
         change_commmand_env_ids = (torch.fmod(
@@ -525,7 +526,7 @@ class A1(BaseTask):
             self.torques_buf = torch.cat(
                 [self.torques_buf[:, :-1], self.torques.unsqueeze(1)], dim=1)
 
-        if self.get_image:
+        if self.get_image and self.frame_count % self.vision_update_freq == 0:
             if self.headless:
                 self.gym.step_graphics(self.sim)
                 self.gym.fetch_results(self.sim, True)
@@ -536,7 +537,7 @@ class A1(BaseTask):
                 [self.update_image(i) for i in range(self.num_envs)], dim=0)
             self.image_buf = torch.cat(
                 [image_vectors.unsqueeze(1), self.image_buf[:, :-1]], dim=1)
-            self.obs_buf[:, self.state_obs_size:] = self.image_buf.flatten(1)
+        self.obs_buf[:, self.state_obs_size:] = self.image_buf.flatten(1)
 
         self.compute_observations()
         self.compute_reward(self.actions)

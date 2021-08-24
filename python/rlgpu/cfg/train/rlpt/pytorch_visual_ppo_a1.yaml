@@ -15,11 +15,11 @@ learn:
   agent_name: a1_visual_ppo
   test: False
   resume: 0
-  save_interval: 100 # check for potential saves every this many iterations
+  save_interval: 200 # check for potential saves every this many iterations
   print_log: True
 
   # number of policy updates
-  max_iterations: 2000
+  max_iterations: 5000
 
   # training params
   cliprange: 0.2

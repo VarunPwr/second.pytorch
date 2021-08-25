@@ -1,5 +1,5 @@
 env:
-  numEnvs: 256
+  numEnvs: 512
   envSpacing: 4.  # [m]
   terrain: "jumping_stages"
   command: "vel"
@@ -26,7 +26,7 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.5, 0.6] # min max [m/s]
+    linear_x: [0.7, 0.8] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [0., 0.]             # min max [rad/s]
 
@@ -36,7 +36,7 @@ env:
     damping: 0.4    # [N*m*s/rad]
     actionScale: 0.4
     hipActionScale: 0.15
-    controlFrequencyInv: 4  # 60 Hz
+    controlFrequencyInv: 6  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
     FL_upper: 0.9    # [rad]

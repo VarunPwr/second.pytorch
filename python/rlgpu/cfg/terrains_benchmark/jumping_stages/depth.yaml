@@ -9,10 +9,10 @@ env:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
-    update_freq: 4 # how many control steps do we update the image buffer
+    update_freq: 6 # how many control steps do we update the image buffer
     width: 64
     height: 64
-    camera_angle: 20
+    camera_angle: 30
 
   plane:
     staticFriction: 10.0  # [-]
@@ -36,7 +36,7 @@ env:
     damping: 0.4    # [N*m*s/rad]
     actionScale: 0.4
     hipActionScale: 0.15
-    controlFrequencyInv: 6  # 60 Hz
+    controlFrequencyInv: 4  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
     FL_upper: 0.9    # [rad]
@@ -130,7 +130,7 @@ task:
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [60., 80.]
+            range: [65., 85.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

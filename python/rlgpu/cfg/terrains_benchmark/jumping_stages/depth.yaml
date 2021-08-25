@@ -1,5 +1,5 @@
 env:
-  numEnvs: 512
+  numEnvs: 256
   envSpacing: 4.  # [m]
   terrain: "jumping_stages"
   command: "vel"
@@ -26,7 +26,7 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.7, 0.8] # min max [m/s]
+    linear_x: [0.6, 0.7] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [0., 0.]             # min max [rad/s]
 
@@ -130,7 +130,7 @@ task:
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [65., 85.]
+            range: [60., 80.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

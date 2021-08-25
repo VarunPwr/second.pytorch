@@ -715,10 +715,10 @@ class A1(BaseTask):
             depth_image[torch.isneginf(depth_image)] = 0
 
             # clamp depth image to 10 meters to make output image human friendly
-            depth_image[depth_image < -10] = -10
+            depth_image[depth_image < -5] = -5
 
-            depth_image = (depth_image - torch.mean(depth_image)) / \
-                (torch.std(depth_image) + 1e-5)
+            # depth_image = (depth_image - torch.mean(depth_image)) / \
+            #     (torch.std(depth_image) + 1e-5)
             image_vec.append(depth_image.unsqueeze(0))
 
         if self.image_type != "depth":

@@ -1,7 +1,7 @@
 env:
   numEnvs: 512
   envSpacing: 4.  # [m]
-  terrain: "jumping_stages"
+  terrain: "curriculum_stones"
   command: "vel"
   commandChangeStep: 500
 
@@ -9,7 +9,7 @@ env:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
-    update_freq: 6 # how many control steps do we update the image buffer
+    update_freq: 4 # how many control steps do we update the image buffer
     width: 64
     height: 64
     camera_angle: 30
@@ -26,7 +26,7 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.7, 0.8] # min max [m/s]
+    linear_x: [0.6, 0.7] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [0., 0.]             # min max [rad/s]
 
@@ -63,7 +63,7 @@ env:
     # rewards
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
-    linearVelocityZRewardScale: -0.2
+    linearVelocityZRewardScale: -0.8
     torqueRewardScale: -0.000025 
     torqueSmoothingRewardScale: -0.00001 
     contactForceRewardScale: 0.
@@ -83,8 +83,8 @@ env:
   # viewer cam:
   viewer:
     refEnv: 0
-    # pos: [10, -5, 4]  # [m]
-    pos: [0, -2, 0.4]  # [m]
+    pos: [10, -5, 4]  # [m]
+    # pos: [0, -2, 0.4]  # [m]
     lookat: [0.2, 0.2, -0.4]  # [m]
 
   controller: False
@@ -124,13 +124,13 @@ task:
       a1:
         dof_properties:
           damping: 
-            range: [0.2, 0.4]
+            range: [0.3, 0.5]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [65., 85.]
+            range: [60., 90.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

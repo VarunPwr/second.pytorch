@@ -1,18 +1,17 @@
 env:
-  numEnvs: 512
+  numEnvs: 2048
   envSpacing: 4.  # [m]
-  terrain: "jumping_stages"
+  terrain: "curriculum_stones"
   command: "vel"
   commandChangeStep: 500
 
   vision:
-    get_image: True
+    get_image: False
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
-    update_freq: 6 # how many control steps do we update the image buffer
+    update_freq: 4 # how many control steps do we update the image buffer
     width: 64
     height: 64
-    camera_angle: 30
 
   plane:
     staticFriction: 10.0  # [-]
@@ -26,7 +25,7 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.7, 0.8] # min max [m/s]
+    linear_x: [0.6, 0.7] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [0., 0.]             # min max [rad/s]
 
@@ -34,7 +33,7 @@ env:
     # PD Drive parameters:
     stiffness: 30.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
-    actionScale: 0.4
+    actionScale: 0.3
     hipActionScale: 0.15
     controlFrequencyInv: 4  # 60 Hz
 
@@ -124,13 +123,13 @@ task:
       a1:
         dof_properties:
           damping: 
-            range: [0.2, 0.4]
+            range: [0.2, 0.5]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [65., 85.]
+            range: [50., 100.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

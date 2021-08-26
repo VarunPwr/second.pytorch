@@ -1,19 +1,18 @@
 env:
-  numEnvs: 256
+  numEnvs: 2048
   envSpacing: 4.  # [m]
-  terrain: "curriculum_stones"
+  terrain: "curriculum_way"
   command: "vel"
   commandChangeStep: 500
   risk_reward: False
   vel_reward_exp_coeff: 0.25
   vision:
-    get_image: True
+    get_image: False
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
     update_freq: 4 # how many control steps do we update the image buffer
     width: 64
     height: 64
-    camera_angle: 30
 
   plane:
     staticFriction: 10.0  # [-]
@@ -27,7 +26,7 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.5, 0.55] # min max [m/s]
+    linear_x: [0.6, 0.7] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [0., 0.]             # min max [rad/s]
 
@@ -35,7 +34,7 @@ env:
     # PD Drive parameters:
     stiffness: 30.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
-    actionScale: 0.4
+    actionScale: 0.3
     hipActionScale: 0.15
     controlFrequencyInv: 4  # 60 Hz
 
@@ -64,7 +63,7 @@ env:
     # rewards
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
-    linearVelocityZRewardScale: -0.8
+    linearVelocityZRewardScale: -0.2
     torqueRewardScale: -0.000025 
     torqueSmoothingRewardScale: -0.00001 
     contactForceRewardScale: 0.
@@ -84,8 +83,8 @@ env:
   # viewer cam:
   viewer:
     refEnv: 0
-    pos: [10, -5, 4]  # [m]
-    # pos: [0, -2, 0.4]  # [m]
+    # pos: [10, -5, 4]  # [m]
+    pos: [0, -2, 0.4]  # [m]
     lookat: [0.2, 0.2, -0.4]  # [m]
 
   controller: False
@@ -125,13 +124,13 @@ task:
       a1:
         dof_properties:
           damping: 
-            range: [0.3, 0.5]
+            range: [0.2, 0.5]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [60., 80.]
+            range: [50., 100.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

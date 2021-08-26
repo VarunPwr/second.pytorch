@@ -29,6 +29,7 @@ terrain_init_pos = {
     "jumping_stages": [0.15, 0, 0],
     "sparse_stones": [0, 0, 0],
     "curriculum_stones": [0, 0, 0],
+    "curriculum_way": [0, 0, 0],
 }
 
 
@@ -118,6 +119,9 @@ class A1(BaseTask):
             pos[0] -= 0.9
             pos[-1] += 0.3
         elif self.terrain == "curriculum_stones":
+            pos[0] -= 0.9
+            pos[-1] += 0.3
+        elif self.terrain == "curriculum_way":
             pos[0] -= 0.9
             pos[-1] += 0.3
         state = pos + rot + v_lin + v_ang

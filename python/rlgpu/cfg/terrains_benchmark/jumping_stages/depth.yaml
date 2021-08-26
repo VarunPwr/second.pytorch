@@ -1,15 +1,16 @@
 env:
-  numEnvs: 256
+  numEnvs: 1024
   envSpacing: 4.  # [m]
   terrain: "jumping_stages"
   command: "vel"
-  commandChangeStep: 500
-
+  commandChangeStep: 2000
+  risk_reward: False
+  vel_reward_exp_coeff: 0.25
   vision:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
-    update_freq: 6 # how many control steps do we update the image buffer
+    update_freq: 4 # how many control steps do we update the image buffer
     width: 64
     height: 64
     camera_angle: 30
@@ -26,7 +27,7 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.6, 0.7] # min max [m/s]
+    linear_x: [0.6, 0.8] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [0., 0.]             # min max [rad/s]
 
@@ -98,6 +99,7 @@ sim:
   substeps: 2
   gravity: [0., 0. ,-9.81]  # [m/s^2]
   up_axis: 1  # 0 is y, 1 is z
+  dt: 0.0025
 
   physx:
     num_threads: 4
@@ -130,7 +132,7 @@ task:
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [60., 80.]
+            range: [60., 90.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

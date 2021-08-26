@@ -4,6 +4,8 @@ env:
   terrain: "plane"
   command: "vel"
   commandChangeStep: 500
+  risk_reward: False
+  vel_reward_exp_coeff: 0.25
   vision:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd

@@ -26,7 +26,7 @@ terrain_init_pos = {
     "obstacles": [0, 0, 0],
     "stages": [0, 0, 0],
     "stones": [0, 0, 0],
-    "jumping_stages": [0, 0, 0],
+    "jumping_stages": [0.15, 0, 0],
     "sparse_stones": [0, 0, 0],
     "curriculum_stones": [0, 0, 0],
 }

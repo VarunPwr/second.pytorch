@@ -3,9 +3,9 @@ env:
   envSpacing: 4.  # [m]
   terrain: "curriculum_way"
   command: "vel"
-  commandChangeStep: 500
+  commandChangeStep: 2000
   risk_reward: False
-  vel_reward_exp_coeff: 0.25
+  vel_reward_exp_coeff: 0.2
   vision:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd
@@ -27,7 +27,7 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.6, 0.7] # min max [m/s]
+    linear_x: [0.6, 1.] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [0., 0.]             # min max [rad/s]
 
@@ -37,7 +37,7 @@ env:
     damping: 0.4    # [N*m*s/rad]
     actionScale: 0.4
     hipActionScale: 0.15
-    controlFrequencyInv: 4  # 60 Hz
+    controlFrequencyInv: 8  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
     FL_upper: 0.9    # [rad]

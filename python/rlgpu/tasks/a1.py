@@ -26,9 +26,10 @@ terrain_init_pos = {
     "obstacles": [0, 0, 0],
     "stages": [0, 0, 0],
     "stones": [0, 0, 0],
-    "jumping_stages": [0, 0, 0],
+    "jumping_stages": [0.15, 0, 0],
     "sparse_stones": [0, 0, 0],
     "curriculum_stones": [0, 0, 0],
+    "curriculum_way": [0, 0, 0],
 }
 
 
@@ -120,6 +121,9 @@ class A1(BaseTask):
         elif self.terrain == "curriculum_stones":
             pos[0] -= 0.9
             pos[-1] += 0.3
+        elif self.terrain == "curriculum_way":
+            pos[0] -= 0.9
+            pos[-1] += 0.3
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
 
@@ -128,6 +132,13 @@ class A1(BaseTask):
         self.use_sys_information = self.cfg["env"]["sensor"]["sys_id"]
 
         self.refEnv = self.cfg["env"]["viewer"]["refEnv"]
+
+        self.risk_reward = self.cfg["env"]["risk_reward"]
+        self.vel_reward_exp_coeff = self.cfg["env"]["vel_reward_exp_coeff"]
+        if self.risk_reward:
+            self.compute_a1_reward = compute_a1_risk_reward
+        else:
+            self.compute_a1_reward = compute_a1_reward
 
         # default joint positions
         self.named_default_joint_angles = self.cfg["env"]["defaultJointAngles"]
@@ -564,7 +575,7 @@ class A1(BaseTask):
             root_states = self.root_states - self.last_root_states
             commands = self.commands * self.control_freq_inv / 120
         if self.historical_step > 1:
-            self.rew_buf[:], self.reset_buf[:] = compute_a1_reward(
+            self.rew_buf[:], self.reset_buf[:] = self.compute_a1_reward(
                 # tensors
                 root_states,
                 commands,
@@ -578,10 +589,11 @@ class A1(BaseTask):
                 self.base_index,
                 self.max_episode_length,
                 last_torques=self.torques_buf[:, -2],
-                a1_indices=self.a1_indices
+                a1_indices=self.a1_indices,
+                vel_reward_exp_coeff=self.vel_reward_exp_coeff
             )
         else:
-            self.rew_buf[:], self.reset_buf[:] = compute_a1_reward(
+            self.rew_buf[:], self.reset_buf[:] = self.compute_a1_reward(
                 # tensors
                 root_states,
                 commands,
@@ -595,7 +607,8 @@ class A1(BaseTask):
                 self.base_index,
                 self.max_episode_length,
                 last_torques=self.torques,
-                a1_indices=self.a1_indices
+                a1_indices=self.a1_indices,
+                vel_reward_exp_coeff=self.vel_reward_exp_coeff
             )
 
     def compute_observations(self):
@@ -869,6 +882,7 @@ def compute_a1_reward(
     max_episode_length: int,
     last_torques: Tensor,
     a1_indices: Tensor,
+    vel_reward_exp_coeff: float
 ) -> Tuple[Tensor, Tensor]:  # (reward, reset, feet_in air, feet_air_time, episode sums)
 
     # prepare quantities (TODO: return from obs ?)
@@ -882,9 +896,9 @@ def compute_a1_reward(
     lin_vel_error = torch.sum(torch.square(
         commands[:, :2] - base_lin_vel[:, :2]), dim=1)
     ang_vel_error = torch.square(commands[:, 2] - base_ang_vel[:, 2])
-    rew_lin_vel_xy = torch.exp(-lin_vel_error / 0.25) * \
+    rew_lin_vel_xy = torch.exp(-lin_vel_error / vel_reward_exp_coeff) * \
         rew_scales["linearVelocityXYRewardScale"]
-    rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * \
+    rew_ang_vel_z = torch.exp(-ang_vel_error / vel_reward_exp_coeff) * \
         rew_scales["angularVelocityZRewardScale"]
     # z velocity penalty
     rew_z_vel = torch.square(
@@ -903,6 +917,73 @@ def compute_a1_reward(
     total_reward = rew_lin_vel_xy + rew_ang_vel_z + \
         rew_torque + rew_z_vel + rew_contact_force
     total_reward = torch.clip(total_reward, 0., None)
+    # reset agents
+    reset = torch.norm(contact_forces[:, base_index, :], dim=1) > 1.
+    reset = reset | torch.any(torch.norm(
+        contact_forces[:, knee_indices, :], dim=2) > 1., dim=1)
+
+    # reset due to fall
+    reset = reset | (base_quat[:, -1] < 0.6)
+
+    # no terminal reward for time-outs
+    time_out = episode_lengths > max_episode_length
+    reset = reset | time_out
+
+    return total_reward.detach(), reset
+
+
+@torch.jit.script
+def compute_a1_risk_reward(
+    # tensors
+    root_states: Tensor,
+    commands: Tensor,
+    torques: Tensor,
+    contact_forces: Tensor,
+    knee_indices: Tensor,
+    episode_lengths: Tensor,
+    # Dict
+    rew_scales: Dict[str, float],
+    # other
+    base_index: int,
+    max_episode_length: int,
+    last_torques: Tensor,
+    a1_indices: Tensor,
+    vel_reward_exp_coeff: float
+) -> Tuple[Tensor, Tensor]:  # (reward, reset, feet_in air, feet_air_time, episode sums)
+
+    # prepare quantities (TODO: return from obs ?)
+    del vel_reward_exp_coeff
+    base_quat = root_states[a1_indices, 3:7]
+    base_lin_vel = quat_rotate_inverse(
+        base_quat, root_states[a1_indices, 7:10])
+    base_ang_vel = quat_rotate_inverse(
+        base_quat, root_states[a1_indices, 10:13])
+
+    # velocity tracking reward
+    lin_vel_error = torch.mean(torch.square(
+        commands[:, :2] - base_lin_vel[:, :2]), dim=1)
+    ang_vel_error = torch.square(commands[:, 2] - base_ang_vel[:, 2])
+    rew_lin_vel_xy = -lin_vel_error * \
+        rew_scales["linearVelocityXYRewardScale"]
+    rew_ang_vel_z = -ang_vel_error * \
+        rew_scales["angularVelocityZRewardScale"]
+    # z velocity penalty
+    rew_z_vel = torch.square(
+        base_lin_vel[:, 2]) * rew_scales["linearVelocityZRewardScale"]
+
+    # torque penalty
+    rew_torque = torch.sum(torch.square(torques), dim=1) * \
+        rew_scales["torqueRewardScale"]
+    if last_torques is not None:
+        rew_torque += torch.sum(torch.square(torques - last_torques),
+                                dim=1) * rew_scales["torqueSmoothingRewardScale"]
+
+    # contact force penalty
+    rew_contact_force = torch.norm(contact_forces.flatten(
+        1), dim=1) * rew_scales["contactForceRewardScale"]
+    total_reward = rew_lin_vel_xy + rew_ang_vel_z + \
+        rew_torque + rew_z_vel + rew_contact_force
+    total_reward = torch.clip(total_reward, -5., None)
     # reset agents
     reset = torch.norm(contact_forces[:, base_index, :], dim=1) > 1.
     reset = reset | torch.any(torch.norm(

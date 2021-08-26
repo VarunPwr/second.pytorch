@@ -1,7 +1,7 @@
 env:
   numEnvs: 2048
   envSpacing: 4.  # [m]
-  terrain: "curriculum_stones"
+  terrain: "curriculum_way"
   command: "vel"
   commandChangeStep: 500
   risk_reward: False

@@ -1,7 +1,7 @@
 env:
   numEnvs: 1
   envSpacing: 4.  # [m]
-  terrain: "sparse_stones"
+  terrain: "plane"
   command: "vel"
   commandChangeStep: 500
 
@@ -62,7 +62,7 @@ env:
     # rewards
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
-    linearVelocityZRewardScale: -0.2
+    linearVelocityZRewardScale: -0.8
     torqueRewardScale: -0.000025 
     torqueSmoothingRewardScale: -0.00001 
     contactForceRewardScale: 0.
@@ -97,6 +97,8 @@ sim:
   substeps: 2
   gravity: [0., 0. ,-9.81]  # [m/s^2]
   up_axis: 1  # 0 is y, 1 is z
+  dt: 0.005
+  # dt: 0.0025
 
   physx:
     num_threads: 4
@@ -129,7 +131,7 @@ task:
             schedule: "linear"  
             schedule_steps: 30000
           stiffness: 
-            range: [50., 100.]
+            range: [50., 90.]
             operation: "scaling"
             distribution: "loguniform"
             schedule: "linear"  

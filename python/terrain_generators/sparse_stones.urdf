@@ -1,0 +1,786 @@
+
+<?xml version="1.0"?>
+<robot name="sparse_stones_terrain">
+    <link name="sparse_stones_terrain">
+        
+    <visual>
+    <origin xyz="-1 0 0.05"/>
+    <geometry>
+        <box size="2 0.7 0.5"/>
+    </geometry>
+    </visual>
+    <collision>
+    <origin xyz="-1 0 0.05"/>
+    <geometry>
+        <box size="2 0.7 0.5"/>
+    </geometry>
+    <material name="white">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+    </material>
+    </collision>
+    <inertial>
+    <density value="567.0"/>
+    </inertial>
+
+            <visual>
+            <origin xyz="0.014926519949260291 -0.12691141533258876 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="0.014926519949260291 -0.12691141533258876 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="0.011494350113327442 0.19895513458573727 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="0.011494350113327442 0.19895513458573727 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="0.2664059020058557 -0.10268845114602085 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="0.2664059020058557 -0.10268845114602085 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="0.2383712540530473 0.19190237432804458 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="0.2383712540530473 0.19190237432804458 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="0.5085661049305016 -0.13929739898767374 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="0.5085661049305016 -0.13929739898767374 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="0.49926699905151606 0.16444125690845193 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="0.49926699905151606 0.16444125690845193 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="0.7664723489863842 -0.11717023060041655 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="0.7664723489863842 -0.11717023060041655 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="0.7508503702922626 0.1947784530105227 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="0.7508503702922626 0.1947784530105227 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.0152911536298066 -0.10209376207287171 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.0152911536298066 -0.10209376207287171 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.0155125076141012 0.16775374592554443 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.0155125076141012 0.16775374592554443 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.230750197334304 -0.12548922851972014 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.230750197334304 -0.12548922851972014 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.2582809867260034 0.19384841019557592 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.2582809867260034 0.19384841019557592 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.483328266514593 -0.10128425452862595 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.483328266514593 -0.10128425452862595 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.512910626555522 0.16380297521738726 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.512910626555522 0.16380297521738726 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.7553816089581527 -0.13830866557956542 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.7553816089581527 -0.13830866557956542 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.7381128744304069 0.18589693535937293 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.7381128744304069 0.18589693535937293 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.995661840742893 -0.12300694032208945 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.995661840742893 -0.12300694032208945 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="1.9995428383403826 0.18342537569499437 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="1.9995428383403826 0.18342537569499437 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="2.233957549259014 -0.12051767840860396 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="2.233957549259014 -0.12051767840860396 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="2.2378244372435203 0.19202125756631966 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="2.2378244372435203 0.19202125756631966 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="2.5157593579151687 -0.1277785468363932 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="2.5157593579151687 -0.1277785468363932 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="2.4921328055927376 0.17720091055063594 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="2.4921328055927376 0.17720091055063594 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="2.7694948074441554 -0.10818905102977405 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="2.7694948074441554 -0.10818905102977405 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="2.736957553034596 0.19851862993818872 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="2.736957553034596 0.19851862993818872 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="2.9844246229155034 -0.11418188543060805 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="2.9844246229155034 -0.11418188543060805 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="2.996162366865477 0.19326143192909312 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="2.996162366865477 0.19326143192909312 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="3.2424424572663653 -0.1325879456561869 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="3.2424424572663653 -0.1325879456561869 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="3.2502995527573364 0.17242455694729225 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="3.2502995527573364 0.17242455694729225 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="3.510343602080453 -0.1359546459783401 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="3.510343602080453 -0.1359546459783401 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="3.5131141484568422 0.16625413116933566 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="3.5131141484568422 0.16625413116933566 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="3.7583728861209615 -0.1335676699839129 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="3.7583728861209615 -0.1335676699839129 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="3.7333494750480205 0.19154703068094686 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="3.7333494750480205 0.19154703068094686 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="3.983550921640297 -0.11276758971673131 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="3.983550921640297 -0.11276758971673131 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="4.0105355018867535 0.18726374011845776 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="4.0105355018867535 0.18726374011845776 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="4.231541305782679 -0.12135045801428554 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="4.231541305782679 -0.12135045801428554 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="4.247193352367732 0.1737858013249582 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="4.247193352367732 0.1737858013249582 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="4.485222360777196 -0.12641391039872793 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="4.485222360777196 -0.12641391039872793 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="4.516475747891761 0.16392513786546997 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="4.516475747891761 0.16392513786546997 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="4.758846413470513 -0.11296454211078925 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="4.758846413470513 -0.11296454211078925 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+            <visual>
+            <origin xyz="4.763465047523513 0.16521406783793596 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            </visual>
+            <collision>
+            <origin xyz="4.763465047523513 0.16521406783793596 0.05"/>
+            <geometry>
+                <box size="0.1 0.1 0.5"/>
+            </geometry>
+            <material name="white">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+            </collision>
+            <inertial>
+            <density value="567.0"/>
+            </inertial>
+        
+    </link>
+</robot>

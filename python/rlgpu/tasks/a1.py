@@ -126,6 +126,9 @@ class A1(BaseTask):
             pos[0] -= 2.8
             pos[-1] += 0.3
             self.cfg["env"]['envSpacing'] = 8.
+        elif self.terrain == "obstacles":
+            pos[0] -= 1
+            self.cfg["env"]['envSpacing'] = 8.
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
 

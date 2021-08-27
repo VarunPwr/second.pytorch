@@ -113,8 +113,9 @@ class A1(BaseTask):
             pos[0] -= 0.6
             pos[-1] += 0.3
         elif self.terrain == "jumping_stages":
-            pos[0] -= 0.9
+            pos[0] -= 2.5
             pos[-1] += 0.3
+            self.cfg["env"]['envSpacing'] = 20.
         elif self.terrain == "sparse_stones":
             pos[0] -= 0.9
             pos[-1] += 0.3
@@ -122,8 +123,9 @@ class A1(BaseTask):
             pos[0] -= 0.9
             pos[-1] += 0.3
         elif self.terrain == "curriculum_way":
-            pos[0] -= 0.9
+            pos[0] -= 2.8
             pos[-1] += 0.3
+            self.cfg["env"]['envSpacing'] = 8.
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
 

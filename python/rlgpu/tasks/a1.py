@@ -134,9 +134,12 @@ class A1(BaseTask):
         self.refEnv = self.cfg["env"]["viewer"]["refEnv"]
 
         self.risk_reward = self.cfg["env"]["risk_reward"]
+        self.rush_reward = self.cfg["env"]["rush_reward"]
         self.vel_reward_exp_coeff = self.cfg["env"]["vel_reward_exp_coeff"]
         if self.risk_reward:
             self.compute_a1_reward = compute_a1_risk_reward
+        elif self.rush_reward:
+            self.compute_a1_reward = compute_a1_rush_reward
         else:
             self.compute_a1_reward = compute_a1_reward
 
@@ -998,6 +1001,70 @@ def compute_a1_risk_reward(
 
     return total_reward.detach(), reset
 
+
+@torch.jit.script
+def compute_a1_rush_reward(
+    # tensors
+    root_states: Tensor,
+    commands: Tensor,
+    torques: Tensor,
+    contact_forces: Tensor,
+    knee_indices: Tensor,
+    episode_lengths: Tensor,
+    # Dict
+    rew_scales: Dict[str, float],
+    # other
+    base_index: int,
+    max_episode_length: int,
+    last_torques: Tensor,
+    a1_indices: Tensor,
+    vel_reward_exp_coeff: float
+) -> Tuple[Tensor, Tensor]:  # (reward, reset, feet_in air, feet_air_time, episode sums)
+
+    # prepare quantities (TODO: return from obs ?)
+    del vel_reward_exp_coeff
+    del commands
+    base_quat = root_states[a1_indices, 3:7]
+    base_lin_vel = quat_rotate_inverse(
+        base_quat, root_states[a1_indices, 7:10])
+    base_ang_vel = quat_rotate_inverse(
+        base_quat, root_states[a1_indices, 10:13])
+
+    # velocity tracking reward
+    rew_lin_vel_xy = torch.clamp(torch.mean(base_lin_vel[:, :2], dim=1), 0, 1) * \
+        rew_scales["linearVelocityXYRewardScale"]
+    rew_ang_vel_z = - torch.square(base_ang_vel[:, 2]) * \
+        rew_scales["angularVelocityZRewardScale"]
+    # z velocity penalty
+    rew_z_vel = torch.square(
+        base_lin_vel[:, 2]) * rew_scales["linearVelocityZRewardScale"]
+
+    # torque penalty
+    rew_torque = torch.sum(torch.square(torques), dim=1) * \
+        rew_scales["torqueRewardScale"]
+    if last_torques is not None:
+        rew_torque += torch.sum(torch.square(torques - last_torques),
+                                dim=1) * rew_scales["torqueSmoothingRewardScale"]
+
+    # contact force penalty
+    rew_contact_force = torch.norm(contact_forces.flatten(
+        1), dim=1) * rew_scales["contactForceRewardScale"]
+    total_reward = rew_lin_vel_xy + rew_ang_vel_z + \
+        rew_torque + rew_z_vel + rew_contact_force
+    total_reward = torch.clip(total_reward, -5., None)
+    # reset agents
+    reset = torch.norm(contact_forces[:, base_index, :], dim=1) > 1.
+    reset = reset | torch.any(torch.norm(
+        contact_forces[:, knee_indices, :], dim=2) > 1., dim=1)
+
+    # reset due to fall
+    reset = reset | (base_quat[:, -1] < 0.6)
+
+    # no terminal reward for time-outs
+    time_out = episode_lengths > max_episode_length
+    reset = reset | time_out
+
+    return total_reward.detach(), reset
 
 @torch.jit.script
 def compute_a1_observations(root_states: Tensor,

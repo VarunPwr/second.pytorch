@@ -1,11 +1,12 @@
 env:
-  numEnvs: 1024
+  numEnvs: 1
   envSpacing: 4.  # [m]
   terrain: "jumping_stages"
   command: "vel"
-  commandChangeStep: 2000
+  commandChangeStep: 200
   risk_reward: False
-  vel_reward_exp_coeff: 0.1
+  rush_reward: False
+  vel_reward_exp_coeff: 0.05
   vision:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd

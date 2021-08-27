@@ -1031,7 +1031,7 @@ def compute_a1_rush_reward(
         base_quat, root_states[a1_indices, 10:13])
 
     # velocity tracking reward
-    rew_lin_vel_xy = torch.clamp(torch.mean(base_lin_vel[:, :2], dim=1), 0, 1) * \
+    rew_lin_vel_xy = torch.clamp(torch.mean(torch.square(base_lin_vel[:, :2]), dim=1), 0, 1.5) * \
         rew_scales["linearVelocityXYRewardScale"]
     rew_ang_vel_z = - torch.square(base_ang_vel[:, 2]) * \
         rew_scales["angularVelocityZRewardScale"]

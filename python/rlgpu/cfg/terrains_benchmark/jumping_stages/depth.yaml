@@ -3,9 +3,9 @@ env:
   envSpacing: 4.  # [m]
   terrain: "jumping_stages"
   command: "vel"
-  commandChangeStep: 200
+  commandChangeStep: 2000
   risk_reward: False
-  rush_reward: False
+  rush_reward: True
   vel_reward_exp_coeff: 0.05
   vision:
     get_image: True

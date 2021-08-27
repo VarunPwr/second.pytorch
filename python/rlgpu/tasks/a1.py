@@ -140,6 +140,8 @@ class A1(BaseTask):
             self.compute_a1_reward = compute_a1_risk_reward
         elif self.rush_reward:
             self.compute_a1_reward = compute_a1_rush_reward
+            self.command_x_range = [0., 0.]
+            self.command_y_range = [0., 0.]
         else:
             self.compute_a1_reward = compute_a1_reward
 

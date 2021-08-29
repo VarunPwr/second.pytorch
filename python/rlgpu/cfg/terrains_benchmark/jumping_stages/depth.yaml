@@ -6,7 +6,7 @@ env:
   commandChangeStep: 1000
   risk_reward: False
   rush_reward: False
-  vel_reward_exp_coeff: 0.05
+  vel_reward_exp_coeff: 0.2
   vision:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd

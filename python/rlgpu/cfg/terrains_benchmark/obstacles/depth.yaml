@@ -6,7 +6,7 @@ env:
   commandChangeStep: 500
   risk_reward: False
   rush_reward: False
-  vel_reward_exp_coeff: 0.25
+  vel_reward_exp_coeff: 0.15
   vision:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd
@@ -28,7 +28,7 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.4, 0.5] # min max [m/s]
+    linear_x: [0.3, 0.8] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
     yaw: [0., 0.]          # min max [rad/s]
 

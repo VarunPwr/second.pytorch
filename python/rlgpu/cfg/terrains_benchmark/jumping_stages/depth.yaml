@@ -1,5 +1,5 @@
 env:
-  numEnvs: 1024
+  numEnvs: 512
   envSpacing: 4.  # [m]
   terrain: "jumping_stages"
   command: "vel"

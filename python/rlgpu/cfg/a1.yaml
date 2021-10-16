@@ -1,5 +1,5 @@
 env:
-  numEnvs: 2
+  numEnvs: 1
   envSpacing: 4.  # [m]
   command: "vel"
   commandChangeStep: 200
@@ -64,10 +64,10 @@ env:
     FR_hip: 0.     # [rad]
     RR_hip: 0.     # [rad]
 
-    FL_lower: -1.8     # [rad]
-    RL_lower: -1.8     # [rad]
-    FR_lower: -1.8     # [rad]
-    RR_lower: -1.8     # [rad]
+    FL_lower: -1.7     # [rad]
+    RL_lower: -1.7     # [rad]
+    FR_lower: -1.7     # [rad]
+    RR_lower: -1.7     # [rad]
     
   urdfAsset:
     collapseFixedJoints: True
@@ -76,6 +76,10 @@ env:
 
   learn:
     # rewards
+    soft_limits:
+      soft_dof_pos_limit: 1.
+      soft_dof_vel_limit: 0.9
+      soft_torque_limit: 1.
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
     linearVelocityZRewardScale: -0.8
@@ -98,8 +102,8 @@ env:
   # viewer cam:
   viewer:
     refEnv: 0
-    pos: [10, -5, 4]  # [m]
-    # pos: [0, -2, 0.4]  # [m]
+    # pos: [10, -5, 4]  # [m]
+    pos: [0, -2, 0.4]  # [m]
     lookat: [0.2, 0.2, -0.4]  # [m]
 
   controller: False
@@ -121,7 +125,7 @@ sim:
     solver_type: 1  # 0: pgs, 1: tgs
     num_position_iterations: 4
     num_velocity_iterations: 1
-    contact_offset: 0.02
+    contact_offset: 0.01
     rest_offset: 0.0
     bounce_threshold_velocity: 0.2
     max_depenetration_velocity: 5.0
@@ -139,19 +143,6 @@ task:
       schedule_steps: 40000
     actor_params:
       a1:
-        dof_properties:
-          damping: 
-            range: [0.2, 0.5]
-            operation: "scaling"
-            distribution: "loguniform"
-            schedule: "linear"  
-            schedule_steps: 30000
-          stiffness: 
-            range: [50., 90.]
-            operation: "scaling"
-            distribution: "loguniform"
-            schedule: "linear"  
-            schedule_steps: 30000
         rigid_body_properties:
           mass: 
             range: [0.8, 1.2]

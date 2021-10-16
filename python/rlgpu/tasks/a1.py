@@ -19,24 +19,6 @@ from torch._C import device
 from torch.tensor import Tensor
 from typing import Tuple, Dict
 
-terrain_init_pos = {
-    "triangle_mesh": [5.2, 0, 0.3],
-    "box": [0, 0, 0],
-    "box_dense": [0, 0, 0],
-    "obstacles": [0, 0, 0],
-    "stages": [0, 0, 0],
-    "stones": [0, 0, 0],
-    "jumping_stages": [0.15, 0, 0],
-    "sparse_stones": [0, 0, 0],
-    "curriculum_stones": [0, 0, 0],
-    "curriculum_way": [0, 0, 0],
-    "upstairs": [0, 0, 0],
-    "downstairs": [0, 0, 0],
-    "upladder": [0, 0, 0],
-    "downladder": [0, 0, 0],
-}
-
-
 class A1(BaseTask):
 
     def __init__(self, cfg, sim_params, physics_engine, device_type, device_id, headless):
@@ -75,6 +57,8 @@ class A1(BaseTask):
         self.rew_scales["torqueSmoothingRewardScale"] = self.cfg["env"]["learn"]["torqueSmoothingRewardScale"]
         self.rew_scales["contactForceRewardScale"] = self.cfg["env"]["learn"]["contactForceRewardScale"]
 
+        self.soft_limits = self.cfg["env"]["learn"]["soft_limits"]
+
         # use diagonal action
         self.diagonal_act = self.cfg["env"]["learn"]["diagonal_act"]
 
@@ -106,7 +90,9 @@ class A1(BaseTask):
         rot = self.cfg["env"]["baseInitState"]["rot"]
         v_lin = self.cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
-        pos += self.cfg["env"]["terrain"]["robot_origin"]
+        pos[0] += self.cfg["env"]["terrain"]["robot_origin"][0]
+        pos[1] += self.cfg["env"]["terrain"]["robot_origin"][1]
+        pos[2] += self.cfg["env"]["terrain"]["robot_origin"][2]
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
 
@@ -394,10 +380,6 @@ class A1(BaseTask):
             # create env instances
             env_ptr = self.gym.create_env(
                 self.sim, env_lower, env_upper, num_per_row)
-            rigid_shape_props = self._process_rigid_shape_props(
-                rigid_shape_props_asset, i)
-            self.gym.set_asset_rigid_shape_properties(
-                a1_asset, rigid_shape_props)
             a1_handle = self.gym.create_actor(
                 env_ptr, a1_asset, start_pose, "a1", i, 1, 0)
             dof_props = self._process_dof_props(dof_props_asset, i)
@@ -716,9 +698,9 @@ class A1(BaseTask):
                 m = (self.dof_pos_limits[i, 0] + self.dof_pos_limits[i, 1]) / 2
                 r = self.dof_pos_limits[i, 1] - self.dof_pos_limits[i, 0]
                 self.dof_pos_limits[i, 0] = m - 0.5 * r * \
-                    self.reward_params["soft_dof_vel_limit"]
+                    self.soft_limits["soft_dof_vel_limit"]
                 self.dof_pos_limits[i, 1] = m + 0.5 * r * \
-                    self.reward_params["soft_dof_vel_limit"]
+                    self.soft_limits["soft_dof_vel_limit"]
         for i in range(self.num_dof):
             props['driveMode'][i] = gymapi.DOF_MODE_POS
             props['stiffness'][i] = self.Kp

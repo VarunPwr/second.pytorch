@@ -1,12 +1,24 @@
 env:
   numEnvs: 512
   envSpacing: 4.  # [m]
-  terrain: "plane"
   command: "vel"
   commandChangeStep: 500
   risk_reward: False
   rush_reward: False
   vel_reward_exp_coeff: 0.25
+  terrain:
+    terrain_name: "plane" #  # none, plane or trimesh
+    curriculum: true
+    static_friction: 1.0  # [-]
+    dynamic_friction: 1.0  # [-]
+    restitution: 0.        # [-]
+    # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
+    robot_origin: [0., 0., 0.]
+    terrain_origin: [0., 0., 0.]
+
+  asset:
+    penalize_contacts_on: []
+    terminate_after_contacts_on: ["base", "thigh"]
   vision:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd

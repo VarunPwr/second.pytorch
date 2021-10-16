@@ -75,6 +75,8 @@ def retrieve_cfg(args, use_rlg_config=False):
             return os.path.join(args.logdir, "anymal"), "cfg/train/rlg/rlg_anymal.yaml", "cfg/anymal.yaml"
         elif args.task == "A1":
             return os.path.join(args.logdir, "a1"), "cfg/train/rlg/rlg_a1.yaml", "cfg/a1.yaml"
+        elif args.task == "A1Group":
+            return os.path.join(args.logdir, "a1_group"), "cfg/train/rlg/rlg_a1.yaml", "cfg/a1.yaml"
         elif args.task == "ShadowHand":
             return os.path.join(args.logdir, "shadow_hand"), "cfg/train/rlg/rlg_shadow_hand.yaml", "cfg/shadow_hand.yaml"
         elif args.task == "ShadowHandLSTM":
@@ -121,6 +123,8 @@ def retrieve_cfg(args, use_rlg_config=False):
             return os.path.join(args.logdir, "anymal"), "cfg/train/rlpt/pytorch_ppo_anymal.yaml", "cfg/anymal.yaml"
         elif args.task == "A1":
             return os.path.join(args.logdir, "a1"), "cfg/train/rlpt/pytorch_ppo_a1.yaml", "cfg/a1.yaml"
+        elif args.task == "A1Group":
+            return os.path.join(args.logdir, "a1_group"), "cfg/train/rlpt/pytorch_ppo_a1.yaml", "cfg/a1.yaml"
         elif args.task == "ShadowHand":
             return os.path.join(args.logdir, "shadow_hand"), "cfg/train/rlpt/pytorch_ppo_shadow_hand.yaml", "cfg/shadow_hand.yaml"
         elif args.task == "ShadowHandFFOpenAI":

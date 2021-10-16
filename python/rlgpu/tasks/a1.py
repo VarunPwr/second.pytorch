@@ -30,6 +30,10 @@ terrain_init_pos = {
     "sparse_stones": [0, 0, 0],
     "curriculum_stones": [0, 0, 0],
     "curriculum_way": [0, 0, 0],
+    "upstairs": [0, 0, 0],
+    "downstairs": [0, 0, 0],
+    "upladder": [0, 0, 0],
+    "downladder": [0, 0, 0],
 }
 
 
@@ -41,7 +45,7 @@ class A1(BaseTask):
         self.sim_params = sim_params
         self.physics_engine = physics_engine
 
-        # use RL or controller
+        # use RL or mpc controller
         self.use_controller = self.cfg["env"]["controller"]
 
         # normalization
@@ -77,7 +81,6 @@ class A1(BaseTask):
         # randomization
         self.randomization_params = self.cfg["task"]["randomization_params"]
         self.randomize = self.cfg["task"]["randomize"]
-
         self.randomize_reward = self.cfg["randomize_reward"]["randomize"]
         self.reward_randomization_params = self.cfg["randomize_reward"]["randomization_params"]
 
@@ -91,7 +94,7 @@ class A1(BaseTask):
         self.command_yaw_range = self.cfg["env"]["randomCommandRanges"]["yaw"]
 
         # terrain
-        self.terrain = self.cfg["env"]["terrain"]
+        self.terrain_name = self.cfg["env"]["terrain"]["terrain_name"]
 
         # plane params
         self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]
@@ -103,32 +106,7 @@ class A1(BaseTask):
         rot = self.cfg["env"]["baseInitState"]["rot"]
         v_lin = self.cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
-        if self.terrain == "triangle_mesh":
-            pos[-1] += 0.52
-        elif self.terrain == "box_dense":
-            pos[-1] += 0.1
-        elif self.terrain == "stages":
-            pos[-1] += 0.3
-        elif self.terrain == "stones":
-            pos[0] -= 0.6
-            pos[-1] += 0.3
-        elif self.terrain == "jumping_stages":
-            pos[0] -= 2.5
-            pos[-1] += 0.3
-            self.cfg["env"]['envSpacing'] = 20.
-        elif self.terrain == "sparse_stones":
-            pos[0] -= 0.9
-            pos[-1] += 0.3
-        elif self.terrain == "curriculum_stones":
-            pos[0] -= 0.9
-            pos[-1] += 0.3
-        elif self.terrain == "curriculum_way":
-            pos[0] -= 2.8
-            pos[-1] += 0.3
-            self.cfg["env"]['envSpacing'] = 8.
-        elif self.terrain == "obstacles":
-            pos[0] -= 1
-            self.cfg["env"]['envSpacing'] = 8.
+        pos += self.cfg["env"]["terrain"]["robot_origin"]
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
 
@@ -273,12 +251,6 @@ class A1(BaseTask):
         self.commands_yaw = self.commands.view(
             self.num_envs, 3 + extra_info_len)[..., 2]
 
-        if self.use_sys_information and self.terrain == "box":
-            # the size of box
-            self.commands[..., -3] = 0.06
-            self.commands[..., -2] = 0.06
-            self.commands[..., -1] = 0.04
-
         self.default_dof_pos = torch.zeros_like(
             self.dof_pos, dtype=torch.float, device=self.device, requires_grad=False)
         for i in range(self.num_dof):
@@ -326,8 +298,8 @@ class A1(BaseTask):
         self.sim = super().create_sim(self.device_id, self.graphics_device_id,
                                       self.physics_engine, self.sim_params)
         self._create_ground_plane()
-        self._create_envs(
-            self.num_envs, self.cfg["env"]['envSpacing'], int(np.sqrt(self.num_envs)))
+        self._create_envs(self.cfg["env"]['envSpacing'],
+                          int(np.sqrt(self.num_envs)))
 
     def _create_ground_plane(self):
         plane_params = gymapi.PlaneParams()
@@ -340,15 +312,31 @@ class A1(BaseTask):
 
         pose = gymapi.Transform()
 
-        pose.p.x = terrain_init_pos[self.terrain][0]
-        pose.p.y = terrain_init_pos[self.terrain][1]
-        pose.p.z = terrain_init_pos[self.terrain][2]
+        pose.p.x = self.cfg["env"]["terrain"]["terrain_origin"][0]
+        pose.p.y = self.cfg["env"]["terrain"]["terrain_origin"][1]
+        pose.p.z = self.cfg["env"]["terrain"]["terrain_origin"][2]
 
         handle = self.gym.create_actor(
             env_ptr, self.terrain_asset, pose, "tm", env_id, 2, 0)
         return handle
 
-    def _create_envs(self, num_envs, spacing, num_per_row):
+    def _load_terrain(self):
+        if self.terrain_name != "plane":
+            terrain_asset_root = "../../assets"
+            terrain_asset_file = "terrains/{}/{}.urdf".format(
+                self.terrain, self.terrain)
+            terrain_asset_path = os.path.join(
+                terrain_asset_root, terrain_asset_file)
+            terrain_asset_root = os.path.dirname(terrain_asset_path)
+            terrain_asset_file = os.path.basename(terrain_asset_path)
+
+            terrain_asset_options = gymapi.AssetOptions()
+            terrain_asset_options.fix_base_link = True
+
+            self.terrain_asset = self.gym.load_asset(
+                self.sim, terrain_asset_root, terrain_asset_file, terrain_asset_options)
+
+    def _create_envs(self, spacing, num_per_row):
         asset_root = "../../assets"
         asset_file = "urdf/a1/a1.urdf"
         asset_path = os.path.join(asset_root, asset_file)
@@ -370,6 +358,9 @@ class A1(BaseTask):
 
         a1_asset = self.gym.load_asset(
             self.sim, asset_root, asset_file, asset_options)
+        dof_props_asset = self.gym.get_asset_dof_properties(a1_asset)
+        rigid_shape_props_asset = self.gym.get_asset_rigid_shape_properties(
+            a1_asset)
         self.num_dof = self.gym.get_asset_dof_count(a1_asset)
         self.num_bodies = self.gym.get_asset_rigid_body_count(a1_asset)
         start_pose = gymapi.Transform()
@@ -387,12 +378,6 @@ class A1(BaseTask):
             len(knee_names), dtype=torch.long, device=self.device, requires_grad=False)
         self.base_index = 0
 
-        dof_props = self.gym.get_asset_dof_properties(a1_asset)
-        for i in range(self.num_dof):
-            dof_props['driveMode'][i] = gymapi.DOF_MODE_POS
-            dof_props['stiffness'][i] = self.Kp
-            dof_props['damping'][i] = self.Kd
-
         env_lower = gymapi.Vec3(-spacing, -spacing, 0.0)
         env_upper = gymapi.Vec3(spacing, spacing, spacing)
         self.a1_indices = []
@@ -405,27 +390,19 @@ class A1(BaseTask):
             self.camera_handles = []
             self.depth_image = []
 
-        if self.terrain != "plane":
-            terrain_asset_root = "../../assets"
-            terrain_asset_file = "terrains/{}/{}.urdf".format(
-                self.terrain, self.terrain)
-            terrain_asset_path = os.path.join(
-                terrain_asset_root, terrain_asset_file)
-            terrain_asset_root = os.path.dirname(terrain_asset_path)
-            terrain_asset_file = os.path.basename(terrain_asset_path)
-
-            terrain_asset_options = gymapi.AssetOptions()
-            terrain_asset_options.fix_base_link = True
-
-            self.terrain_asset = self.gym.load_asset(
-                self.sim, terrain_asset_root, terrain_asset_file, terrain_asset_options)
-
         for i in range(self.num_envs):
             # create env instances
             env_ptr = self.gym.create_env(
                 self.sim, env_lower, env_upper, num_per_row)
+            rigid_shape_props = self._process_rigid_shape_props(
+                rigid_shape_props_asset, i)
+            self.gym.set_asset_rigid_shape_properties(
+                a1_asset, rigid_shape_props)
             a1_handle = self.gym.create_actor(
                 env_ptr, a1_asset, start_pose, "a1", i, 1, 0)
+            dof_props = self._process_dof_props(dof_props_asset, i)
+            self.gym.set_actor_dof_properties(
+                env_ptr, a1_handle, dof_props)
             self.gym.set_actor_dof_properties(env_ptr, a1_handle, dof_props)
             self.gym.enable_actor_dof_force_sensors(env_ptr, a1_handle)
             self.envs.append(env_ptr)
@@ -433,7 +410,7 @@ class A1(BaseTask):
             a1_idx = self.gym.get_actor_index(
                 env_ptr, a1_handle, gymapi.DOMAIN_SIM)
             self.a1_indices.append(a1_idx)
-            if self.terrain != "plane":
+            if self.terrain_name != "plane":
                 terrain_handle = self._create_terrain(env_ptr, i)
                 terrain_idx = self.gym.get_actor_index(
                     env_ptr, terrain_handle, gymapi.DOMAIN_SIM)
@@ -465,7 +442,27 @@ class A1(BaseTask):
             self.envs[0], self.a1_handles[0], "trunk")
         self.a1_indices = to_torch(
             self.a1_indices, dtype=torch.long, device=self.device)
-        if self.terrain != "plane":
+
+        penalized_contact_names = []
+        for name in self.cfg["env"]["asset"]["penalize_contacts_on"]:
+            penalized_contact_names.extend(
+                [s for s in body_names if name in s])
+        self.penalised_contact_indices = torch.zeros(len(
+            penalized_contact_names), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(penalized_contact_names)):
+            self.penalised_contact_indices[i] = self.gym.find_actor_rigid_body_handle(
+                self.envs[0], self.anymal_handles[0], penalized_contact_names[i])
+        termination_contact_names = []
+        for name in self.cfg["env"]["asset"]["terminate_after_contacts_on"]:
+            termination_contact_names.extend(
+                [s for s in body_names if name in s])
+        self.termination_contact_indices = torch.zeros(len(
+            termination_contact_names), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(termination_contact_names)):
+            self.termination_contact_indices[i] = self.gym.find_actor_rigid_body_handle(
+                self.envs[0], self.anymal_handles[0], termination_contact_names[i])
+
+        if self.terrain_name != "plane":
             self.terrain_indices = to_torch(
                 self.terrain_indices, dtype=torch.long, device=self.device)
 
@@ -553,7 +550,7 @@ class A1(BaseTask):
             self.reset(env_ids)
         if len(change_commmand_env_ids) > 0:
             self.reset_command(change_commmand_env_ids)
-        self._update_viewer()
+        # self._update_viewer()
         if self.historical_step > 1:
             self.dof_pos_buf = torch.cat(
                 [self.dof_pos_buf[:, :-1], self.dof_pos.unsqueeze(1)], dim=1)
@@ -664,6 +661,69 @@ class A1(BaseTask):
                 self.a1_indices,
                 contact_forces,
             )
+
+    def _process_rigid_shape_props(self, props, env_id):
+        """ Callback allowing to store/change/randomize the rigid shape properties of each environment.
+            Called During environment creation.
+            Base behavior: randomizes the friction of each environment
+
+        Args:
+            props (List[gymapi.RigidShapeProperties]): Properties of each shape of the asset
+            env_id (int): Environment id
+
+        Returns:
+            [List[gymapi.RigidShapeProperties]]: Modified rigid shape properties
+        """
+        if self.randomize_friction:
+            if env_id == 0:
+                # prepare friction randomization
+                friction_range = self.cfg["env"]["learn"]["friction_range"]
+                num_buckets = 64
+                bucket_ids = torch.randint(0, num_buckets, (self.num_envs, 1))
+                friction_buckets = torch_rand_float(
+                    friction_range[0], friction_range[1], (num_buckets, 1), device='cpu')
+                self.friction_coeffs = friction_buckets[bucket_ids]
+
+            for s in range(len(props)):
+                props[s].friction = self.friction_coeffs[env_id]
+        return props
+
+    def _process_dof_props(self, props, env_id):
+        """ Callback allowing to store/change/randomize the DOF properties of each environment.
+            Called During environment creation.
+            Base behavior: stores position, velocity and torques limits defined in the URDF
+
+        Args:
+            props (numpy.array): Properties of each DOF of the asset
+            env_id (int): Environment id
+
+        Returns:
+            [numpy.array]: Modified DOF properties
+        """
+        if env_id == 0:
+            self.dof_pos_limits = torch.zeros(
+                self.num_dof, 2, dtype=torch.float, device=self.device, requires_grad=False)
+            self.dof_vel_limits = torch.zeros(
+                self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
+            self.torque_limits = torch.zeros(
+                self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
+            for i in range(len(props)):
+                self.dof_pos_limits[i, 0] = props["lower"][i].item()
+                self.dof_pos_limits[i, 1] = props["upper"][i].item()
+                self.dof_vel_limits[i] = props["velocity"][i].item()
+                self.torque_limits[i] = props["effort"][i].item()
+                # soft limits
+                m = (self.dof_pos_limits[i, 0] + self.dof_pos_limits[i, 1]) / 2
+                r = self.dof_pos_limits[i, 1] - self.dof_pos_limits[i, 0]
+                self.dof_pos_limits[i, 0] = m - 0.5 * r * \
+                    self.reward_params["soft_dof_vel_limit"]
+                self.dof_pos_limits[i, 1] = m + 0.5 * r * \
+                    self.reward_params["soft_dof_vel_limit"]
+        for i in range(self.num_dof):
+            props['driveMode'][i] = gymapi.DOF_MODE_POS
+            props['stiffness'][i] = self.Kp
+            props['damping'][i] = self.Kd
+        return props
 
     def apply_reward_randomizations(self, rr_params):
         rand_freq = rr_params.get("frequency", 1)
@@ -1073,6 +1133,7 @@ def compute_a1_rush_reward(
     reset = reset | time_out
 
     return total_reward.detach(), reset
+
 
 @torch.jit.script
 def compute_a1_observations(root_states: Tensor,

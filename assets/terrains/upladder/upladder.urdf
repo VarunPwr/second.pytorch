@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<robot name="ladder_terrain">
+  <link name="ladder_terrain">
+	  <contact>
+      <lateral_friction value="1.0"/>
+    </contact>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value=".0"/>
+       <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+    <visual>
+      <origin rpy="1.57 0 -1.57" xyz="0 0 0"/>
+      <geometry>
+				<mesh filename="meshes/ladder.obj" scale="2 0.5 1"/>
+      </geometry>
+       <material name="white">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 -1.57" xyz="0 0 0"/>
+      <geometry>
+				<mesh filename="meshes/ladder.obj" scale="2 0.5 1"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>

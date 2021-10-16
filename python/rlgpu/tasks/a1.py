@@ -315,7 +315,7 @@ class A1(BaseTask):
         if self.terrain_name != "plane":
             terrain_asset_root = "../../assets"
             terrain_asset_file = "terrains/{}/{}.urdf".format(
-                self.terrain, self.terrain)
+                self.terrain_name, self.terrain_name)
             terrain_asset_path = os.path.join(
                 terrain_asset_root, terrain_asset_file)
             terrain_asset_root = os.path.dirname(terrain_asset_path)
@@ -366,7 +366,7 @@ class A1(BaseTask):
         self.knee_indices = torch.zeros(
             len(knee_names), dtype=torch.long, device=self.device, requires_grad=False)
         self.base_index = 0
-
+        self._load_terrain()
         env_lower = gymapi.Vec3(-spacing, -spacing, 0.0)
         env_upper = gymapi.Vec3(spacing, spacing, spacing)
         self.a1_indices = []

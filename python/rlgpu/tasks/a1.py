@@ -540,7 +540,7 @@ class A1(BaseTask):
         if len(change_commmand_env_ids) > 0:
             self.reset_command(change_commmand_env_ids)
         self.check_termination()
-        self.compute_reward(self.actions)
+        self.compute_reward()
         env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
         if len(env_ids) > 0:
             self.reset(env_ids)
@@ -589,7 +589,7 @@ class A1(BaseTask):
         self.feet_air_time *= ~contact
         return rew_airTime * self.rew_scales["feet_air_time"]
 
-    def compute_reward(self, actions):
+    def compute_reward(self):
         if self.command_type == "vel":
             root_states = self.root_states
             commands = self.commands

@@ -1,32 +1,33 @@
 env:
-  numEnvs: 1
-  envSpacing: 4.  # [m]
+  numEnvs: 512
+  envSpacing: 20.  # [m]
   command: "vel"
-  commandChangeStep: 500
+  commandChangeStep: 1000
   risk_reward: False
   rush_reward: False
-  vel_reward_exp_coeff: 0.25
+  vel_reward_exp_coeff: 0.2
   terrain:
-    terrain_name: "plane" #  # none, plane or trimesh
+    terrain_name: "mountain_range" #  # none, plane or trimesh
     curriculum: true
     texture: "none"
     static_friction: 1.0  # [-]
     dynamic_friction: 1.0  # [-]
     restitution: 0.        # [-]
     # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-    robot_origin: [0., 0., 0.]
-    terrain_origin: [0., 0., 0.]
+    robot_origin: [-2.5, 0., 0.3]
+    terrain_origin: [0.15, 0., 0.]
 
   asset:
     penalize_contacts_on: []
     terminate_after_contacts_on: ["trunk", "upper"]
   vision:
-    get_image: False
+    get_image: True
     image_type: "depth" # depth, rgb, rgbd
     frame_stack: 4
     update_freq: 4 # how many control steps do we update the image buffer
     width: 64
     height: 64
+    camera_angle: 30
 
   plane:
     staticFriction: 10.0  # [-]
@@ -40,9 +41,9 @@ env:
     vAngular: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
 
   randomCommandRanges:
-    linear_x: [0.3, 0.6] # min max [m/s]
+    linear_x: [0.4, 1.2] # min max [m/s]
     linear_y: [0., 0.]   # min max [m/s]
-    yaw: [-0.1, 0.1]          # min max [rad/s]
+    yaw: [0., 0.]             # min max [rad/s]
 
   control:
     # PD Drive parameters:
@@ -81,7 +82,7 @@ env:
       soft_torque_limit: 1.
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
-    linearVelocityZRewardScale: -0.2
+    linearVelocityZRewardScale: -0.7
     torqueRewardScale: -0.000025 
     actionSmoothingRewardScale: -0.005 
     stumble: 0.

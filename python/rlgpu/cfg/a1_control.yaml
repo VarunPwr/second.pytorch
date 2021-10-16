@@ -6,7 +6,7 @@ env:
   commandChangeStep: 200
   risk_reward: False
   rush_reward: False
-  vel_reward_exp_coeff: 0.1
+  vel_reward_exp_coeff: 0.25
 
   vision:
     get_image: False

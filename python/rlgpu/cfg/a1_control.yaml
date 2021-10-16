@@ -72,8 +72,12 @@ env:
     angularVelocityZRewardScale: 1.0
     linearVelocityZRewardScale: -0.02
     torqueRewardScale: -0.000025 
-    torqueSmoothingRewardScale: 0. 
-    contactForceRewardScale: 0.
+    actionSmoothingRewardScale: 0. 
+    stumble: 0.
+    feet_air_time: 0.5
+    dof_vel_limit: -0.002
+    torque_limit: -0.00002
+    collision: -1
 
     # normalization
     linearVelocityScale: 2.0
@@ -161,7 +165,7 @@ randomize_reward:
         distribution: "uniform"
         schedule: "linear"
         schedule_steps: 50000
-      torqueSmoothingRewardScale:
+      actionSmoothingRewardScale:
         range: [-0.000015, -0.000025]
         distribution: "uniform"
         schedule: "linear"

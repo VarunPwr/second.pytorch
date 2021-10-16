@@ -18,7 +18,7 @@ env:
 
   asset:
     penalize_contacts_on: []
-    terminate_after_contacts_on: ["base", "thigh"]
+    terminate_after_contacts_on: ["trunk", "upper"]
   vision:
     get_image: True
     image_type: "depth" # depth, rgb, rgbd
@@ -83,8 +83,12 @@ env:
     angularVelocityZRewardScale: 1.0
     linearVelocityZRewardScale: -0.2
     torqueRewardScale: -0.000025 
-    torqueSmoothingRewardScale: -0.00001 
-    contactForceRewardScale: 0.
+    actionSmoothingRewardScale: -0.005 
+    stumble: 0.
+    feet_air_time: 0.5
+    dof_vel_limit: -0.002
+    torque_limit: -0.00002
+    collision: -1
 
     # normalization
     linearVelocityScale: 2.0
@@ -175,7 +179,7 @@ randomize_reward:
         distribution: "uniform"
         schedule: "linear"
         schedule_steps: 50000
-      torqueSmoothingRewardScale:
+      actionSmoothingRewardScale:
         range: [-0.000015, -0.000025]
         distribution: "uniform"
         schedule: "linear"

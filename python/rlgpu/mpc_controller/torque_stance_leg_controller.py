@@ -67,7 +67,8 @@ class TorqueStanceLegController(leg_controller.LegController):
         self._num_legs = 4
         self._friction_coeffs = torch.as_tensor(
             [friction_coeffs], device=self._device).repeat(self._num_envs, 1)
-        self._default_motor_directions = torch.ones((self._num_envs, 12), device=self._device)
+        self._default_motor_directions = torch.ones(
+            (self._num_envs, 12), device=self._device)
         self.KP = torch.as_tensor((0., 0., 100., 100., 100., 0.), device=self._device).unsqueeze(
             0).repeat(self._num_envs, 1)
         self.KD = torch.as_tensor((40., 30., 10., 10., 10., 30.), device=self._device).unsqueeze(

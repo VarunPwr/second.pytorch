@@ -310,8 +310,10 @@ class A1(BaseTask):
         handle = self.gym.create_actor(
             env_ptr, self.terrain_asset, pose, "tm", env_id, 2, 0)
         if self.cfg["env"]["terrain"]["texture"] != "none":
-            th = self.gym.create_texture_from_file(self.sim, "../../assets/textures/{}".format(self.cfg["env"]["terrain"]["texture"]))
-            self.gym.set_rigid_body_texture(env_ptr, handle, 0, gymapi.MESH_VISUAL_AND_COLLISION, th)
+            th = self.gym.create_texture_from_file(
+                self.sim, "../../assets/textures/{}".format(self.cfg["env"]["terrain"]["texture"]))
+            self.gym.set_rigid_body_texture(
+                env_ptr, handle, 0, gymapi.MESH_VISUAL_AND_COLLISION, th)
         return handle
 
     def _load_terrain(self):

@@ -45,11 +45,11 @@ env:
 
   control:
     # PD Drive parameters:
-    stiffness: 30.0  # [N*m/rad]
+    stiffness: 20.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
     actionScale: 0.4
     hipActionScale: 0.15
-    controlFrequencyInv: 8  # 60 Hz
+    controlFrequencyInv: 4  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
     FL_upper: 0.9    # [rad]
@@ -119,7 +119,7 @@ sim:
   substeps: 2
   gravity: [0., 0. ,-9.81]  # [m/s^2]
   up_axis: 1  # 0 is y, 1 is z
-  dt: 0.0025
+  dt: 0.005
 
   physx:
     num_threads: 4

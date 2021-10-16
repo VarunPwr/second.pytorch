@@ -14,6 +14,7 @@ from copy import deepcopy
 # import time
 
 from mpc_controller import leg_controller
+# from mpc_controller import qp_torque_optimizer_cpu as qp_torque_optimizer
 from mpc_controller import qp_torque_optimizer
 
 

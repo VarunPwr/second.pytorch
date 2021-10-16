@@ -4,6 +4,19 @@ env:
   terrain: "plane"
   command: "vel"
   commandChangeStep: 200
+  risk_reward: False
+  rush_reward: False
+  vel_reward_exp_coeff: 0.1
+
+  vision:
+    get_image: False
+    image_type: "depth" # depth, rgb, rgbd
+    frame_stack: 4
+    update_freq: 4 # how many control steps do we update the image buffer
+    width: 64
+    height: 64
+    camera_angle: 0
+
   plane:
     staticFriction: 10.0  # [-]
     dynamicFriction: 10.0  # [-]
@@ -25,6 +38,7 @@ env:
     stiffness: 60.0  # [N*m/rad]
     damping: 0.4    # [N*m*s/rad]
     actionScale: 0.4
+    hipActionScale: 0.15
     controlFrequencyInv: 2  # 60 Hz
 
   defaultJointAngles:  # = target angles when action = 0.0
@@ -55,6 +69,7 @@ env:
     linearVelocityZRewardScale: -0.02
     torqueRewardScale: -0.000025 
     torqueSmoothingRewardScale: 0. 
+    contactForceRewardScale: 0.
 
     # normalization
     linearVelocityScale: 2.0

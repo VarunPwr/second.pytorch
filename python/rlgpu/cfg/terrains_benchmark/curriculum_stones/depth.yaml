@@ -9,6 +9,7 @@ env:
   terrain:
     terrain_name: "curriculum_stones" #  # none, plane or trimesh
     curriculum: true
+    texture: "none"
     static_friction: 1.0  # [-]
     dynamic_friction: 1.0  # [-]
     restitution: 0.        # [-]

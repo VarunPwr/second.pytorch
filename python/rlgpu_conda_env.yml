@@ -11,3 +11,8 @@ dependencies:
   - pyyaml>=5.3.1
   - scipy>=1.5.0
   - tensorboard>=2.2.1
+  - wandb
+  - osqp
+  - qpth
+  - qradprog
+  - gitpython

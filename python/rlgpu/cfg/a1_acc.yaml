@@ -1,5 +1,5 @@
 env:
-  numEnvs: 1
+  numEnvs: 512
   envSpacing: 4. # [m]
   terrain: "plane"
   command: "acc"

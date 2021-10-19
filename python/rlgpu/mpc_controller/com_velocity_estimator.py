@@ -7,8 +7,7 @@ from typing import Any
 
 from rlgpu.utils.torch_jit_utils import quat_rotate_inverse
 import torch
-from torch.tensor import Tensor
-from isaacgym import gymapi
+from torch import Tensor
 from pytorch3d.transforms import quaternion_apply
 
 _DEFAULT_WINDOW_SIZE = 20

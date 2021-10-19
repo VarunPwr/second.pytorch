@@ -7,16 +7,13 @@
 
 import numpy as np
 import os
-from numpy.core.numeric import indices, roll
-from PIL import Image as im
 from rlgpu.utils.torch_jit_utils import *
 from rlgpu.tasks.base.base_task import BaseTask
 from isaacgym import gymtorch
 from isaacgym import gymapi
 from pytorch3d.transforms import matrix_to_euler_angles, quaternion_to_matrix
 import torch
-from torch._C import device
-from torch.tensor import Tensor
+from torch import Tensor
 from typing import Tuple, Dict
 
 

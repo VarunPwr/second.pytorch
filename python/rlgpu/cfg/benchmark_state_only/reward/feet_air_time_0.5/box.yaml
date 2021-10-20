@@ -1,5 +1,5 @@
 env:
-  numEnvs: 512
+  numEnvs: 256
   envSpacing: 4.  # [m]
   command: "vel"
   commandChangeStep: 500

@@ -325,6 +325,10 @@ class A1(BaseTask):
 
             terrain_asset_options = gymapi.AssetOptions()
             terrain_asset_options.fix_base_link = True
+            terrain_asset_options.vhacd_enabled = True
+            terrain_asset_options.vhacd_params.resolution = 3000000
+            terrain_asset_options.vhacd_params.max_convex_hulls = 20
+            terrain_asset_options.vhacd_params.max_num_vertices_per_ch = 256
 
             self.terrain_asset = self.gym.load_asset(
                 self.sim, terrain_asset_root, terrain_asset_file, terrain_asset_options)

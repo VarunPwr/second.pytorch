@@ -13,6 +13,4 @@ dependencies:
   - tensorboard>=2.2.1
   - wandb
   - osqp
-  - qpth
-  - qradprog
   - gitpython

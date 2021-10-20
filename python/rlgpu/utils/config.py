@@ -212,7 +212,7 @@ def get_args(benchmark=False, use_rlg_config=False):
             "help": "Force display off at all times"},
         {"name": "--horovod", "action": "store_true", "default": False,
             "help": "Use horovod for multi-gpu training, have effect only with rl_games RL library"},
-        {"name": "--task", "type": str, "default": "Humanoid",
+        {"name": "--task", "type": str, "default": "A1",
             "help": "Can be BallBalance, Cartpole, CartpoleYUp, Ant, Humanoid, Anymal, FrankaCabinet, Quadcopter, ShadowHand, Ingenuity, Xarm"},
         {"name": "--task_type", "type": str,
             "default": "Python", "help": "Choose Python or C++"},
@@ -243,6 +243,8 @@ def get_args(benchmark=False, use_rlg_config=False):
             "help": "Apply additional PyTorch settings for more deterministic behaviour"},
         {"name": "--sync_frame_time", "action": "store_true", "default": False,
             "help": "run in the real time"},
+        {"name": "--local", "action": "store_true", "default": False,
+            "help": "run in the local machine, limit the number of envs"},
     ]
 
     if benchmark:

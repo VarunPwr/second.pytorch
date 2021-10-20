@@ -28,6 +28,8 @@ def parse_task(args, cfg, cfg_train, sim_params):
     cfg_task = cfg["env"]
     cfg_task["seed"] = cfg["seed"]
 
+    if args.local:
+        cfg_task["numEnvs"] = 1
     if args.task_type == "C++":
         if args.device == "cpu":
             print("C++ CPU")

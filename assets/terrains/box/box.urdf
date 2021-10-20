@@ -2,7 +2,37 @@
 <?xml version="1.0"?>
 <robot name="box_terrain">
     <link name="box_terrain">
-        
+        <visual>
+        <origin rpy="0 0 0" xyz="1.5 -1.35 0 "/>
+        <geometry>
+            <box size="3 0.2 0.8"/>
+        </geometry>
+        <material name="white">
+            <color rgba="0.5 0.5 0.5 1.0"/>
+        </material>
+        </visual>
+        <collision>
+        <origin rpy="0 0 0" xyz="1.5 -1.35 0 "/>
+        <geometry>
+            <box size="3 0.2 0.8"/>
+        </geometry>
+        </collision>
+
+        <visual>
+        <origin rpy="0 0 0" xyz="1.5 1.1 0 "/>
+        <geometry>
+            <box size="3 0.2 0.8"/>
+        </geometry>
+        <material name="white">
+            <color rgba="0.5 0.5 0.5 1.0"/>
+        </material>
+        </visual>
+        <collision>
+        <origin rpy="0 0 0" xyz="1.5 1.1 0 "/>
+        <geometry>
+            <box size="3 0.2 0.8"/>
+        </geometry>
+        </collision>
             <visual>
             <origin xyz="-0.4409616722148355 -1.0305323878206156 0.05"/>
             <geometry>

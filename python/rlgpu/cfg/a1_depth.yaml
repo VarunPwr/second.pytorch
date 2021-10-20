@@ -89,8 +89,8 @@ env:
   # viewer cam:
   viewer:
     refEnv: 0
-    pos: [0, -2, 0.4]  # [m]
-    lookat: [0.2, 0.2, -0.4]  # [m]
+    pos: [0, -2, 0.3]  # [m]
+    lookat: [0.2, 0.2, -0.3]  # [m]
 
   controller: False
 

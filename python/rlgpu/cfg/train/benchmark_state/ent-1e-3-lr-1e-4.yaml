@@ -15,7 +15,7 @@ learn:
   agent_name: a1_ppo
   test: False
   resume: 0
-  save_interval: 100 # check for potential saves every this many iterations
+  save_interval: 200 # check for potential saves every this many iterations
   print_log: True
 
   # number of policy updates
@@ -23,7 +23,7 @@ learn:
 
   # training params
   cliprange: 0.2
-  ent_coef: 0.005
+  ent_coef: 0.001
   nsteps: 24
   noptepochs: 8
   nminibatches: 4 # this is per agent

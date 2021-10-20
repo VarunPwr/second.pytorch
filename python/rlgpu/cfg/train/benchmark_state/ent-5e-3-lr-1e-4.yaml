@@ -15,7 +15,7 @@ learn:
   agent_name: a1_ppo
   test: False
   resume: 0
-  save_interval: 100 # check for potential saves every this many iterations
+  save_interval: 200 # check for potential saves every this many iterations
   print_log: True
 
   # number of policy updates

@@ -1,6 +1,6 @@
 env:
   numEnvs: 512
-  envSpacing: 4.  # [m]
+  envSpacing: 8.  # [m]
   command: "vel"
   commandChangeStep: 500
   risk_reward: False

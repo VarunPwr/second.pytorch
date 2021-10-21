@@ -1,6 +1,6 @@
 env:
   numEnvs: 512
-  envSpacing: 4.  # [m]
+  envSpacing: 8.  # [m]
   command: "vel"
   commandChangeStep: 500
   risk_reward: False
@@ -107,7 +107,7 @@ env:
     refEnv: 0
     # pos: [10, -5, 4]  # [m]
     # pos: [-2, 0.3, 0.4]  # [m]
-    pos: [0, 0, 0.3]  # [m]
+    pos: [-3, 0, 1.8]  # [m]
     lookat: [0.2, 0.2, -0.3]  # [m]
 
   controller: False

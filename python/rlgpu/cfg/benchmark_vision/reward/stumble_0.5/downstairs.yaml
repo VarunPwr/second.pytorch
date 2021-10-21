@@ -1,6 +1,6 @@
 env:
   numEnvs: 512
-  envSpacing: 4.  # [m]
+  envSpacing: 8.  # [m]
   command: "vel"
   commandChangeStep: 500
   risk_reward: False
@@ -14,7 +14,7 @@ env:
     dynamic_friction: 1.0  # [-]
     restitution: 0.        # [-]
     # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-    robot_origin: [0.1, 0, 1.1]
+    robot_origin: [0.8, 0, 2.1]
     terrain_origin: [0., 0., 0.]
 
   asset:

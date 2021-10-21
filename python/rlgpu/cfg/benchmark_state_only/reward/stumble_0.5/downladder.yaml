@@ -14,7 +14,7 @@ env:
     dynamic_friction: 1.0  # [-]
     restitution: 0.        # [-]
     # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-    robot_origin: [-0.3, 0, 1.7]
+    robot_origin: [-0.3, 0, 1.25]
     terrain_origin: [0., 0., 0.]
 
   asset:

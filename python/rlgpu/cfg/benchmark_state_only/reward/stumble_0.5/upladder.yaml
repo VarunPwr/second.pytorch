@@ -105,7 +105,7 @@ env:
   # viewer cam:
   viewer:
     refEnv: 0
-    pos: [-1, 0.3, 0.3]  # [m]
+    pos: [-4, 0., 1.2]  # [m]
     # pos: [-2, 0.3, 0.4]  # [m]
     # pos: [0, 0, 0.3]  # [m]
     lookat: [0.2, 0.2, -0.3]  # [m]

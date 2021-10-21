@@ -38,7 +38,7 @@ for i in range(10):
             <inertial>
             <density value="567.0"/>
             </inertial>
-        '''.format(pos[0], pos[1], rand_width + 0.04, rand_width + 0.04, pos[0], pos[1], rand_width, rand_width)
+        '''.format(pos[0], pos[1], rand_width, rand_width, pos[0], pos[1], rand_width + 0.02, rand_width + 0.02)
 
         init_str += aug_str
 

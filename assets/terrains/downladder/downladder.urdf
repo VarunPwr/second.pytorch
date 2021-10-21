@@ -21,7 +21,7 @@
     <collision>
       <origin rpy="1.57 0 1.57" xyz="1 0 0"/>
       <geometry>
-				<mesh filename="meshes/ladder.obj" scale="2 0.5 1"/>
+				<mesh filename="meshes/ladder.obj" scale="2 0.3 1"/>
       </geometry>
     </collision>
   </link>

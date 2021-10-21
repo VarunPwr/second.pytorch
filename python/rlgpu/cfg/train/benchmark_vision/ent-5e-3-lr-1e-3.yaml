@@ -15,18 +15,18 @@ learn:
   agent_name: a1_visual_ppo
   test: False
   resume: 0
-  save_interval: 200 # check for potential saves every this many iterations
+  save_interval: 400 # check for potential saves every this many iterations
   print_log: True
 
   # number of policy updates
-  max_iterations: 3000
+  max_iterations: 5000
 
   # training params
   cliprange: 0.2
   ent_coef: 0.005
-  nsteps: 96
+  nsteps: 24
   noptepochs: 8
-  nminibatches: 8 # this is per agent
+  nminibatches: 4 # this is per agent
   optim_stepsize: 1.e-3
   schedule: adaptive # could be adaptive, linear or fixed
   gamma: 0.99

@@ -24,9 +24,9 @@ learn:
   # training params
   cliprange: 0.2
   ent_coef: 0.005
-  nsteps: 96
+  nsteps: 24
   noptepochs: 8
-  nminibatches: 8 # this is per agent
+  nminibatches: 4 # this is per agent
   optim_stepsize: 3.e-4
   schedule: adaptive # could be adaptive, linear or fixed
   gamma: 0.99

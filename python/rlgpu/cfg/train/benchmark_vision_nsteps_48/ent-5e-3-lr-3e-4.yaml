@@ -26,7 +26,7 @@ learn:
   ent_coef: 0.005
   nsteps: 48
   noptepochs: 8
-  nminibatches: 4 # this is per agent
+  nminibatches: 8 # this is per agent
   optim_stepsize: 3.e-4
   schedule: adaptive # could be adaptive, linear or fixed
   gamma: 0.99

@@ -461,9 +461,10 @@ class A1(BaseTask):
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
         self.last_root_states = self.root_states.clone()
+        self.last_actions[:] = self.actions[:]
         if self.historical_step > 1:
             self.actions_buf = torch.cat(
-                [self.actions_buf[:, :-1], self.actions.unsqueeze(1)], dim=1)
+                [self.actions_buf[:, 1:], self.actions.unsqueeze(1)], dim=1)
 
     def controller_step(self, actions):
         self.actions = actions.clone().to(self.device)
@@ -505,10 +506,10 @@ class A1(BaseTask):
 
         # step physics and render each frame
         if self.diagonal_act:
-            right_action, left_action = torch.chunk(self.actions, 2, dim=-1)
+            right_action, left_action = torch.chunk(self.action_scale * self.actions, 2, dim=-1)
             whole_action = torch.cat(
                 [right_action, left_action, left_action, right_action], dim=-1)
-            targets_pos = self.action_scale * whole_action + self.default_dof_pos
+            targets_pos = whole_action + self.default_dof_pos
         else:
             targets_pos = self.action_scale * self.actions + self.default_dof_pos
 
@@ -546,7 +547,6 @@ class A1(BaseTask):
         if len(env_ids) > 0:
             self.reset(env_ids)
         # self._update_viewer()
-        self.last_actions[:] = self.actions[:]
         if self.historical_step > 1:
             self.dof_pos_buf = torch.cat(
                 [self.dof_pos_buf[:, :-1], self.dof_pos.unsqueeze(1)], dim=1)
@@ -566,7 +566,6 @@ class A1(BaseTask):
                 [image_vectors.unsqueeze(1), self.image_buf[:, :-1]], dim=1)
         if self.get_image:
             self.obs_buf[:, self.state_obs_size:] = self.image_buf.flatten(1)
-
         self.compute_observations()
 
     def check_termination(self):

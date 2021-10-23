@@ -9,7 +9,7 @@ policy: # only works for MlpPolicy right now
   encoder_params:
     in_channels: 4
     visual_dim: 16384
-    state_dim: 132
+    state_dim: 84
     hidden_dims: [256, 256]
 learn:
   agent_name: a1_visual_ppo

@@ -100,7 +100,7 @@ env:
   controller: True
   # sensor:
   sensor:
-    historical_step: 4
+    historical_step: 2
     sys_id: False
 
 sim:

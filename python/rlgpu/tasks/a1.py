@@ -137,7 +137,6 @@ class A1(BaseTask):
         self.state_obs_size = self.cfg["env"]["numObservations"]
         if self.use_controller:
             self.cfg["env"]["numActions"] *= 2
-
         if self.get_image:
             if self.image_type == "depth":
                 image_obs_size = self.width * \

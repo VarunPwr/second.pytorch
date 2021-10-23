@@ -14,7 +14,7 @@ env:
     dynamic_friction: 1.0  # [-]
     restitution: 0.        # [-]
     # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-    robot_origin: [-1, 0, 0]
+    robot_origin: [0, 0, 0]
     terrain_origin: [0., 0., 0.]
 
   asset:
@@ -106,14 +106,14 @@ env:
   viewer:
     refEnv: 0
     # pos: [10, -5, 4]  # [m]
-    pos: [-2, 0.3, 0.4]  # [m]
+    pos: [6, 0.3, 0.4]  # [m]
     lookat: [0.2, 0.2, -0.3]  # [m]
 
   controller: False
 
   # sensor:
   sensor:
-    historical_step: 4
+    historical_step: 2
     sys_id: False
 
 sim:

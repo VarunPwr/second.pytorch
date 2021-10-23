@@ -6,21 +6,16 @@
 
 class BaseTaskWrapper(object):
 
-    def __init__(self):
+    def __init__(self, device, cfg):
         """Initializes the task wrappers."""
-        self._draw_ref_model_alpha = 1.
-        self._ref_model = -1
+        self.device = device
+        self.cfg = cfg
         return
 
     def __call__(self, task):
         return self.reward(task)
 
-    def reset(self, task):
-        """Resets the internal state of the task."""
-        self._task = task
-        return
-
-    def done(self, task):
+    def check_termination(self, task):
         """Checks if the episode is over."""
         del task
         return False

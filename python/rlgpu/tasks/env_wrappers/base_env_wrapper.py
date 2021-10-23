@@ -26,7 +26,7 @@ class BaseEnvWrapper(object):
 
         return
 
-    def done(self, task):
+    def check_termination(self, task):
         """Checks if the episode is over."""
         base_pos = task.root_states[task.a1_indices, 0:2]
         flag = torch.all((base_pos > self.offset and base_pos <
@@ -36,6 +36,7 @@ class BaseEnvWrapper(object):
     def create_surroundings(self, task, env_ptr, env_id):
         """Create the surroundings including terrains and obstacles for each environment."""
         handles = []
+        i = 0
         for surrounding_assets, surrounding_cfg in zip(task.surrounding_assets, self.cfg["env"]["surroundings"]):
             pose = gymapi.Transform()
             pose.p.x = surrounding_cfg["surrounding_origin"][0]
@@ -43,10 +44,13 @@ class BaseEnvWrapper(object):
             pose.p.z = surrounding_cfg["surrounding_origin"][2]
 
             handle = task.gym.create_actor(
-                env_ptr, surrounding_assets, pose, "tm", env_id, 2, 0)
+                env_ptr, surrounding_assets, pose, "tm", env_id, 2 + i, 0)
             if surrounding_cfg["texture"] != "none":
                 th = task.gym.create_texture_from_file(
                     task.sim, "../../../assets/textures/{}".format(surrounding_cfg["texture"]))
                 task.gym.set_rigid_body_texture(
                     env_ptr, handle, 0, gymapi.MESH_VISUAL_AND_COLLISION, th)
+
+            i += 1
+
         return handles

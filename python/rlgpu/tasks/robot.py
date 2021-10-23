@@ -13,7 +13,11 @@ from isaacgym import gymtorch
 from isaacgym import gymapi
 import torch
 from torch import Tensor
-from typing import Tuple, Dict
+from rlgpu.tasks.task_wrappers import build_task_wrapper
+from rlgpu.tasks.env_wrappers import build_env_wrapper
+
+all_task_wrappers = {}
+all_env_wrappers = {}
 
 
 class Robot(BaseTask):
@@ -28,17 +32,12 @@ class Robot(BaseTask):
         self.cfg["headless"] = headless
 
         super().__init__(cfg=self.cfg)
-        if self.viewer is not None:
-            p = self.cfg["env"]["viewer"]["pos"]
-            lookat = self.cfg["env"]["viewer"]["lookat"]
-            self.camera_distance = [
-                _lookat - _p for _lookat, _p in zip(lookat, p)]
-            cam_pos = gymapi.Vec3(p[0], p[1], p[2])
-            cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
-            self.gym.viewer_camera_look_at(
-                self.viewer, None, cam_pos, cam_target)
+        self._init_viewer()
         self._build_buf()
-
+        self.task_wrapper = build_task_wrapper(
+            self.task_name, self.device, self.cfg)
+        self.env_wrapper = build_env_wrapper(
+            self.task_name, self.device, self.cfg)
         self.reset(torch.arange(self.num_envs, device=self.device))
 
     def create_sim(self):
@@ -56,49 +55,32 @@ class Robot(BaseTask):
         plane_params.dynamic_friction = self.plane_dynamic_friction
         self.gym.add_ground(self.sim, plane_params)
 
-    def _create_terrain(self, env_ptr, env_id):
-
-        pose = gymapi.Transform()
-
-        pose.p.x = self.cfg["env"]["terrain"]["terrain_origin"][0]
-        pose.p.y = self.cfg["env"]["terrain"]["terrain_origin"][1]
-        pose.p.z = self.cfg["env"]["terrain"]["terrain_origin"][2]
-
-        handle = self.gym.create_actor(
-            env_ptr, self.terrain_asset, pose, "tm", env_id, 2, 0)
-        if self.cfg["env"]["terrain"]["texture"] != "none":
-            th = self.gym.create_texture_from_file(
-                self.sim, "../../assets/textures/{}".format(self.cfg["env"]["terrain"]["texture"]))
-            self.gym.set_rigid_body_texture(
-                env_ptr, handle, 0, gymapi.MESH_VISUAL_AND_COLLISION, th)
-        return handle
-
     def _load_surrounding_assets(self):
         self.surrounding_assets = []
         for name in self.surrounding_names:
-            if name != "plane":
-                terrain_asset_root = "../../assets"
-                terrain_asset_file = "terrains/{}/{}.urdf".format(
-                    name, name)
-                terrain_asset_path = os.path.join(
-                    terrain_asset_root, terrain_asset_file)
-                terrain_asset_root = os.path.dirname(terrain_asset_path)
-                terrain_asset_file = os.path.basename(terrain_asset_path)
+            asset_root = "../../assets"
+            asset_file = "terrains/{}/{}.urdf".format(
+                name, name)
+            asset_path = os.path.join(
+                asset_root, asset_file)
+            asset_root = os.path.dirname(asset_path)
+            asset_file = os.path.basename(asset_path)
 
-                terrain_asset_options = gymapi.AssetOptions()
-                terrain_asset_options.fix_base_link = True
-                terrain_asset_options.vhacd_enabled = True
-                terrain_asset_options.vhacd_params.resolution = 3000000
-                terrain_asset_options.vhacd_params.max_convex_hulls = 20
-                terrain_asset_options.vhacd_params.max_num_vertices_per_ch = 256
+            asset_options = gymapi.AssetOptions()
+            asset_options.fix_base_link = True
+            asset_options.vhacd_enabled = True
+            asset_options.vhacd_params.resolution = 3000000
+            asset_options.vhacd_params.max_convex_hulls = 20
+            asset_options.vhacd_params.max_num_vertices_per_ch = 256
 
-                asset = self.gym.load_asset(
-                    self.sim, terrain_asset_root, terrain_asset_file, terrain_asset_options)
-                self.surrounding_assets.append(asset)
+            asset = self.gym.load_asset(
+                self.sim, asset_root, asset_file, asset_options)
+            self.surrounding_assets.append(asset)
 
     def _register(self, cfg):
-        self.cfg = cfg
 
+        self.cfg = cfg
+        self.task_name = cfg["task"]["name"]
         # normalization
         self.lin_vel_scale = self.cfg["env"]["learn"]["linearVelocityScale"]
         self.ang_vel_scale = self.cfg["env"]["learn"]["angularVelocityScale"]
@@ -115,8 +97,8 @@ class Robot(BaseTask):
             self.width = self.cfg["env"]["vision"]["width"]
             self.height = self.cfg["env"]["vision"]["height"]
             self.camera_angle = self.cfg["env"]["vision"]["camera_angle"]
-
         self.frame_count = 0
+
         # reward scales
         self.rew_scales = {}
         self.rew_scales["linearVelocityXYRewardScale"] = self.cfg["env"]["learn"]["linearVelocityXYRewardScale"]
@@ -154,8 +136,7 @@ class Robot(BaseTask):
 
         # surroundings
         self.surroundings = self.cfg["env"]["surroundings"]
-        self.surrounding_names = [term["name"]
-                                  for _, term in self.surroundings.items()]
+        self.surrounding_names = [key for key, _ in self.surroundings.items()]
         self._load_surrounding_assets()
         self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]
         self.plane_dynamic_friction = self.cfg["env"]["plane"]["dynamicFriction"]
@@ -377,9 +358,7 @@ class Robot(BaseTask):
         env_upper = gymapi.Vec3(spacing, spacing, spacing)
         self.a1_indices = []
         self.a1_handles = []
-        self.terrain_handles = []
-        self.terrain_indices = []
-        self.box_handles = []
+        self.surrounding_indices = []
         self.envs = []
         if self.get_image:
             self.camera_handles = []
@@ -401,11 +380,12 @@ class Robot(BaseTask):
             a1_idx = self.gym.get_actor_index(
                 env_ptr, a1_handle, gymapi.DOMAIN_SIM)
             self.a1_indices.append(a1_idx)
-            if self.terrain_name != "plane":
-                terrain_handle = self._create_terrain(env_ptr, i)
-                terrain_idx = self.gym.get_actor_index(
-                    env_ptr, terrain_handle, gymapi.DOMAIN_SIM)
-                self.terrain_indices.append(terrain_idx)
+
+            surrounding_handles = self.env_wrapper.create_surroundings(
+                self, env_ptr, i)
+            surrounding_indices = [self.gym.get_actor_index(
+                env_ptr, sh, gymapi.DOMAIN_SIM) for sh in surrounding_handles]
+            self.surrounding_indices.append(surrounding_indices)
 
             if self.get_image:
                 camera_properties = gymapi.CameraProperties()
@@ -454,9 +434,8 @@ class Robot(BaseTask):
                 self.envs[0], self.a1_handles[0], termination_contact_names[i])
         self.feet_air_time = torch.zeros(
             self.num_envs, self.feet_indices.shape[0], dtype=torch.float, device=self.device, requires_grad=False)
-        if self.terrain_name != "plane":
-            self.terrain_indices = to_torch(
-                self.terrain_indices, dtype=torch.long, device=self.device)
+        self.surrounding_indices = to_torch(
+            self.surrounding_indices, dtype=torch.long, device=self.device)
 
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
@@ -521,7 +500,6 @@ class Robot(BaseTask):
                 self.sim, gymtorch.unwrap_tensor(targets_pos))
             self.gym.simulate(self.sim)
 
-        # to fix!
         if self.device == 'cpu':
             self.gym.fetch_results(self.sim, True)
 
@@ -574,6 +552,7 @@ class Robot(BaseTask):
             self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1., dim=1)
         self.time_out_buf = self.progress_buf > self.max_episode_length
         self.reset_buf |= self.time_out_buf
+        self.reset_buf |= self.env_wrapper.check_termination(self)
 
     def _reward_feet_air_time(self):
         # Reward long steps
@@ -811,6 +790,17 @@ class Robot(BaseTask):
             self.commands_x[env_ids] = - self.commands_x[env_ids]
             self.commands_y[env_ids] = - self.commands_y[env_ids]
             self.commands_yaw[env_ids] = - self.commands_yaw[env_ids]
+
+    def _init_viewer(self):
+        if self.viewer is not None:
+            p = self.cfg["env"]["viewer"]["pos"]
+            lookat = self.cfg["env"]["viewer"]["lookat"]
+            self.camera_distance = [
+                _lookat - _p for _lookat, _p in zip(lookat, p)]
+            cam_pos = gymapi.Vec3(p[0], p[1], p[2])
+            cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
+            self.gym.viewer_camera_look_at(
+                self.viewer, None, cam_pos, cam_target)
 
     def _update_viewer(self):
         if self.viewer is not None:

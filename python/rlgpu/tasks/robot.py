@@ -147,9 +147,9 @@ class Robot(BaseTask):
         rot = self.cfg["env"]["baseInitState"]["rot"]
         v_lin = self.cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
-        pos[0] += self.cfg["env"]["terrain"]["robot_origin"][0]
-        pos[1] += self.cfg["env"]["terrain"]["robot_origin"][1]
-        pos[2] += self.cfg["env"]["terrain"]["robot_origin"][2]
+        pos[0] += self.cfg["env"]["robot_origin"][0]
+        pos[1] += self.cfg["env"]["robot_origin"][1]
+        pos[2] += self.cfg["env"]["robot_origin"][2]
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
 

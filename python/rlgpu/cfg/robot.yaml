@@ -8,6 +8,7 @@ env:
   risk_reward: False
   rush_reward: False
   vel_reward_exp_coeff: 0.25
+  robot_origin: [0., 0., 0.]
 
   surroundings:
     upstairs:
@@ -16,14 +17,14 @@ env:
       dynamic_friction: 1.0  # [-]
       restitution: 0.        # [-]
       robot_origin: [0., 0., 0.]
-      terrain_origin: [0., 0., 0.]
+      surrounding_origin_origin: [0., 0., 0.]
     downstairs:
       texture: "none"
       static_friction: 1.0  # [-]
       dynamic_friction: 1.0  # [-]
       restitution: 0.        # [-]
       robot_origin: [0., 0., 0.]
-      terrain_origin: [0., 0., 0.]
+      surrounding_origin_origin: [0., 0., 0.]
 
   asset:
     penalize_contacts_on: []

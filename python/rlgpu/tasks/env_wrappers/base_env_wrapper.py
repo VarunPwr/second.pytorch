@@ -44,7 +44,7 @@ class BaseEnvWrapper(object):
             pose.p.z = surrounding_cfg["surrounding_origin"][2]
 
             handle = task.gym.create_actor(
-                env_ptr, surrounding_assets, pose, "tm", env_id, 2 + i, 0)
+                env_ptr, surrounding_assets, pose, "sr_{}".format(i), env_id, 2 + i, 0)
             if surrounding_cfg["texture"] != "none":
                 th = task.gym.create_texture_from_file(
                     task.sim, "../../../assets/textures/{}".format(surrounding_cfg["texture"]))

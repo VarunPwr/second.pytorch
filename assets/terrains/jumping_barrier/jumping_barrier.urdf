@@ -10,49 +10,49 @@
        <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
     </inertial>
     <visual>
-      <origin rpy="1.57 0 -1.57" xyz="0 0.6 0 "/>
+      <origin rpy="1.57 0 -1.57" xyz="0 0.0 0 "/>
       <geometry>
-				<mesh filename="meshes/bench.obj" scale="0.2 0.2 0.06"/>
+				<mesh filename="meshes/barrier.obj" scale="0.8 0.4 0.06"/>
       </geometry>
        <material name="white">
         <color rgba="0.5 0.5 0.5 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin rpy="1.57 0 -1.57" xyz="0 0.6 0 "/>
+      <origin rpy="1.57 0 -1.57" xyz="0 0.0 0 "/>
       <geometry>
-				<mesh filename="meshes/bench.obj" scale="0.2 0.2 0.06"/>
+				<mesh filename="meshes/barrier.obj" scale="0.8 0.4 0.06"/>
       </geometry>
     </collision>
 
     <visual>
-      <origin rpy="1.57 0 -1.57" xyz="1.5 0.6 0 "/>
+      <origin rpy="1.57 0 -1.57" xyz="1.5 0.0 0 "/>
       <geometry>
-				<mesh filename="meshes/bench.obj" scale="0.2 0.2 0.1"/>
+				<mesh filename="meshes/barrier.obj" scale="0.8 0.4 0.1"/>
       </geometry>
        <material name="white">
         <color rgba="0.5 0.5 0.5 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin rpy="1.57 0 -1.57" xyz="1.5 0.6 0 "/>
+      <origin rpy="1.57 0 -1.57" xyz="1.5 0.0 0 "/>
       <geometry>
-				<mesh filename="meshes/bench.obj" scale="0.2 0.2 0.1"/>
+				<mesh filename="meshes/barrier.obj" scale="0.8 0.4 0.1"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="1.57 0 -1.57" xyz="3 0.6 0 "/>
+      <origin rpy="1.57 0 -1.57" xyz="3 0.0 0 "/>
       <geometry>
-				<mesh filename="meshes/bench.obj" scale="0.2 0.2 0.15"/>
+				<mesh filename="meshes/barrier.obj" scale="0.8 0.4 0.15"/>
       </geometry>
        <material name="white">
         <color rgba="0.5 0.5 0.5 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin rpy="1.57 0 -1.57" xyz="3 0.6 0 "/>
+      <origin rpy="1.57 0 -1.57" xyz="3 0.0 0 "/>
       <geometry>
-				<mesh filename="meshes/bench.obj" scale="0.2 0.2 0.15"/>
+				<mesh filename="meshes/barrier.obj" scale="0.8 0.4 0.15"/>
       </geometry>
     </collision>
 

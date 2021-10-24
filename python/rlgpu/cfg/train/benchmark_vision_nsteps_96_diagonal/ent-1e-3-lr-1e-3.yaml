@@ -1,0 +1,37 @@
+seed: -1
+clip_observations: 1000.0
+clip_actions: 4.0
+policy: # only works for MlpPolicy right now
+  vf_hid_sizes: [256, 128]
+  pi_hid_sizes: [256, 128]
+  activation: relu # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
+  encoder_type: "nature"
+  encoder_params:
+    in_channels: 4
+    visual_dim: 16384
+    state_dim: 72
+    hidden_dims: [256, 256]
+learn:
+  agent_name: a1_visual_ppo
+  test: False
+  resume: 0
+  save_interval: 400 # check for potential saves every this many iterations
+  print_log: True
+
+  # number of policy updates
+  max_iterations: 5000
+
+  # training params
+  cliprange: 0.2
+  ent_coef: 0.001
+  nsteps: 96
+  noptepochs: 8
+  nminibatches: 16 # this is per agent
+  optim_stepsize: 1.e-3
+  schedule: adaptive # could be adaptive, linear or fixed
+  gamma: 0.99
+  lam: 0.95
+  init_noise_std: 1.0
+  desired_kl: 0.01
+  log_interval: 1
+  max_grad_norm: 1.

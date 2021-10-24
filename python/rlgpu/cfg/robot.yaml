@@ -143,7 +143,7 @@ sim:
     bounce_threshold_velocity: 0.2
     max_depenetration_velocity: 5.0
 
-task:
+randomize_state:
   randomize: True
   randomization_params:
     frequency: 10000

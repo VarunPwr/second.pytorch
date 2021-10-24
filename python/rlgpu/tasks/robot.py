@@ -15,9 +15,7 @@ import torch
 from torch import Tensor
 from rlgpu.tasks.task_wrappers import build_task_wrapper
 from rlgpu.tasks.env_wrappers import build_env_wrapper
-
-all_task_wrappers = {}
-all_env_wrappers = {}
+from rlgpu.tasks.utilizers import build_utilizer
 
 
 class Robot(BaseTask):
@@ -34,6 +32,7 @@ class Robot(BaseTask):
         super().__init__(cfg=self.cfg)
         self._init_viewer()
         self._build_buf()
+        self._build_utilizers()
         self.task_wrapper = build_task_wrapper(
             self.task_name, self.device, self.cfg)
         self.env_wrapper = build_env_wrapper(
@@ -119,12 +118,6 @@ class Robot(BaseTask):
         # use diagonal action
         self.diagonal_act = self.cfg["env"]["learn"]["diagonal_act"]
 
-        # randomization
-        self.randomization_params = self.cfg["task"]["randomization_params"]
-        self.randomize = self.cfg["task"]["randomize"]
-        self.randomize_reward = self.cfg["randomize_reward"]["randomize"]
-        self.reward_randomization_params = self.cfg["randomize_reward"]["randomization_params"]
-
         # commands
         self.command_type = self.cfg["env"]["command"]
         self.command_change_step = self.cfg["env"]["commandChangeStep"]
@@ -203,6 +196,15 @@ class Robot(BaseTask):
 
             self.cfg["env"]["numObservations"] += image_obs_size
             self.image_obs_size = image_obs_size
+
+    def _build_utilizers(self):
+        self.randomizer = {}
+        if self.cfg["randomize_state"]:
+            self.randomizer["randomize_state"] = build_utilizer("randomize_state", self.cfg)
+            self.randomize_input = True
+        if self.cfg["randomize_reward"]:
+            self.randomizer["randomize_reward"] = build_utilizer(
+                "randomize_reward", self.cfg)
 
     def _build_buf(self):
         # get gym state tensors
@@ -474,10 +476,9 @@ class Robot(BaseTask):
 
     def step(self, actions):
 
-        if self.dr_randomizations.get('actions', None):
-            actions = self.dr_randomizations['actions']['noise_lambda'](
-                actions)
-
+        if self.randomize_input:
+            actions = self.randomizer["randomize_state"].dr_randomizations['actions']['noise_lambda'](actions)
+            
         # apply actions
         self.pre_physics_step(actions)
 
@@ -506,9 +507,8 @@ class Robot(BaseTask):
         # compute observations, rewards, resets, ...
         self.post_physics_step()
 
-        if self.dr_randomizations.get('observations', None):
-            self.obs_buf = self.dr_randomizations['observations']['noise_lambda'](
-                self.obs_buf)
+        if self.randomize_input:
+            actions = self.randomizer["randomize_state"].dr_randomizations['observations']['noise_lambda'](actions)
 
     def post_physics_step(self):
         self.frame_count += 1
@@ -674,29 +674,10 @@ class Robot(BaseTask):
             props['damping'][i] = self.Kd
         return props
 
-    def apply_reward_randomizations(self, rr_params):
-        rand_freq = rr_params.get("frequency", 1)
-
-        self.last_step = self.gym.get_frame_count(self.sim)
-
-        do_rew_randomize = (
-            self.last_step - self.last_rew_rand_step) >= rand_freq
-        if do_rew_randomize:
-            self.last_rew_rand_step = self.last_step
-
-        scale_params = rr_params["reward_scale"]
-        for k, v in scale_params.items():
-            v_range = v["range"]
-            self.rew_scales[k] = np.random.uniform(
-                low=v_range[0], high=v_range[1]) * self.dt
-
     def reset(self, env_ids):
         # Randomization can happen only at reset time, since it can reset actor positions on GPU
-        if self.randomize:
-            self.apply_randomizations(self.randomization_params)
-
-        if self.randomize_reward:
-            self.apply_reward_randomizations(self.reward_randomization_params)
+        for _, randomizer in self.randomizer.items():
+            randomizer.apply_randomizations(self)
 
         # positions_offset = torch_rand_float(
         #     0.5, 1.5, (len(env_ids), self.num_dof), device=self.device)

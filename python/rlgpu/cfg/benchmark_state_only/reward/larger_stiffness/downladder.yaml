@@ -46,8 +46,8 @@ env:
 
   control:
     # PD Drive parameters:
-    stiffness: 30.0  # [N*m/rad]
-    damping: 0.4    # [N*m*s/rad]
+    stiffness: 35.0  # [N*m/rad]
+    damping: 0.2    # [N*m*s/rad]
     actionScale: 0.5
     hipActionScale: 0.15
     controlFrequencyInv: 4  # 60 Hz

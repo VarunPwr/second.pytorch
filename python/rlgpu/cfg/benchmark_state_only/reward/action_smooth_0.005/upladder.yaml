@@ -81,7 +81,7 @@ env:
       soft_torque_limit: 1.
     linearVelocityXYRewardScale: 2.0
     angularVelocityZRewardScale: 1.0
-    linearVelocityZRewardScale: -0.2
+    linearVelocityZRewardScale: -0.01
     torqueRewardScale: -0.000025 
     actionSmoothingRewardScale: -0.005 
     stumble: 0.

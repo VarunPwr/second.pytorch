@@ -18,9 +18,7 @@ class SubTerrain:
 class Terrain:
     def __init__(self, cfg, num_robots) -> None:
 
-        self.type = cfg["mesh_type"]
-        if self.type in ["none", 'plane']:
-            return
+        self.type = "trimesh"
         self.horizontal_scale = 0.1  # [m]
         self.vertical_scale = 0.005  # [m]
         self.border_size = 20  # [m]
@@ -58,6 +56,75 @@ class Terrain:
         if self.type == "trimesh":
             self.slope_treshold = cfg["slope_treshold"]
             self.convert_to_trimesh()
+
+    def curiculum(self, num_robots, num_terrains, num_levels):
+        num_robots_per_map = int(num_robots / num_terrains)
+        left_over = num_robots % num_terrains
+        idx = 0
+        for j in range(num_terrains):
+            for i in range(num_levels):
+                terrain = SubTerrain("terrain",
+                                     width=self.width_per_env_pixels,
+                                     length=self.width_per_env_pixels,
+                                     vertical_scale=self.vertical_scale,
+                                     horizontal_scale=self.horizontal_scale)
+                difficulty = i / num_levels
+                choice = j / num_terrains + 0.001
+
+                slope = difficulty * 0.4
+                step_height = 0.05 + 0.175 * difficulty
+                discrete_obstacles_height = 0.025 + difficulty * 0.2
+                stepping_stones_size = 1.5 * (1.1 - difficulty)
+                if choice < self.proportions[0]:
+                    if choice < self.proportions[0] / 2:
+                        slope *= -1
+                    pyramid_sloped_terrain(
+                        terrain, slope=slope, platform_size=3.)
+                elif choice < self.proportions[1]:
+                    # if choice <= (self.proportions[0] + self.proportions[1]) / 2:
+                    #     slope *= -1
+                    pyramid_sloped_terrain(
+                        terrain, slope=slope, platform_size=3.)
+                    rand_uniform_terrain(
+                        terrain, min_height=-0, max_height=15, step=5)
+                    terrain.height_field_raw -= 15
+                elif choice < self.proportions[3]:
+                    if choice < self.proportions[2]:
+                        step_height *= -1
+                    pyramid_stairs_terrain(
+                        terrain, step_width=0.31, step_height=step_height, platform_size=3.)
+                elif choice < self.proportions[4]:
+                    num_rectangles = 40
+                    rectangle_min_size = int(1. / self.horizontal_scale)
+                    rectangle_max_size = int(2. / self.horizontal_scale)
+                    discrete_obstacles_terrain(
+                        terrain, discrete_obstacles_height, rectangle_min_size, rectangle_max_size, num_rectangles, platform_size=3.)
+                else:
+                    stepping_stones_terrain(
+                        terrain, stone_size=stepping_stones_size, stone_distance=0.1, max_height=0., platform_size=3.)
+
+                # Heightfield coordinate system
+                start_x = self.border + i * self.length_per_env_pixels
+                end_x = self.border + (i + 1) * self.length_per_env_pixels
+                start_y = self.border + j * self.width_per_env_pixels
+                end_y = self.border + (j + 1) * self.width_per_env_pixels
+                self.height_field_raw[start_x: end_x,
+                                      start_y:end_y] = terrain.height_field_raw
+
+                robots_in_map = num_robots_per_map
+                if j < left_over:
+                    robots_in_map += 1
+
+                env_origin_x = (i + 0.5) * self.env_length
+                env_origin_y = (j + 0.5) * self.env_width
+                x1 = int((self.env_length/2. - 1) / self.horizontal_scale)
+                x2 = int((self.env_length/2. + 1) / self.horizontal_scale)
+                y1 = int((self.env_width/2. - 1) / self.horizontal_scale)
+                y2 = int((self.env_width/2. + 1) / self.horizontal_scale)
+                env_origin_z = np.max(
+                    terrain.height_field_raw[x1:x2, y1:y2])*self.vertical_scale
+                self.env_origins[i, j] = [
+                    env_origin_x, env_origin_y, env_origin_z]
 
     def randomized_terrain(self):
         for k in range(self.num_maps):
@@ -195,12 +262,12 @@ class Terrain:
         self.vertices = vertices
         self.triangles = triangles
         # Uncomment to write to .obj file
-        file = open("terrain.obj", "w")
-        for v in range(self.vertices.shape[0]):
-            file.write("v {:.2f} {:.2f} {:.2f}\n".format(*self.vertices[v]))
-        for t in range(self.triangles.shape[0]):
-            file.write("f {} {} {}\n".format(*self.triangles[t] + 1))
-        file.close()
+        # file = open("terrain.obj", "w")
+        # for v in range(self.vertices.shape[0]):
+        #     file.write("v {:.2f} {:.2f} {:.2f}\n".format(*self.vertices[v]))
+        # for t in range(self.triangles.shape[0]):
+        #     file.write("f {} {} {}\n".format(*self.triangles[t] + 1))
+        # file.close()
 
 
 def rand_uniform_terrain(terrain, min_height, max_height, step=1):

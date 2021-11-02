@@ -9,6 +9,7 @@ import numpy as np
 import os
 from rlgpu.utils.torch_jit_utils import *
 from rlgpu.tasks.base.base_task import BaseTask
+from rlgpu.utils.terrain import Terrain
 from isaacgym import gymtorch
 from isaacgym import gymapi
 from pytorch3d.transforms import matrix_to_euler_angles, quaternion_to_matrix
@@ -81,6 +82,10 @@ class A1(BaseTask):
 
         # terrain
         self.terrain_name = self.cfg["env"]["terrain"]["terrain_name"]
+
+        if self.terrain_name == "play_ground":
+            self.play_ground = Terrain(
+                self.cfg["env"]["terrain"]["play_ground_attr"], self.cfg["env"]["numEnvs"])
 
         # plane params
         self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]
@@ -284,7 +289,10 @@ class A1(BaseTask):
         self.up_axis_idx = self.set_sim_params_up_axis(self.sim_params, 'z')
         self.sim = super().create_sim(self.device_id, self.graphics_device_id,
                                       self.physics_engine, self.sim_params)
-        self._create_ground_plane()
+        if self.terrain_name == "play_ground":
+            self._create_play_ground()
+        else:
+            self._create_ground_plane()
         self._create_envs(self.cfg["env"]['envSpacing'],
                           int(np.sqrt(self.num_envs)))
 
@@ -294,6 +302,25 @@ class A1(BaseTask):
         plane_params.static_friction = self.plane_static_friction
         plane_params.dynamic_friction = self.plane_dynamic_friction
         self.gym.add_ground(self.sim, plane_params)
+
+    def _create_play_ground(self):
+        """ Adds a triangle mesh terrain to the simulation, sets parameters based on the cfg.
+        """
+        tm_params = gymapi.TriangleMeshParams()
+        tm_params.nb_vertices = self.play_ground.vertices.shape[0]
+        tm_params.nb_triangles = self.play_ground.triangles.shape[0]
+        tm_params.transform.p.x = -self.play_ground.border_size
+        tm_params.transform.p.y = -self.play_ground.border_size
+        tm_params.transform.p.z = 0.0
+        tm_params.static_friction = self.cfg["env"]["terrain"]["play_ground_attr"]["static_friction"]
+        tm_params.dynamic_friction = self.cfg["env"]["terrain"]["play_ground_attr"]["dynamic_friction"]
+        tm_params.restitution = self.cfg["env"]["terrain"]["play_ground_attr"]["restitution"]
+        # tm_params.texture_path = os.path.join(self.cwd, 'resources', 'terrain', 'textures', 'texture_concrete_seemless.jpg') TODO: not working at the moment
+
+        self.gym.add_triangle_mesh(self.sim, self.play_ground.vertices.flatten(
+            order='C'), self.play_ground.triangles.flatten(order='C'), tm_params)
+        self.height_samples = torch.tensor(self.play_ground.heightsamples).view(
+            self.play_ground.tot_cols, self.play_ground.tot_rows).to(self.device)
 
     def _create_terrain(self, env_ptr, env_id):
 
@@ -313,7 +340,7 @@ class A1(BaseTask):
         return handle
 
     def _load_terrain(self):
-        if self.terrain_name != "plane":
+        if self.terrain_name not in ["plane", "play_ground"]:
             terrain_asset_root = "../../assets"
             terrain_asset_file = "terrains/{}/{}.urdf".format(
                 self.terrain_name, self.terrain_name)
@@ -400,7 +427,7 @@ class A1(BaseTask):
             a1_idx = self.gym.get_actor_index(
                 env_ptr, a1_handle, gymapi.DOMAIN_SIM)
             self.a1_indices.append(a1_idx)
-            if self.terrain_name != "plane":
+            if self.terrain_name not in ["plane", "play_ground"]:
                 terrain_handle = self._create_terrain(env_ptr, i)
                 terrain_idx = self.gym.get_actor_index(
                     env_ptr, terrain_handle, gymapi.DOMAIN_SIM)
@@ -505,7 +532,8 @@ class A1(BaseTask):
 
         # step physics and render each frame
         if self.diagonal_act:
-            right_action, left_action = torch.chunk(self.action_scale * self.actions, 2, dim=-1)
+            right_action, left_action = torch.chunk(
+                self.action_scale * self.actions, 2, dim=-1)
             whole_action = torch.cat(
                 [right_action, left_action, left_action, right_action], dim=-1)
             targets_pos = whole_action + self.default_dof_pos

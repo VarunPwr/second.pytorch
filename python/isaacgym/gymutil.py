@@ -370,6 +370,8 @@ def parse_arguments(description="Isaac Gym Example", headless=False, no_graphics
 
 # parse sim options provided in sim_cfg to gym api sim_options
 
+# NOTE: This function is deprecated and will not be supported in future releases.
+
 
 def parse_sim_config(sim_cfg: dict, sim_options: gymapi.SimParams):
     # Todo:: add param value checks
@@ -406,6 +408,8 @@ def parse_sim_config(sim_cfg: dict, sim_options: gymapi.SimParams):
 
 # parse flex sim options
 
+# NOTE: This function is deprecated and will not be supported in future releases.
+
 
 def parse_flex_config(flex_cfg: dict, sim_options: gymapi.SimParams):
     ints = ["solver_type", "num_outer_iterations", "num_inner_iterations", "friction_mode"]
@@ -420,9 +424,11 @@ def parse_flex_config(flex_cfg: dict, sim_options: gymapi.SimParams):
 
 # parse physx sim options
 
+# NOTE: This function is deprecated and will not be supported in future releases.
+
 
 def parse_physx_config(physx_cfg: dict, sim_options: gymapi.SimParams):
-    ints = ["num_threads", "solver_type", "num_position_iterations", "num_velocity_iterations"]
+    ints = ["num_threads", "solver_type", "num_position_iterations", "num_velocity_iterations", "max_gpu_contact_pairs", "num_subscenes", "contact_collection"]
     floats = ["contact_offset", "rest_offset", "bounce_threshold_velocity", "max_depenetration_velocity",
               "default_buffer_size_multiplier", "friction_correlation_distance", "friction_offset_threshold"]
     bools = ["use_gpu", "always_use_articulations"]
@@ -432,6 +438,8 @@ def parse_physx_config(physx_cfg: dict, sim_options: gymapi.SimParams):
     parse_float_int_bool(physx_cfg, sim_options.physx, params)
 
 # parses float, int, and bools listed in float_int_bool from cfg and stores them in opts
+
+# NOTE: This function is deprecated and will not be supported in future releases.
 
 
 def parse_float_int_bool(cfg: dict, opts: object, float_int_bool: dict):
@@ -444,7 +452,10 @@ def parse_float_int_bool(cfg: dict, opts: object, float_int_bool: dict):
     if "int" in float_int_bool:
         for opt in float_int_bool["int"]:
             if opt in cfg:
-                val = int(cfg[opt])
+                if opt == "contact_collection":
+                    val = gymapi.ContactCollection(cfg[opt])
+                else:
+                    val = int(cfg[opt])
                 setattr(opts, opt, val)
 
     if "bool" in float_int_bool:

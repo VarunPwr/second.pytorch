@@ -7,6 +7,7 @@
 
 
 from rlgpu.tasks.a1 import A1
+from rlgpu.tasks.robot import Robot
 from rlgpu.tasks.base.vec_task import VecTaskCPU, VecTaskGPU, VecTaskPython
 
 from rlgpu.utils.config import warn_task_name

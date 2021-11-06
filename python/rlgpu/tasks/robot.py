@@ -7,6 +7,7 @@
 
 import numpy as np
 import os
+import sys
 from rlgpu.utils.torch_jit_utils import *
 from rlgpu.tasks.base.base_task import BaseTask
 from isaacgym import gymtorch
@@ -18,36 +19,76 @@ from rlgpu.tasks.env_wrappers import build_env_wrapper
 from rlgpu.tasks.utilizers import build_utilizer
 
 
-class Robot(BaseTask):
+class Robot:
 
     def __init__(self, cfg, sim_params, physics_engine, device_type, device_id, headless):
 
+        self.gym = gymapi.acquire_gym()
+
+        self.cfg = cfg
+        self.task_name = cfg["task"]["name"]
+        self.num_envs = cfg["env"]["numEnvs"]
+        self.get_image = cfg["env"]["vision"]["get_image"]
+        self.device_type = cfg.get("device_type", "cuda")
+        self.device_id = cfg.get("device_id", 0)
+
+        self.device = "cpu"
+        # if self.device_type == "cuda" or self.device_type == "GPU":
+        #     self.device = "cuda" + ":" + str(self.device_id)
+
+        self.headless = cfg["headless"]
+
+        # double check!
+        self.graphics_device_id = self.device_id
+        if self.headless and not self.get_image:
+            self.graphics_device_id = -1
+
+        # self.control_freq_inv = cfg["env"].get("controlFrequencyInv", 1)
+
+        # optimization flags for pytorch JIT
+        torch._C._jit_set_profiling_mode(False)
+        torch._C._jit_set_profiling_executor(False)
+
         self.sim_params = sim_params
         self.physics_engine = physics_engine
-        self._register(cfg)
+        self.create_sim()
+        self.gym.prepare_sim(self.sim)
+        self._register()
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
         self.cfg["headless"] = headless
-
-        super().__init__(cfg=self.cfg)
         self._init_viewer()
         self._build_buf()
         self._build_utilizers()
-        self.task_wrapper = build_task_wrapper(
-            self.task_name, self.device, self.cfg)
-        self.env_wrapper = build_env_wrapper(
-            self.task_name, self.device, self.cfg)
+        self._prepare_reward_function()
         self.reset(torch.arange(self.num_envs, device=self.device))
 
     def create_sim(self):
         self.up_axis_idx = self.set_sim_params_up_axis(self.sim_params, 'z')
-        self.sim = super().create_sim(self.device_id, self.graphics_device_id,
-                                      self.physics_engine, self.sim_params)
+        self.sim = self.gym.create_sim(self.device_id, self.graphics_device_id,
+                                       self.physics_engine, self.sim_params)
+        if self.sim is None:
+            print("*** Failed to create sim")
+            quit()
         self._create_ground_plane()
         self._create_envs(self.cfg["env"]['envSpacing'],
                           int(np.sqrt(self.num_envs)))
 
+    def set_sim_params_up_axis(self, sim_params, axis):
+        if axis == 'z':
+            sim_params.up_axis = gymapi.UP_AXIS_Z
+            sim_params.gravity.x = 0
+            sim_params.gravity.y = 0
+            sim_params.gravity.z = -9.81
+            return 2
+        return 1
+
     def _create_ground_plane(self):
+
+        self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]
+        self.plane_dynamic_friction = self.cfg["env"]["plane"]["dynamicFriction"]
+        self.plane_restitution = self.cfg["env"]["plane"]["restitution"]
+
         plane_params = gymapi.PlaneParams()
         plane_params.normal = gymapi.Vec3(0.0, 0.0, 1.0)
         plane_params.static_friction = self.plane_static_friction
@@ -76,10 +117,8 @@ class Robot(BaseTask):
                 self.sim, asset_root, asset_file, asset_options)
             self.surrounding_assets.append(asset)
 
-    def _register(self, cfg):
+    def _register(self):
 
-        self.cfg = cfg
-        self.task_name = cfg["task"]["name"]
         # normalization
         self.lin_vel_scale = self.cfg["env"]["learn"]["linearVelocityScale"]
         self.ang_vel_scale = self.cfg["env"]["learn"]["angularVelocityScale"]
@@ -87,7 +126,6 @@ class Robot(BaseTask):
         self.dof_vel_scale = self.cfg["env"]["learn"]["dofVelocityScale"]
         self.action_scale = self.cfg["env"]["control"]["actionScale"]
         self.hip_action_scale = self.cfg["env"]["control"]["hipActionScale"]
-        self.get_image = self.cfg["env"]["vision"]["get_image"]
         if self.get_image:
             # vision-guided mode
             self.frame_stack = self.cfg["env"]["vision"]["frame_stack"]
@@ -113,8 +151,6 @@ class Robot(BaseTask):
 
         self.num_rew_terms = len(self.rew_scales)
 
-        self.soft_limits = self.cfg["env"]["learn"]["soft_limits"]
-
         # use diagonal action
         self.diagonal_act = self.cfg["env"]["learn"]["diagonal_act"]
 
@@ -126,25 +162,6 @@ class Robot(BaseTask):
         self.command_x_range = self.cfg["env"]["randomCommandRanges"]["linear_x"]
         self.command_y_range = self.cfg["env"]["randomCommandRanges"]["linear_y"]
         self.command_yaw_range = self.cfg["env"]["randomCommandRanges"]["yaw"]
-
-        # surroundings
-        self.surroundings = self.cfg["env"]["surroundings"]
-        self.surrounding_names = [key for key, _ in self.surroundings.items()]
-        self._load_surrounding_assets()
-        self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]
-        self.plane_dynamic_friction = self.cfg["env"]["plane"]["dynamicFriction"]
-        self.plane_restitution = self.cfg["env"]["plane"]["restitution"]
-
-        # base init state
-        pos = self.cfg["env"]["baseInitState"]["pos"]
-        rot = self.cfg["env"]["baseInitState"]["rot"]
-        v_lin = self.cfg["env"]["baseInitState"]["vLinear"]
-        v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
-        pos[0] += self.cfg["env"]["robot_origin"][0]
-        pos[1] += self.cfg["env"]["robot_origin"][1]
-        pos[2] += self.cfg["env"]["robot_origin"][2]
-        state = pos + rot + v_lin + v_ang
-        self.base_init_state = state
 
         # sensor settings
         self.historical_step = self.cfg["env"]["sensor"]["historical_step"]
@@ -165,8 +182,6 @@ class Robot(BaseTask):
         self.max_episode_length_s = self.cfg["env"]["learn"]["episodeLength_s"]
         self.max_episode_length = int(
             self.max_episode_length_s / (self.control_freq_inv * self.dt) + 0.5)
-        self.Kp = self.cfg["env"]["control"]["stiffness"]
-        self.Kd = self.cfg["env"]["control"]["damping"]
 
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
@@ -197,10 +212,15 @@ class Robot(BaseTask):
             self.cfg["env"]["numObservations"] += image_obs_size
             self.image_obs_size = image_obs_size
 
+        self.num_obs = self.cfg["env"]["numObservations"]
+        self.num_states = self.cfg["env"].get("numStates", 0)
+        self.num_actions = self.cfg["env"]["numActions"]
+
     def _build_utilizers(self):
         self.randomizer = {}
         if self.cfg["randomize_state"]:
-            self.randomizer["randomize_state"] = build_utilizer("randomize_state", self.cfg)
+            self.randomizer["randomize_state"] = build_utilizer(
+                "randomize_state", self.cfg)
             self.randomize_input = True
         if self.cfg["randomize_reward"]:
             self.randomizer["randomize_reward"] = build_utilizer(
@@ -208,6 +228,26 @@ class Robot(BaseTask):
 
     def _build_buf(self):
         # get gym state tensors
+        # allocate buffers
+        self.obs_buf = torch.zeros(
+            (self.num_envs, self.num_obs), device=self.device, dtype=torch.float)
+        self.states_buf = torch.zeros(
+            (self.num_envs, self.num_states), device=self.device, dtype=torch.float)
+        self.rew_buf = torch.zeros(
+            self.num_envs, device=self.device, dtype=torch.float)
+        self.reset_buf = torch.ones(
+            self.num_envs, device=self.device, dtype=torch.long)
+        self.progress_buf = torch.zeros(
+            self.num_envs, device=self.device, dtype=torch.long)
+        self.randomize_buf = torch.zeros(
+            self.num_envs, device=self.device, dtype=torch.long)
+
+        self.dr_randomizations = {}
+
+        self.last_step = -1
+        self.last_rand_step = -1
+        self.last_rew_rand_step = -1
+
         actor_root_state = self.gym.acquire_actor_root_state_tensor(self.sim)
         dof_state_tensor = self.gym.acquire_dof_state_tensor(self.sim)
         net_contact_forces = self.gym.acquire_net_contact_force_tensor(
@@ -317,6 +357,35 @@ class Robot(BaseTask):
             self.action_scale = torch.as_tensor(
                 [self.hip_action_scale, self.action_scale, self.action_scale] * 4, device=self.device)
 
+    def _sample_init_state(self):
+        # base init state
+        pos = self.cfg["env"]["baseInitState"]["pos"]
+        rot = self.cfg["env"]["baseInitState"]["rot"]
+        v_lin = self.cfg["env"]["baseInitState"]["vLinear"]
+        v_ang = self.cfg["env"]["baseInitState"]["vAngular"]
+        pos[0] += self.cfg["env"]["robot_origin"][0]
+        pos[1] += self.cfg["env"]["robot_origin"][1]
+        pos[2] += self.cfg["env"]["robot_origin"][2]
+        state = pos + rot + v_lin + v_ang
+        self.base_init_state = state
+
+    def _prepare_motor_params(self):
+
+        self.soft_limits = self.cfg["env"]["learn"]["soft_limits"]
+        self.Kp = self.cfg["env"]["control"]["stiffness"]
+        self.Kd = self.cfg["env"]["control"]["damping"]
+
+    def _prepare_wrappers(self):
+
+        # surroundings
+        self.surroundings = self.cfg["env"]["surroundings"]
+        self.surrounding_names = [key for key, _ in self.surroundings.items()]
+        self._load_surrounding_assets()
+        self.task_wrapper = build_task_wrapper(
+            self.task_name, self.device, self.cfg)
+        self.env_wrapper = build_env_wrapper(
+            self.task_name, self.device, self.cfg)
+
     def _create_envs(self, spacing, num_per_row):
         asset_root = "../../assets"
         asset_file = "urdf/a1/a1.urdf"
@@ -343,6 +412,7 @@ class Robot(BaseTask):
         self.num_dof = self.gym.get_asset_dof_count(a1_asset)
         self.num_bodies = self.gym.get_asset_rigid_body_count(a1_asset)
         start_pose = gymapi.Transform()
+        self._sample_init_state()
         start_pose.p = gymapi.Vec3(*self.base_init_state[:3])
 
         body_names = self.gym.get_asset_rigid_body_names(a1_asset)
@@ -366,6 +436,9 @@ class Robot(BaseTask):
             self.camera_handles = []
             self.depth_image = []
 
+        self._prepare_motor_params()
+        self._prepare_wrappers()
+
         for i in range(self.num_envs):
             # create env instances
             env_ptr = self.gym.create_env(
@@ -373,6 +446,7 @@ class Robot(BaseTask):
             a1_handle = self.gym.create_actor(
                 env_ptr, a1_asset, start_pose, "a1", i, 1, 0)
             dof_props = self._process_dof_props(dof_props_asset, i)
+
             self.gym.set_actor_dof_properties(
                 env_ptr, a1_handle, dof_props)
             self.gym.set_actor_dof_properties(env_ptr, a1_handle, dof_props)
@@ -388,7 +462,6 @@ class Robot(BaseTask):
             surrounding_indices = [self.gym.get_actor_index(
                 env_ptr, sh, gymapi.DOMAIN_SIM) for sh in surrounding_handles]
             self.surrounding_indices.append(surrounding_indices)
-
             if self.get_image:
                 camera_properties = gymapi.CameraProperties()
                 camera_properties.width = self.width
@@ -415,7 +488,6 @@ class Robot(BaseTask):
             self.envs[0], self.a1_handles[0], "trunk")
         self.a1_indices = to_torch(
             self.a1_indices, dtype=torch.long, device=self.device)
-
         penalized_contact_names = []
         for name in self.cfg["env"]["asset"]["penalize_contacts_on"]:
             penalized_contact_names.extend(
@@ -474,11 +546,41 @@ class Robot(BaseTask):
             self.gym.fetch_results(self.sim, True)
         self.post_physics_step()
 
+    def get_states(self):
+        return self.states_buf
+
+    def render(self, sync_frame_time=True):
+        if self.viewer:
+            # check for window closed
+            if self.gym.query_viewer_has_closed(self.viewer):
+                sys.exit()
+
+            # check for keyboard events
+            for evt in self.gym.query_viewer_action_events(self.viewer):
+                if evt.action == "QUIT" and evt.value > 0:
+                    sys.exit()
+                elif evt.action == "toggle_viewer_sync" and evt.value > 0:
+                    self.enable_viewer_sync = not self.enable_viewer_sync
+
+            # fetch results
+            if self.device != 'cpu':
+                self.gym.fetch_results(self.sim, True)
+
+            # step graphics
+            if self.enable_viewer_sync:
+                self.gym.step_graphics(self.sim)
+                self.gym.draw_viewer(self.viewer, self.sim, True)
+                if sync_frame_time:
+                    self.gym.sync_frame_time(self.sim)
+            else:
+                self.gym.poll_viewer_events(self.viewer)
+
     def step(self, actions):
 
         if self.randomize_input:
-            actions = self.randomizer["randomize_state"].dr_randomizations['actions']['noise_lambda'](actions)
-            
+            actions = self.randomizer["randomize_state"].state_randomizations['actions']['noise_lambda'](
+                actions)
+
         # apply actions
         self.pre_physics_step(actions)
 
@@ -508,7 +610,8 @@ class Robot(BaseTask):
         self.post_physics_step()
 
         if self.randomize_input:
-            actions = self.randomizer["randomize_state"].dr_randomizations['observations']['noise_lambda'](actions)
+            actions = self.randomizer["randomize_state"].state_randomizations['observations']['noise_lambda'](
+                actions)
 
     def post_physics_step(self):
         self.frame_count += 1
@@ -773,7 +876,31 @@ class Robot(BaseTask):
             self.commands_yaw[env_ids] = - self.commands_yaw[env_ids]
 
     def _init_viewer(self):
-        if self.viewer is not None:
+        self.enable_viewer_sync = True
+        self.viewer = None
+
+        # if running with a viewer, set up keyboard shortcuts and camera
+        if self.headless == False:
+            # subscribe to keyboard shortcuts
+            self.viewer = self.gym.create_viewer(
+                self.sim, gymapi.CameraProperties())
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_ESCAPE, "QUIT")
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_V, "toggle_viewer_sync")
+
+            # set the camera position based on up axis
+            sim_params = self.gym.get_sim_params(self.sim)
+            if sim_params.up_axis == gymapi.UP_AXIS_Z:
+                cam_pos = gymapi.Vec3(20.0, 25.0, 3.0)
+                cam_target = gymapi.Vec3(10.0, 15.0, 0.0)
+            else:
+                cam_pos = gymapi.Vec3(20.0, 3.0, 25.0)
+                cam_target = gymapi.Vec3(10.0, 0.0, 15.0)
+
+            self.gym.viewer_camera_look_at(
+                self.viewer, None, cam_pos, cam_target)
+
             p = self.cfg["env"]["viewer"]["pos"]
             lookat = self.cfg["env"]["viewer"]["lookat"]
             self.camera_distance = [
@@ -860,6 +987,7 @@ class Robot(BaseTask):
         """
         self.reward_functions = []
         self.reward_names = []
+        self.reward_scales = {}
         for name, scale in self.reward_scales.items():
             if name == "termination":
                 continue
@@ -878,8 +1006,7 @@ class Robot(BaseTask):
             rew = self.reward_functions[i]() * self.reward_scales[name]
             self.rew_buf += rew
             self.episode_sums[name] += rew
-        if self.only_positive_rewards:
-            self.rew_buf[:] = torch.clip(self.rew_buf[:], min=0.)
+        self.rew_buf[:] = torch.clip(self.rew_buf[:], min=0.)
         # add termination reward after clipping
         if "termination" in self.reward_scales:
             rew = self._reward_termination(

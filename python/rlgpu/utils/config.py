@@ -59,11 +59,15 @@ def retrieve_cfg(args, use_rlg_config=False):
     if use_rlg_config:
         if args.task == "A1":
             return os.path.join(args.logdir, "a1"), "cfg/train/rlg/rlg_a1.yaml", "cfg/a1.yaml"
+        elif args.task == "Robot":
+            return os.path.join(args.logdir, "robot"), "cfg/train/rlg/rlg_a1.yaml", "cfg/a1.yaml"
         else:
             warn_task_name()
     else:
         if args.task == "A1":
             return os.path.join(args.logdir, "a1"), "cfg/train/rlpt/pytorch_ppo_a1.yaml", "cfg/a1.yaml"
+        elif args.task == "Robot":
+            return os.path.join(args.logdir, "robot"), "cfg/train/rlpt/pytorch_ppo_a1.yaml", "cfg/robot.yaml"
         else:
             warn_task_name()
 

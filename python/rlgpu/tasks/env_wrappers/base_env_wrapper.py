@@ -15,6 +15,7 @@ class BaseEnvWrapper(object):
         """Initializes the env wrappers."""
         self.cfg = cfg
         self.num_envs = cfg["env"]["numEnvs"]
+        # print("num envs", self.num_envs)
         self.device = device
         self.offset = torch.as_tensor(
             cfg["env"]["envOffset"], device=self.device)
@@ -29,15 +30,15 @@ class BaseEnvWrapper(object):
     def check_termination(self, task):
         """Checks if the episode is over."""
         base_pos = task.root_states[task.a1_indices, 0:2]
-        flag = torch.all((base_pos > self.offset and base_pos <
-                          self.offset + self.env_size), dim=-1)
+        flag = torch.all(torch.logical_and(base_pos > self.offset, base_pos <
+                                           self.offset + self.env_size), dim=-1)
         return ~flag
 
     def create_surroundings(self, task, env_ptr, env_id):
         """Create the surroundings including terrains and obstacles for each environment."""
         handles = []
         i = 0
-        for surrounding_assets, surrounding_cfg in zip(task.surrounding_assets, self.cfg["env"]["surroundings"]):
+        for surrounding_assets, surrounding_cfg in zip(task.surrounding_assets, self.cfg["env"]["surroundings"].values()):
             pose = gymapi.Transform()
             pose.p.x = surrounding_cfg["surrounding_origin"][0]
             pose.p.y = surrounding_cfg["surrounding_origin"][1]
@@ -50,7 +51,7 @@ class BaseEnvWrapper(object):
                     task.sim, "../../../assets/textures/{}".format(surrounding_cfg["texture"]))
                 task.gym.set_rigid_body_texture(
                     env_ptr, handle, 0, gymapi.MESH_VISUAL_AND_COLLISION, th)
-
+            handles.append(handle)
             i += 1
-
+        # print(handles)
         return handles

@@ -17,7 +17,7 @@ init_str = ''
 #         <box size="15 0.05 3.0"/>
 #       </geometry>
 #        <material name="white">
-#         <color rgba="0.5 0.5 0.5 1.0"/>
+#         <color rgba="0.2 0.2 0.2 1.0"/>
 #       </material>
 #     </visual>
 #     <collision>
@@ -33,7 +33,7 @@ init_str = ''
 #         <box size="15 0.05 3.0"/>
 #       </geometry>
 #        <material name="white">
-#         <color rgba="0.5 0.5 0.5 1.0"/>
+#         <color rgba="0.2 0.2 0.2 1.0"/>
 #       </material>
 #     </visual>
 #     <collision>
@@ -46,7 +46,7 @@ init_str = ''
 # init_str += head_stage
 
 base_interval = 0.01
-current_height = 4
+current_height = 1.598
 i = 0
 while current_height > 0.02:
     i += 1
@@ -57,15 +57,15 @@ while current_height > 0.02:
         <geometry>
             <box size="0.3 1.0 {}"/>
         </geometry>
+        <material name="white">
+            <color rgba="0.2 0.2 0.2 1.0"/>
+        </material>
         </visual>
         <collision>
         <origin xyz="{} {} 0.05"/>
         <geometry>
             <box size="0.3 1.0 {}"/>
         </geometry>
-        <material name="white">
-            <color rgba="0.5 0.5 0.5 1.0"/>
-        </material>
         </collision>
         <inertial>
         <density value="567.0"/>

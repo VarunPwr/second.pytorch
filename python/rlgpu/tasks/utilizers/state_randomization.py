@@ -24,18 +24,26 @@ class StateRandomizer(object):
         self.last_rand_step = self.last_step = 0
         self.state_randomizations = {}
         self.randomization_params = cfg["randomize_state"]["randomization_params"]
+        self.num_envs = cfg["env"]["numEnvs"]
+        self.extras = {}
+        self.original_props = {}
+        self.first_randomization = True
+        self.actor_params_generator = None
+        self.extern_actor_params = {}
+        for env_id in range(self.num_envs):
+            self.extern_actor_params[env_id] = None
         return
 
-    def get_actor_params_info(self, task, dr_params, env):
+    def get_actor_params_info(self, task, env):
         """Returns a flat array of actor params, their names and ranges."""
-        if "actor_params" not in dr_params:
+        if "actor_params" not in self.randomization_params:
             return None
         params = []
         names = []
         lows = []
         highs = []
         param_getters_map = get_property_getter_map(task.gym)
-        for actor, actor_properties in dr_params["actor_params"].items():
+        for actor, actor_properties in self.randomization_params["actor_params"].items():
             handle = task.gym.find_actor_handle(env, actor)
             for prop_name, prop_attrs in actor_properties.items():
                 if prop_name == 'color':
@@ -65,9 +73,9 @@ class StateRandomizer(object):
 
     # Apply randomizations only on resets, due to current PhysX limitations
 
-    def apply_randomizations(self, task, dr_params):
+    def apply_randomizations(self, task):
         # If we don't have a randomization frequency, randomize every step
-        rand_freq = dr_params.get("frequency", 1)
+        rand_freq = self.randomization_params.get("frequency", 1)
 
         # First, determine what to randomize:
         #   - non-environment parameters when > frequency steps have passed since the last non-environment
@@ -96,14 +104,14 @@ class StateRandomizer(object):
 
         # On first iteration, check the number of buckets
         if self.first_randomization:
-            check_buckets(task.gym, task.envs, dr_params)
+            check_buckets(task.gym, task.envs, self.randomization_params)
 
         for nonphysical_param in ["observations", "actions"]:
-            if nonphysical_param in dr_params and do_nonenv_randomize:
-                dist = dr_params[nonphysical_param]["distribution"]
-                op_type = dr_params[nonphysical_param]["operation"]
-                sched_type = dr_params[nonphysical_param]["schedule"] if "schedule" in dr_params[nonphysical_param] else None
-                sched_step = dr_params[nonphysical_param]["schedule_steps"] if "schedule" in dr_params[nonphysical_param] else None
+            if nonphysical_param in self.randomization_params and do_nonenv_randomize:
+                dist = self.randomization_params[nonphysical_param]["distribution"]
+                op_type = self.randomization_params[nonphysical_param]["operation"]
+                sched_type = self.randomization_params[nonphysical_param]["schedule"] if "schedule" in self.randomization_params[nonphysical_param] else None
+                sched_step = self.randomization_params[nonphysical_param]["schedule_steps"] if "schedule" in self.randomization_params[nonphysical_param] else None
                 op = operator.add if op_type == 'additive' else operator.mul
 
                 if sched_type == 'linear':
@@ -115,8 +123,8 @@ class StateRandomizer(object):
                     sched_scaling = 1
 
                 if dist == 'gaussian':
-                    mu, var = dr_params[nonphysical_param]["range"]
-                    mu_corr, var_corr = dr_params[nonphysical_param].get(
+                    mu, var = self.randomization_params[nonphysical_param]["range"]
+                    mu_corr, var_corr = self.randomization_params[nonphysical_param].get(
                         "range_correlated", [0., 0.])
 
                     if op_type == 'additive':
@@ -147,8 +155,8 @@ class StateRandomizer(object):
                         'mu': mu, 'var': var, 'mu_corr': mu_corr, 'var_corr': var_corr, 'noise_lambda': noise_lambda}
 
                 elif dist == 'uniform':
-                    lo, hi = dr_params[nonphysical_param]["range"]
-                    lo_corr, hi_corr = dr_params[nonphysical_param].get(
+                    lo, hi = self.randomization_params[nonphysical_param]["range"]
+                    lo_corr, hi_corr = self.randomization_params[nonphysical_param].get(
                         "range_correlated", [0., 0.])
 
                     if op_type == 'additive':
@@ -178,8 +186,8 @@ class StateRandomizer(object):
                     self.state_randomizations[nonphysical_param] = {
                         'lo': lo, 'hi': hi, 'lo_corr': lo_corr, 'hi_corr': hi_corr, 'noise_lambda': noise_lambda}
 
-        if "sim_params" in dr_params and do_nonenv_randomize:
-            prop_attrs = dr_params["sim_params"]
+        if "sim_params" in self.randomization_params and do_nonenv_randomize:
+            prop_attrs = self.randomization_params["sim_params"]
             prop = task.gym.get_sim_params(task.sim)
 
             if self.first_randomization:
@@ -204,7 +212,7 @@ class StateRandomizer(object):
                     self.actor_params_generator.sample()
                 extern_offsets[env_id] = 0
 
-        for actor, actor_properties in dr_params["actor_params"].items():
+        for actor, actor_properties in self.randomization_params["actor_params"].items():
             for env_id in env_ids:
                 env = task.envs[env_id]
                 handle = task.gym.find_actor_handle(env, actor)

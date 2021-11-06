@@ -21,5 +21,5 @@ class RewardRandomizer(object):
         scale_params = self.randomization_params["reward_scale"]
         for k, v in scale_params.items():
             v_range = v["range"]
-            self.rew_scales[k] = np.random.uniform(
+            task.rew_scales[k] = np.random.uniform(
                 low=v_range[0], high=v_range[1]) * task.dt

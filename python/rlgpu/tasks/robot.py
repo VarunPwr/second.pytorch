@@ -70,7 +70,9 @@ class Robot:
         if self.sim is None:
             print("*** Failed to create sim")
             quit()
-        self._create_ground_plane()
+        # self._create_ground_plane()
+        self._prepare_wrappers()
+        self._create_ground()
         self._create_envs(self.cfg["env"]['envSpacing'],
                           int(np.sqrt(self.num_envs)))
 
@@ -83,17 +85,8 @@ class Robot:
             return 2
         return 1
 
-    def _create_ground_plane(self):
-
-        self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]
-        self.plane_dynamic_friction = self.cfg["env"]["plane"]["dynamicFriction"]
-        self.plane_restitution = self.cfg["env"]["plane"]["restitution"]
-
-        plane_params = gymapi.PlaneParams()
-        plane_params.normal = gymapi.Vec3(0.0, 0.0, 1.0)
-        plane_params.static_friction = self.plane_static_friction
-        plane_params.dynamic_friction = self.plane_dynamic_friction
-        self.gym.add_ground(self.sim, plane_params)
+    def _create_ground(self):
+        self.env_wrapper.create_ground(self)
 
     def _load_surrounding_assets(self):
         self.surrounding_assets = []
@@ -379,8 +372,10 @@ class Robot:
 
         # surroundings
         self.surroundings = self.cfg["env"]["surroundings"]
-        self.surrounding_names = [key for key, _ in self.surroundings.items()]
-        self._load_surrounding_assets()
+        if self.surroundings is not None:
+            self.surrounding_names = [
+                key for key, _ in self.surroundings.items()]
+            self._load_surrounding_assets()
         self.task_wrapper = build_task_wrapper(
             self.task_name, self.device, self.cfg)
         self.env_wrapper = build_env_wrapper(
@@ -437,7 +432,6 @@ class Robot:
             self.depth_image = []
 
         self._prepare_motor_params()
-        self._prepare_wrappers()
 
         for i in range(self.num_envs):
             # create env instances
@@ -456,12 +450,12 @@ class Robot:
             a1_idx = self.gym.get_actor_index(
                 env_ptr, a1_handle, gymapi.DOMAIN_SIM)
             self.a1_indices.append(a1_idx)
-
-            surrounding_handles = self.env_wrapper.create_surroundings(
-                self, env_ptr, i)
-            surrounding_indices = [self.gym.get_actor_index(
-                env_ptr, sh, gymapi.DOMAIN_SIM) for sh in surrounding_handles]
-            self.surrounding_indices.append(surrounding_indices)
+            if self.surroundings is not None:
+                surrounding_handles = self.env_wrapper.create_surroundings(
+                    self, env_ptr, i)
+                surrounding_indices = [self.gym.get_actor_index(
+                    env_ptr, sh, gymapi.DOMAIN_SIM) for sh in surrounding_handles]
+                self.surrounding_indices.append(surrounding_indices)
             if self.get_image:
                 camera_properties = gymapi.CameraProperties()
                 camera_properties.width = self.width

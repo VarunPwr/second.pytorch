@@ -71,20 +71,24 @@ class BaseEnvWrapper(object):
             plane_params.dynamic_friction = self.dynamic_friction
             task.gym.add_ground(task.sim, plane_params)
             return torch.zeros((self.num_envs, 3), device=self.device)
-        elif self.ground_type in ["mountain_range"]:
+        elif self.ground_type in ["mountain_range", "stepping_stones", "barriers"]:
             # Please ensure the loaded 3d model only contains triangle faces
             task.trimesh = trimesh.load(
                 "../../assets/terrains/ground/{}.obj".format(self.ground_type))
             vertices = np.asarray(task.trimesh.vertices, dtype=np.float32)
             scale = self.cfg["env"]["groundType"]["scale"]
+            offset = self.cfg["env"]["groundType"]["offset"]
             vertices *= np.asarray(scale)
             faces = np.asarray(task.trimesh.faces, dtype=np.uint32)
             tm_params = gymapi.TriangleMeshParams()
             tm_params.nb_vertices = task.trimesh.vertices.shape[0]
             tm_params.nb_triangles = task.trimesh.faces.shape[0]
+            tm_params.transform.p.x = offset[0]
+            tm_params.transform.p.y = offset[1]
+            tm_params.transform.p.z = offset[2]
             task.gym.add_triangle_mesh(task.sim, vertices.flatten(
                 order='C'), faces.flatten(order='C'), tm_params)
-            return self.sample_origins(vertices)
+            return self.sample_origins(vertices + np.asarray(offset))
 
         else:
             raise NotImplementedError

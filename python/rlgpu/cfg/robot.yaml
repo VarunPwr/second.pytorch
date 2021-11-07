@@ -1,7 +1,7 @@
 task:
   name: "base"
 env:
-  numEnvs: 15
+  numEnvs: 512
   envSpacing: 4. # [m]
   command: "vel"
   commandChangeStep: 200
@@ -39,12 +39,12 @@ env:
     height: 64
 
   groundType:
-    name: "mountain_range" # plane, mountain range, slopes, stairs
-    # name: "plane" # plane, mountain range, slopes, stairs
+    name: "stepping_stones" # plane, mountain range, 
     staticFriction: 10.0 # [-]
     dynamicFriction: 10.0 # [-]
     restitution: 0. # [-]
-    scale: [200, 200, 80]
+    scale: [0.3, 0.3, 0.05]
+    offset: [-5, -5, 0]
 
   baseInitState:
     pos: [0.05, 0.05, 0.45] # x,y,z [m]
@@ -117,7 +117,7 @@ env:
 
   # viewer cam:
   viewer:
-    refEnv: 4
+    refEnv: 0
     pos: [5, -5, 4.0] # [m]
     # pos: [5, 0.3, 3] # [m]
     lookat: [4, 0, 0.2] # [m]

@@ -8,10 +8,23 @@ env:
   risk_reward: False
   rush_reward: False
   vel_reward_exp_coeff: 0.25
-  # robot_origin: [100., 100., 0.]
-  robot_origin: [-1., 0., 0.]
-  envOffset: [1000, 1000]
+  robot_origin: [0., 0., 0.]
+  envOffset: [5, 5]
   surroundings:
+    # upstairs:
+    #   texture: "none"
+    #   static_friction: 1.0 # [-]
+    #   dynamic_friction: 1.0 # [-]
+    #   restitution: 0. # [-]
+    #   robot_origin: [-1., 0., 0.]
+    #   surrounding_origin: [0., 0., 0.]
+    # downstairs:
+    #   texture: "none"
+    #   static_friction: 1.0 # [-]
+    #   dynamic_friction: 1.0 # [-]
+    #   restitution: 0. # [-]
+    #   robot_origin: [5.8, 0., 1.9]
+    #   surrounding_origin: [5.61, 0., 0.]
 
   asset:
     penalize_contacts_on: []
@@ -27,14 +40,15 @@ env:
 
   groundType:
     name: "mountain_range" # plane, mountain range, slopes, stairs
+    # name: "plane" # plane, mountain range, slopes, stairs
     staticFriction: 10.0 # [-]
     dynamicFriction: 10.0 # [-]
     restitution: 0. # [-]
-    scale: [200, 200, 150]
-    offset: [300, 300, 100]
+    offset: [50, 50, 0]
+    scale: [200, 200, 80]
 
   baseInitState:
-    pos: [0.0, 0.0, 0.32] # x,y,z [m]
+    pos: [0.05, 0.05, 0.45] # x,y,z [m]
     rot: [0.0, 0.0, 0.0, 1.0] # x,y,z,w [quat]
     vLinear: [0.0, 0.0, 0.0] # x,y,z [m/s]
     vAngular: [0.0, 0.0, 0.0] # x,y,z [rad/s]
@@ -105,9 +119,9 @@ env:
   # viewer cam:
   viewer:
     refEnv: 0
-    # pos: [102, 102, 0.5]  # [m]
-    pos: [5, 0.3, 3] # [m]
-    lookat: [0, 0, 0.2] # [m]
+    pos: [5, -5, 4.0] # [m]
+    # pos: [5, 0.3, 3] # [m]
+    lookat: [4, 0, 0.2] # [m]
 
   controller: False
 

@@ -22,10 +22,10 @@ class BaseEnvWrapper(object):
         self.offset = torch.as_tensor(
             cfg["env"]["envOffset"], device=self.device)
         if "envSize" in cfg["env"]:
-            self.env_size = cfg["env"]["envSize"]
+            self.env_size = cfg["env"]["envSpace"]
         else:
-            self.env_size = torch.as_tensor(
-                (cfg["env"]["envSpacing"], cfg["env"]["envSpacing"]), device=self.device)
+            self.env_size = np.asarray(
+                (cfg["env"]["envSpacing"], cfg["env"]["envSpacing"])) * 2
         self.ground_type = cfg["env"]["groundType"]["name"]
         self.static_friction = self.cfg["env"]["groundType"]["staticFriction"]
         self.dynamic_friction = self.cfg["env"]["groundType"]["dynamicFriction"]
@@ -70,26 +70,40 @@ class BaseEnvWrapper(object):
             plane_params.static_friction = self.static_friction
             plane_params.dynamic_friction = self.dynamic_friction
             task.gym.add_ground(task.sim, plane_params)
-            return None
+            return torch.zeros((self.num_envs, 3), device=self.device)
         elif self.ground_type in ["mountain_range"]:
             # Please ensure the loaded 3d model only contains triangle faces
             task.trimesh = trimesh.load(
                 "../../assets/terrains/ground/{}.obj".format(self.ground_type))
             vertices = np.asarray(task.trimesh.vertices, dtype=np.float32)
             scale = self.cfg["env"]["groundType"]["scale"]
-            offset = self.cfg["env"]["groundType"]["offset"]
             vertices *= np.asarray(scale)
             faces = np.asarray(task.trimesh.faces, dtype=np.uint32)
             tm_params = gymapi.TriangleMeshParams()
             tm_params.nb_vertices = task.trimesh.vertices.shape[0]
             tm_params.nb_triangles = task.trimesh.faces.shape[0]
-            tm_params.transform.p.x = offset[0]
-            tm_params.transform.p.y = offset[1]
-            tm_params.transform.p.z = offset[2]
             task.gym.add_triangle_mesh(task.sim, vertices.flatten(
                 order='C'), faces.flatten(order='C'), tm_params)
-            np.meshgrid()
-            return 
+            return self.sample_origins(vertices)
+
         else:
             raise NotImplementedError
-    
+
+    def sample_origins(self, vertices):
+        self.origins = np.zeros((self.num_envs, 3))
+        self.num_per_row = int(np.sqrt(self.num_envs))
+        if self.num_per_row == 1:
+            self.num_per_row += 1
+        for k in range(self.num_envs):
+            pos = (k % self.num_per_row,
+                   k // self.num_per_row)
+            pos = np.asarray(pos) * self.env_size
+            vertices_xy = vertices[..., :2]
+            closest_indices = np.argsort(np.linalg.norm(
+                pos - vertices_xy, axis=-1), axis=0)[:15]
+            closest_index = np.argmax(vertices[closest_indices, -1], axis=-1)
+            sampled_pos = vertices[closest_indices[closest_index]]
+            sampled_pos[:2] -= pos
+            self.origins[k] = sampled_pos
+        self.origins = torch.as_tensor(self.origins, device=self.device)
+        return self.origins

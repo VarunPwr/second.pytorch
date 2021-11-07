@@ -57,8 +57,8 @@ class Robot:
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
         self.cfg["headless"] = headless
-        self._init_viewer()
         self._build_buf()
+        self._build_viewer()
         self._build_utilizers()
         self._prepare_reward_function()
         self.reset(torch.arange(self.num_envs, device=self.device))
@@ -72,6 +72,7 @@ class Robot:
             quit()
         # self._create_ground_plane()
         self._prepare_wrappers()
+        self._sample_init_state()
         self._create_ground()
         self._create_envs(self.cfg["env"]['envSpacing'],
                           int(np.sqrt(self.num_envs)))
@@ -86,7 +87,8 @@ class Robot:
         return 1
 
     def _create_ground(self):
-        self.env_wrapper.create_ground(self)
+        self.robot_origin = self.env_wrapper.create_ground(
+            self) + torch.as_tensor(self.base_init_state[:3], device=self.device)
 
     def _load_surrounding_assets(self):
         self.surrounding_assets = []
@@ -333,7 +335,7 @@ class Robot:
         self.extras = {}
         self.initial_root_states = self.root_states.clone()
         self.initial_root_states[self.a1_indices] = to_torch(
-            self.base_init_state, device=self.device, requires_grad=False)
+            self.init_states_for_each_env, device=self.device, requires_grad=False)
         self.gravity_vec = to_torch(
             get_axis_params(-1., self.up_axis_idx), device=self.device).repeat((self.num_envs, 1))
         self.actions = torch.zeros(self.num_envs, self.num_actions,
@@ -361,6 +363,8 @@ class Robot:
         pos[2] += self.cfg["env"]["robot_origin"][2]
         state = pos + rot + v_lin + v_ang
         self.base_init_state = state
+        self.init_states_for_each_env = torch.as_tensor(
+            [self.base_init_state for _ in range(self.num_envs)], device=self.device)
 
     def _prepare_motor_params(self):
 
@@ -369,7 +373,6 @@ class Robot:
         self.Kd = self.cfg["env"]["control"]["damping"]
 
     def _prepare_wrappers(self):
-
         # surroundings
         self.surroundings = self.cfg["env"]["surroundings"]
         if self.surroundings is not None:
@@ -407,7 +410,6 @@ class Robot:
         self.num_dof = self.gym.get_asset_dof_count(a1_asset)
         self.num_bodies = self.gym.get_asset_rigid_body_count(a1_asset)
         start_pose = gymapi.Transform()
-        self._sample_init_state()
         start_pose.p = gymapi.Vec3(*self.base_init_state[:3])
 
         body_names = self.gym.get_asset_rigid_body_names(a1_asset)
@@ -432,11 +434,13 @@ class Robot:
             self.depth_image = []
 
         self._prepare_motor_params()
-
+        self.init_states_for_each_env[..., :3] = self.robot_origin
         for i in range(self.num_envs):
             # create env instances
             env_ptr = self.gym.create_env(
                 self.sim, env_lower, env_upper, num_per_row)
+            if self.robot_origin is not None:
+                start_pose.p = gymapi.Vec3(*self.robot_origin[i])
             a1_handle = self.gym.create_actor(
                 env_ptr, a1_asset, start_pose, "a1", i, 1, 0)
             dof_props = self._process_dof_props(dof_props_asset, i)
@@ -791,7 +795,7 @@ class Robot:
         a1_indices = self.a1_indices[env_ids].to(torch.int32)
         self.gym.set_actor_root_state_tensor_indexed(self.sim,
                                                      gymtorch.unwrap_tensor(
-                                                         self.initial_root_states),
+                                                         self.init_states_for_each_env),
                                                      gymtorch.unwrap_tensor(a1_indices), len(env_ids_int32))
         self.gym.set_dof_state_tensor_indexed(self.sim,
                                               gymtorch.unwrap_tensor(
@@ -869,7 +873,7 @@ class Robot:
             self.commands_y[env_ids] = - self.commands_y[env_ids]
             self.commands_yaw[env_ids] = - self.commands_yaw[env_ids]
 
-    def _init_viewer(self):
+    def _build_viewer(self):
         self.enable_viewer_sync = True
         self.viewer = None
 
@@ -899,6 +903,9 @@ class Robot:
             lookat = self.cfg["env"]["viewer"]["lookat"]
             self.camera_distance = [
                 _lookat - _p for _lookat, _p in zip(lookat, p)]
+            lookat = self.root_states[self.a1_indices[self.refEnv], 0:3]
+            p = [_lookat - _camera_distance for _camera_distance,
+                 _lookat in zip(self.camera_distance, lookat)]
             cam_pos = gymapi.Vec3(p[0], p[1], p[2])
             cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
             self.gym.viewer_camera_look_at(

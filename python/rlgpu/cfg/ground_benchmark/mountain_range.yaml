@@ -88,21 +88,24 @@ env:
     defaultDofDriveMode: 1 # see GymDofDriveModeFlags (0 is none, 1 is pos tgt, 2 is vel tgt, 4 effort)
 
   learn:
-    # rewards
-    soft_limits:
+    reward_params:
+      tracking_sigma: 0.25
       soft_dof_pos_limit: 1.
-      soft_dof_vel_limit: 0.9
+      soft_dof_vel_limit: 1.
       soft_torque_limit: 1.
-    linearVelocityXYRewardScale: 2.0
-    angularVelocityZRewardScale: 1.0
-    linearVelocityZRewardScale: -0.8
-    torqueRewardScale: -0.000025
-    actionSmoothingRewardScale: 0.0
-    stumble: -0.0001
-    feet_air_time: 0.5
-    dof_vel_limit: -0.002
-    torque_limit: -0.00002
-    collision: -1
+      base_height_target: 1.
+    reward_scales:
+      tracking_lin_vel: 2.0
+      tracking_ang_vel: 1.0
+      lin_vel_z: -0.8
+      torques: -0.000025
+      action_rate: 0.0
+      stumble: -0.0001
+      feet_air_time: 0.5
+      dof_vel_limits: -0.002
+      torque_limits: -0.00002
+      collision: -1
+
 
     # normalization
     linearVelocityScale: 2.0

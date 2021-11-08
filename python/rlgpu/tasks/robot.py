@@ -203,11 +203,11 @@ class Robot:
 
     def _build_utilizers(self):
         self.randomizer = {}
-        if self.cfg["randomize_state"]:
+        if self.cfg["randomize_state"]["randomize"]:
             self.randomizer["randomize_state"] = build_utilizer(
                 "randomize_state", self.cfg)
             self.randomize_input = True
-        if self.cfg["randomize_reward"]:
+        if self.cfg["randomize_reward"]["randomize"]:
             self.randomizer["randomize_reward"] = build_utilizer(
                 "randomize_reward", self.cfg)
 

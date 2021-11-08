@@ -39,7 +39,7 @@ env:
     height: 64
 
   groundType:
-    name: "plane" # plane, mountain range,
+    name: "stepping_stones" # plane, mountain range,
     staticFriction: 10.0 # [-]
     dynamicFriction: 10.0 # [-]
     restitution: 0. # [-]

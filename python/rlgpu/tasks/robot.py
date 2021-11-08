@@ -51,9 +51,9 @@ class Robot:
 
         self.sim_params = sim_params
         self.physics_engine = physics_engine
+        self._register()
         self.create_sim()
         self.gym.prepare_sim(self.sim)
-        self._register()
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
         self.cfg["headless"] = headless
@@ -133,6 +133,7 @@ class Robot:
 
         # reward scales
         self.reward_scales = self.cfg["env"]["learn"]["reward_scales"]
+        self.reward_params = self.cfg["env"]["learn"]["reward_params"]
         self.num_rew_terms = len(self.reward_scales)
 
         # use diagonal action
@@ -340,6 +341,8 @@ class Robot:
         else:
             self.action_scale = torch.as_tensor(
                 [self.hip_action_scale, self.action_scale, self.action_scale] * 4, device=self.device)
+        self.episode_sums = {name: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
+                             for name in self.reward_scales.keys()}
 
     def _sample_init_state(self):
         # base init state
@@ -357,7 +360,6 @@ class Robot:
 
     def _prepare_motor_params(self):
 
-        self.soft_limits = self.cfg["env"]["learn"]["soft_limits"]
         self.Kp = self.cfg["env"]["control"]["stiffness"]
         self.Kd = self.cfg["env"]["control"]["damping"]
 
@@ -603,7 +605,11 @@ class Robot:
     def post_physics_step(self):
         self.frame_count += 1
         self.progress_buf += 1
-
+        self.base_quat = self.root_states[self.a1_indices, 3:7]
+        self.base_lin_vel = quat_rotate_inverse(
+            self.base_quat, self.root_states[self.a1_indices, 7:10]) * self.lin_vel_scale
+        self.base_ang_vel = quat_rotate_inverse(
+            self.base_quat, self.root_states[self.a1_indices, 10:13]) * self.ang_vel_scale
         change_commmand_env_ids = (torch.fmod(
             self.progress_buf, self.command_change_step) == 0).float().nonzero(as_tuple=False).squeeze(-1)
         if len(change_commmand_env_ids) > 0:
@@ -669,8 +675,7 @@ class Robot:
             dof_pos = (self.dof_pos_buf -
                        self.default_dof_pos.unsqueeze(1)).view(self.num_envs, -1)
             actions = self.actions_buf.view(self.num_envs, -1)
-            self.obs_buf[:, :self.state_obs_size] = compute_a1_observations(  # tensors
-                self.root_states,
+            self.obs_buf[:, :self.state_obs_size] = self.compute_a1_observations(  # tensors
                 self.commands,
                 dof_pos,
                 self.dof_vel,
@@ -685,8 +690,7 @@ class Robot:
                 contact_forces,
             )
         else:
-            self.obs_buf[:, :self.state_obs_size] = compute_a1_observations(  # tensors
-                self.root_states,
+            self.obs_buf[:, :self.state_obs_size] = self.compute_a1_observations(  # tensors
                 self.commands,
                 self.dof_pos - self.default_dof_pos,
                 self.dof_vel,
@@ -755,9 +759,9 @@ class Robot:
                 m = (self.dof_pos_limits[i, 0] + self.dof_pos_limits[i, 1]) / 2
                 r = self.dof_pos_limits[i, 1] - self.dof_pos_limits[i, 0]
                 self.dof_pos_limits[i, 0] = m - 0.5 * r * \
-                    self.soft_limits["soft_dof_vel_limit"]
+                    self.reward_params["soft_dof_vel_limit"]
                 self.dof_pos_limits[i, 1] = m + 0.5 * r * \
-                    self.soft_limits["soft_dof_vel_limit"]
+                    self.reward_params["soft_dof_vel_limit"]
         for i in range(self.num_dof):
             props['driveMode'][i] = gymapi.DOF_MODE_POS
             props['stiffness'][i] = self.Kp
@@ -1100,45 +1104,37 @@ class Robot:
         # penalize high contact forces
         return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) - self.reward_params["max_contact_force"]).clip(min=0.), dim=1)
 
+    def compute_a1_observations(self,
+                                commands: Tensor,
+                                dof_pos: Tensor,
+                                dof_vel: Tensor,
+                                gravity_vec: Tensor,
+                                actions: Tensor,
+                                lin_vel_scale: float,
+                                ang_vel_scale: float,
+                                dof_pos_scale: float,
+                                dof_vel_scale: float,
+                                a1_indices: Tensor,
+                                contact_forces: Tensor
+                                ) -> Tensor:
 
-@torch.jit.script
-def compute_a1_observations(root_states: Tensor,
-                            commands: Tensor,
-                            dof_pos: Tensor,
-                            dof_vel: Tensor,
-                            gravity_vec: Tensor,
-                            actions: Tensor,
-                            lin_vel_scale: float,
-                            ang_vel_scale: float,
-                            dof_pos_scale: float,
-                            dof_vel_scale: float,
-                            a1_indices: Tensor,
-                            contact_forces: Tensor
-                            ) -> Tensor:
+        projected_gravity = quat_rotate(self.base_quat, gravity_vec)
 
-    # base_position = root_states[:, 0:3]
-    base_quat = root_states[a1_indices, 3:7]
-    base_lin_vel = quat_rotate_inverse(
-        base_quat, root_states[a1_indices, 7:10]) * lin_vel_scale
-    base_ang_vel = quat_rotate_inverse(
-        base_quat, root_states[a1_indices, 10:13]) * ang_vel_scale
-    projected_gravity = quat_rotate(base_quat, gravity_vec)
+        dof_pos_scaled = dof_pos * dof_pos_scale
 
-    dof_pos_scaled = dof_pos * dof_pos_scale
+        commands_scaled = commands[..., :3] * \
+            torch.tensor([lin_vel_scale, lin_vel_scale, ang_vel_scale],
+                         requires_grad=False, device=commands.device)
 
-    commands_scaled = commands[..., :3] * \
-        torch.tensor([lin_vel_scale, lin_vel_scale, ang_vel_scale],
-                     requires_grad=False, device=commands.device)
+        obs = torch.cat((self.base_lin_vel,
+                        self.base_ang_vel,
+                        projected_gravity,
+                        commands_scaled,
+                        commands[..., 3:],
+                        dof_pos_scaled,
+                        dof_vel * dof_vel_scale,
+                        actions,
+                        contact_forces,
+                         ), dim=-1)
 
-    obs = torch.cat((base_lin_vel,
-                     base_ang_vel,
-                     projected_gravity,
-                     commands_scaled,
-                     commands[..., 3:],
-                     dof_pos_scaled,
-                     dof_vel * dof_vel_scale,
-                     actions,
-                     contact_forces,
-                     ), dim=-1)
-
-    return obs
+        return obs

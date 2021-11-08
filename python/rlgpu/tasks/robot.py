@@ -132,19 +132,8 @@ class Robot:
         self.frame_count = 0
 
         # reward scales
-        self.rew_scales = {}
-        self.rew_scales["linearVelocityXYRewardScale"] = self.cfg["env"]["learn"]["linearVelocityXYRewardScale"]
-        self.rew_scales["angularVelocityZRewardScale"] = self.cfg["env"]["learn"]["angularVelocityZRewardScale"]
-        self.rew_scales["linearVelocityZRewardScale"] = self.cfg["env"]["learn"]["linearVelocityZRewardScale"]
-        self.rew_scales["torqueRewardScale"] = self.cfg["env"]["learn"]["torqueRewardScale"]
-        self.rew_scales["actionSmoothingRewardScale"] = self.cfg["env"]["learn"]["actionSmoothingRewardScale"]
-        self.rew_scales["dof_vel_limit"] = self.cfg["env"]["learn"]["dof_vel_limit"]
-        self.rew_scales["torque_limit"] = self.cfg["env"]["learn"]["torque_limit"]
-        self.rew_scales["stumble"] = self.cfg["env"]["learn"]["stumble"]
-        self.rew_scales["feet_air_time"] = self.cfg["env"]["learn"]["feet_air_time"]
-        self.rew_scales["collision"] = self.cfg["env"]["learn"]["collision"]
-
-        self.num_rew_terms = len(self.rew_scales)
+        self.reward_scales = self.cfg["env"]["learn"]["reward_scales"]
+        self.num_rew_terms = len(self.reward_scales)
 
         # use diagonal action
         self.diagonal_act = self.cfg["env"]["learn"]["diagonal_act"]
@@ -178,8 +167,8 @@ class Robot:
         self.max_episode_length = int(
             self.max_episode_length_s / (self.control_freq_inv * self.dt) + 0.5)
 
-        for key in self.rew_scales.keys():
-            self.rew_scales[key] *= self.dt
+        for key in self.reward_scales.keys():
+            self.reward_scales[key] *= self.dt
 
         extra_info_len = 3 if self.use_sys_information else 0
         if self.diagonal_act:
@@ -666,7 +655,7 @@ class Robot:
         # no reward for zero command
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1
         self.feet_air_time *= ~contact
-        return rew_airTime * self.rew_scales["feet_air_time"]
+        return rew_airTime * self.reward_scales["feet_air_time"]
 
     def compute_observations(self):
         self.gym.refresh_dof_state_tensor(self.sim)  # done in step
@@ -988,8 +977,7 @@ class Robot:
         """
         self.reward_functions = []
         self.reward_names = []
-        self.reward_scales = {}
-        for name, scale in self.reward_scales.items():
+        for name in self.reward_scales.keys():
             if name == "termination":
                 continue
             self.reward_names.append(name)

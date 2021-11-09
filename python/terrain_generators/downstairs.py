@@ -48,6 +48,7 @@ init_str = ''
 base_interval = 0.01
 current_height = 1.598
 i = 0
+sampled_points = []
 while current_height > 0.02:
     i += 1
     pos = [0.3 * i + base_interval, 0]
@@ -74,8 +75,11 @@ while current_height > 0.02:
 
     init_str += aug_str
     current_height -= (0.05 + 0.011 * i)
+    sampled_points.append([pos[0], pos[1], current_height + (0.05 + 0.01 * i)])
+    
 
 base_str = base_str.format(init_str)
 
 with open("downstairs.urdf", 'w+') as f:
     f.write(base_str)
+print(sampled_points)

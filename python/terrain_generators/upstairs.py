@@ -47,6 +47,7 @@ init_str += head_stage
 
 base_interval = 0.01
 current_height = 0
+sampled_points = []
 for i in range(15):
     pos = [0.4 * i + base_interval, 0]
     aug_str = '''
@@ -68,14 +69,15 @@ for i in range(15):
         <inertial>
         <density value="567.0"/>
         </inertial>
-    '''.format(pos[0], pos[1], current_height + (0.05 + 0.01 * i), pos[0], pos[1], current_height + (0.07 + + 0.01 * i))
+    '''.format(pos[0], pos[1], current_height + (0.05 + 0.01 * i), pos[0], pos[1], current_height + (0.07 + 0.01 * i))
 
     init_str += aug_str
     current_height += (0.05 + 0.008 * i)
-    print(current_height)
-    print(pos[0])
+    sampled_points.append([pos[0], pos[1], current_height + (0.05 + 0.01 * i)])
 
 base_str = base_str.format(init_str)
 
 with open("upstairs.urdf", 'w+') as f:
     f.write(base_str)
+
+print(sampled_points)

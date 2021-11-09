@@ -8,6 +8,8 @@
 import torch
 import trimesh
 import numpy as np
+import os
+import yaml
 from isaacgym import gymapi
 
 
@@ -16,6 +18,8 @@ class BaseEnvWrapper(object):
     def __init__(self, device, cfg):
         """Initializes the env wrappers."""
         self.cfg = cfg
+        with open(os.path.join(os.getcwd(), self.env_name), 'r') as f:
+            self.env_cfg = yaml.load(f, Loader=yaml.SafeLoader)
         self.num_envs = cfg["env"]["numEnvs"]
         # print("num envs", self.num_envs)
         self.device = device
@@ -31,13 +35,38 @@ class BaseEnvWrapper(object):
         self.dynamic_friction = self.cfg["env"]["groundType"]["dynamicFriction"]
         self.restitution = self.cfg["env"]["groundType"]["restitution"]
         return
+    
+    def load_surrounding_assets(self, task):
+        self.surroundings = self.env_cfg["surroundings"]
+        self.surrounding_assets = []
+        if self.surroundings is not None:
+            self.surrounding_names = [
+                key for key, _ in self.surroundings.items()]
+        for name in self.surrounding_names:
+            asset_root = "../../assets"
+            asset_file = "terrains/{}/{}.urdf".format(
+                name, name)
+            asset_path = os.path.join(
+                asset_root, asset_file)
+            asset_root = os.path.dirname(asset_path)
+            asset_file = os.path.basename(asset_path)
 
+            asset_options = gymapi.AssetOptions()
+            asset_options.fix_base_link = True
+            # asset_options.vhacd_enabled = True
+            # asset_options.vhacd_params.resolution = 3000000
+            # asset_options.vhacd_params.max_convex_hulls = 20
+            # asset_options.vhacd_params.max_num_vertices_per_ch = 256
+            asset = task.gym.load_asset(
+                task.sim, asset_root, asset_file, asset_options)
+            self.surrounding_assets.append(asset)
+            
     def check_termination(self, task):
         """Checks if the episode is over."""
         base_pos = task.root_states[task.a1_indices, 0:2]
-        flag = torch.all(torch.logical_and(base_pos > -self.offset, base_pos <
+        flag = ~torch.all(torch.logical_and(base_pos > -self.offset, base_pos <
                                            self.offset), dim=-1)
-        return ~flag
+        return flag
 
     def create_surroundings(self, task, env_ptr, env_id):
         """Create the surroundings including terrains and obstacles for each environment."""
@@ -93,7 +122,7 @@ class BaseEnvWrapper(object):
         else:
             raise NotImplementedError
 
-    def sample_origins(self, vertices):
+    def sample_origins(self, vertices=None):
         self.origins = np.zeros((self.num_envs, 3))
         self.num_per_row = int(np.sqrt(self.num_envs))
         if self.num_per_row == 1:

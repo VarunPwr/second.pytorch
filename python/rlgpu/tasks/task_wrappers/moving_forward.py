@@ -5,8 +5,6 @@ class ForwardTask(object):
 
     def __init__(self):
         """Initializes the task."""
-        self.current_base_pos = np.zeros(3)
-        self.last_base_pos = np.zeros(3)
 
     def __call__(self, task):
         return self.reward(task)

@@ -27,6 +27,7 @@ class Robot:
 
         self.cfg = cfg
         self.task_name = cfg["task"]["name"]
+        self.env_name = cfg["task"]["env_name"]
         self.num_envs = cfg["env"]["numEnvs"]
         self.get_image = cfg["env"]["vision"]["get_image"]
         self.device_type = cfg.get("device_type", "cuda")
@@ -89,28 +90,6 @@ class Robot:
     def _create_ground(self):
         self.robot_origin = self.env_wrapper.create_ground(
             self) + torch.as_tensor(self.base_init_state[:3], device=self.device)
-
-    def _load_surrounding_assets(self):
-        self.surrounding_assets = []
-        for name in self.surrounding_names:
-            asset_root = "../../assets"
-            asset_file = "terrains/{}/{}.urdf".format(
-                name, name)
-            asset_path = os.path.join(
-                asset_root, asset_file)
-            asset_root = os.path.dirname(asset_path)
-            asset_file = os.path.basename(asset_path)
-
-            asset_options = gymapi.AssetOptions()
-            asset_options.fix_base_link = True
-            asset_options.vhacd_enabled = True
-            asset_options.vhacd_params.resolution = 3000000
-            asset_options.vhacd_params.max_convex_hulls = 20
-            asset_options.vhacd_params.max_num_vertices_per_ch = 256
-
-            asset = self.gym.load_asset(
-                self.sim, asset_root, asset_file, asset_options)
-            self.surrounding_assets.append(asset)
 
     def _register(self):
 
@@ -364,17 +343,13 @@ class Robot:
         self.Kd = self.cfg["env"]["control"]["damping"]
 
     def _prepare_wrappers(self):
-        # surroundings
-        self.surroundings = self.cfg["env"]["surroundings"]
-        if self.surroundings is not None:
-            self.surrounding_names = [
-                key for key, _ in self.surroundings.items()]
-            self._load_surrounding_assets()
+        
         self.task_wrapper = build_task_wrapper(
             self.task_name, self.device, self.cfg)
         self.env_wrapper = build_env_wrapper(
-            self.task_name, self.device, self.cfg)
-
+            self.env_name, self.device, self.cfg)
+        self.env_wrapper.load_surrounding_assets(self)
+        
     def _create_envs(self, spacing, num_per_row):
         asset_root = "../../assets"
         asset_file = "urdf/a1/a1.urdf"
@@ -649,19 +624,6 @@ class Robot:
         self.time_out_buf = self.progress_buf > self.max_episode_length
         self.reset_buf |= self.time_out_buf
         self.reset_buf |= self.env_wrapper.check_termination(self)
-
-    def _reward_feet_air_time(self):
-        # Reward long steps
-        contact = self.contact_forces[:, self.feet_indices, 2] > 0.1
-        first_contact = (self.feet_air_time > 0.) * contact
-        self.feet_air_time += self.dt
-        # reward only on first contact with the ground
-        rew_airTime = torch.sum(
-            (self.feet_air_time - 0.5) * first_contact, dim=1)
-        # no reward for zero command
-        rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1
-        self.feet_air_time *= ~contact
-        return rew_airTime * self.reward_scales["feet_air_time"]
 
     def compute_observations(self):
         self.gym.refresh_dof_state_tensor(self.sim)  # done in step
@@ -1066,6 +1028,11 @@ class Robot:
         # penalize torques too close to the limit
         return torch.sum((torch.abs(self.torques) - self.torque_limits * self.reward_params["soft_torque_limit"]).clip(min=0.), dim=1)
 
+    def _reward_moving_forward(self):
+        # encourage moving forward
+        base_lin_val_in_world_frame = self.root_states[self.a1_indices, 7:10] * self.lin_vel_scale
+        return torch.clamp(base_lin_val_in_world_frame, min=-1000., max=self.reward_params["forward_vel"])
+    
     def _reward_tracking_lin_vel(self):
         # Tracking of linear velocity commands (xy axes)
         lin_vel_error = torch.sum(torch.square(
@@ -1104,6 +1071,19 @@ class Robot:
         # penalize high contact forces
         return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) - self.reward_params["max_contact_force"]).clip(min=0.), dim=1)
 
+    def _reward_feet_air_time(self):
+        # Reward long steps
+        contact = self.contact_forces[:, self.feet_indices, 2] > 0.1
+        first_contact = (self.feet_air_time > 0.) * contact
+        self.feet_air_time += self.dt
+        # reward only on first contact with the ground
+        rew_airTime = torch.sum(
+            (self.feet_air_time - 0.5) * first_contact, dim=1)
+        # no reward for zero command
+        rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1
+        self.feet_air_time *= ~contact
+        return rew_airTime * self.reward_scales["feet_air_time"]
+    
     def compute_a1_observations(self,
                                 commands: Tensor,
                                 dof_pos: Tensor,

@@ -3,12 +3,11 @@ docker/
 licenses/
 *.txt
 *.sh
-logs*/
+*logs*/
 __pycache__/
 *.pyc
 lightning_logs*/
 *.npy
-vis*/
 *.ckpt
 examples/
 *images/

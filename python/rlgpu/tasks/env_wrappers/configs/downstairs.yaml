@@ -1,7 +1,7 @@
 envOffset: [5, 5]
 goal_position: [3.9099999999999997, 0, 0.12699999999999995]
+prob_ground: 0.
 surroundings:
-  prob_ground: 0.
   downstairs:
     texture: "none"
     static_friction: 1.0 # [-]

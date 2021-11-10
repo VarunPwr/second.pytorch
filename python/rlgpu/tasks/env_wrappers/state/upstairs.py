@@ -10,21 +10,28 @@ import numpy as np
 from rlgpu.tasks.env_wrappers.base_env_wrapper import BaseEnvWrapper
 from isaacgym import gymapi
 
+
 class UpstairsEnvWrapper(BaseEnvWrapper):
 
     def __init__(self, device, cfg):
         """Initializes the env wrappers."""
         self.env_name = cfg["env"]["name"]
         super(UpstairsEnvWrapper, self).__init__(device, cfg)
-        self.goal_position = torch.as_tensor([self.env_cfg["goal_position"]], device=self.device)
-        return
+        self.ground_type = self.env_cfg["groundType"]["name"]
+        self.static_friction = self.env_cfg["groundType"]["staticFriction"]
+        self.dynamic_friction = self.env_cfg["groundType"]["dynamicFriction"]
+        self.restitution = self.env_cfg["groundType"]["restitution"]
+        self.goal_position = torch.as_tensor(
+            [self.env_cfg["goal_position"]], device=self.device)
+        self.goal_position = torch.as_tensor(
+            [self.env_cfg["goal_position"]], device=self.device)
 
     def check_termination(self, task):
         """Checks if the episode is over."""
         base_xy_pos = task.root_states[task.a1_indices, 0:2]
         base_pos = task.root_states[task.a1_indices, 0:3]
         flag = ~torch.all(torch.logical_and(base_xy_pos > -self.offset, base_xy_pos <
-                                           self.offset), dim=-1)
+                                            self.offset), dim=-1)
         flag |= torch.norm(base_pos - self.goal_position, dim=-1) < 0.05
         return flag
 
@@ -57,20 +64,21 @@ class UpstairsEnvWrapper(BaseEnvWrapper):
         plane_params.dynamic_friction = self.dynamic_friction
         task.gym.add_ground(task.sim, plane_params)
         return torch.zeros((self.num_envs, 3), device=self.device)
-        
+
     def sample_origins(self, vertices=None):
         del vertices
         robot_origin = self.env_cfg["robot_origin"]
         num_choices = len(robot_origin)
         assert num_choices > 1
-        
+
         # Sample the robot origin
         # This is a hack. We should sample the robot origin based on two cases
         # 1. The robot is facing to the stairs and on the ground
         # 2. The robot is on the stairs
-        
-        prob_ground = self.env_cfg["surroundings"]["prob_ground"]
+
+        prob_ground = self.env_cfg["prob_ground"]
         prob_stairs = (1 - prob_ground) / (num_choices - 1)
-        sampled_origins = np.random.choice(robot_origin, size=self.num_envs, p=[prob_ground] + [prob_stairs] * (num_choices - 1))
+        sampled_origins = np.random.choice(robot_origin, size=self.num_envs, p=[
+                                           prob_ground] + [prob_stairs] * (num_choices - 1))
         sampled_origins = torch.as_tensor(sampled_origins, device=self.device)
         return sampled_origins

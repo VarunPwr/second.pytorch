@@ -9,7 +9,6 @@ import numpy as np
 import os
 import sys
 from rlgpu.utils.torch_jit_utils import *
-from rlgpu.tasks.base.base_task import BaseTask
 from isaacgym import gymtorch
 from isaacgym import gymapi
 import torch
@@ -27,22 +26,23 @@ class Robot:
 
         self.cfg = cfg
         self.task_name = cfg["task"]["name"]
-        self.env_name = cfg["task"]["env_name"]
+        self.env_name = cfg["env"]["name"]
         self.num_envs = cfg["env"]["numEnvs"]
-        self.get_image = cfg["env"]["vision"]["get_image"]
         self.device_type = cfg.get("device_type", "cuda")
         self.device_id = cfg.get("device_id", 0)
 
         self.device = "cpu"
-        # if self.device_type == "cuda" or self.device_type == "GPU":
-        #     self.device = "cuda" + ":" + str(self.device_id)
-
-        self.headless = cfg["headless"]
-
+        if self.device_type == "cuda" or self.device_type == "GPU":
+            self.device = "cuda" + ":" + str(self.device_id)
+        self._prepare_wrappers()
+        self.get_image = self.env_wrapper.env_cfg["vision"]["get_image"]
         # double check!
         self.graphics_device_id = self.device_id
+        self.headless = headless
         if self.headless and not self.get_image:
             self.graphics_device_id = -1
+
+        self.headless = cfg["headless"]
 
         # self.control_freq_inv = cfg["env"].get("controlFrequencyInv", 1)
 
@@ -65,6 +65,7 @@ class Robot:
         self.reset(torch.arange(self.num_envs, device=self.device))
 
     def create_sim(self):
+
         self.up_axis_idx = self.set_sim_params_up_axis(self.sim_params, 'z')
         self.sim = self.gym.create_sim(self.device_id, self.graphics_device_id,
                                        self.physics_engine, self.sim_params)
@@ -72,7 +73,7 @@ class Robot:
             print("*** Failed to create sim")
             quit()
         # self._create_ground_plane()
-        self._prepare_wrappers()
+        self.env_wrapper.load_surrounding_assets(self)
         self._sample_init_state()
         self._create_ground()
         self._create_envs(self.cfg["env"]['envSpacing'],
@@ -130,8 +131,6 @@ class Robot:
         # sensor settings
         self.historical_step = self.cfg["env"]["sensor"]["historical_step"]
         self.use_sys_information = self.cfg["env"]["sensor"]["sys_id"]
-
-        self.refEnv = self.cfg["env"]["viewer"]["refEnv"]
 
         self.risk_reward = self.cfg["env"]["risk_reward"]
         self.rush_reward = self.cfg["env"]["rush_reward"]
@@ -343,13 +342,12 @@ class Robot:
         self.Kd = self.cfg["env"]["control"]["damping"]
 
     def _prepare_wrappers(self):
-        
+
         self.task_wrapper = build_task_wrapper(
             self.task_name, self.device, self.cfg)
         self.env_wrapper = build_env_wrapper(
             self.env_name, self.device, self.cfg)
-        self.env_wrapper.load_surrounding_assets(self)
-        
+
     def _create_envs(self, spacing, num_per_row):
         asset_root = "../../assets"
         asset_file = "urdf/a1/a1.urdf"
@@ -420,7 +418,7 @@ class Robot:
             a1_idx = self.gym.get_actor_index(
                 env_ptr, a1_handle, gymapi.DOMAIN_SIM)
             self.a1_indices.append(a1_idx)
-            if self.surroundings is not None:
+            if self.env_wrapper.surroundings is not None:
                 surrounding_handles = self.env_wrapper.create_surroundings(
                     self, env_ptr, i)
                 surrounding_indices = [self.gym.get_actor_index(
@@ -540,7 +538,6 @@ class Robot:
                 self.gym.poll_viewer_events(self.viewer)
 
     def step(self, actions):
-
         if self.randomize_input:
             actions = self.randomizer["randomize_state"].state_randomizations['actions']['noise_lambda'](
                 actions)
@@ -750,7 +747,7 @@ class Robot:
         a1_indices = self.a1_indices[env_ids].to(torch.int32)
         self.gym.set_actor_root_state_tensor_indexed(self.sim,
                                                      gymtorch.unwrap_tensor(
-                                                         self.init_states_for_each_env),
+                                                         self.initial_root_states),
                                                      gymtorch.unwrap_tensor(a1_indices), len(env_ids_int32))
         self.gym.set_dof_state_tensor_indexed(self.sim,
                                               gymtorch.unwrap_tensor(
@@ -831,7 +828,7 @@ class Robot:
     def _build_viewer(self):
         self.enable_viewer_sync = True
         self.viewer = None
-
+        self.refEnv = self.env_wrapper.env_cfg["viewer"]["refEnv"]
         # if running with a viewer, set up keyboard shortcuts and camera
         if self.headless == False:
             # subscribe to keyboard shortcuts
@@ -854,8 +851,8 @@ class Robot:
             self.gym.viewer_camera_look_at(
                 self.viewer, None, cam_pos, cam_target)
 
-            p = self.cfg["env"]["viewer"]["pos"]
-            lookat = self.cfg["env"]["viewer"]["lookat"]
+            p = self.env_wrapper.env_cfg["viewer"]["pos"]
+            lookat = self.env_wrapper.env_cfg["viewer"]["lookat"]
             self.camera_distance = [
                 _lookat - _p for _lookat, _p in zip(lookat, p)]
             lookat = self.root_states[self.a1_indices[self.refEnv], 0:3]
@@ -1030,9 +1027,10 @@ class Robot:
 
     def _reward_moving_forward(self):
         # encourage moving forward
-        base_lin_val_in_world_frame = self.root_states[self.a1_indices, 7:10] * self.lin_vel_scale
+        base_lin_val_in_world_frame = self.root_states[self.a1_indices,
+                                                       7:10] * self.lin_vel_scale
         return torch.clamp(base_lin_val_in_world_frame, min=-1000., max=self.reward_params["forward_vel"])
-    
+
     def _reward_tracking_lin_vel(self):
         # Tracking of linear velocity commands (xy axes)
         lin_vel_error = torch.sum(torch.square(
@@ -1083,7 +1081,7 @@ class Robot:
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1
         self.feet_air_time *= ~contact
         return rew_airTime * self.reward_scales["feet_air_time"]
-    
+
     def compute_a1_observations(self,
                                 commands: Tensor,
                                 dof_pos: Tensor,

@@ -1,7 +1,7 @@
 task:
   name: "base"
 env:
-  name: "plane"
+  name: "downstairs"
   numEnvs: 3
   envSpacing: 4. # [m]
   command: "vel"
@@ -11,7 +11,7 @@ env:
   vel_reward_exp_coeff: 0.25
   robot_origin: [0., 0., 0.]
   envOffset: [5, 5]
-  surroundings:
+  # surroundings:
     # upstairs:
     #   texture: "none"
     #   static_friction: 1.0 # [-]
@@ -30,22 +30,6 @@ env:
   asset:
     penalize_contacts_on: []
     terminate_after_contacts_on: ["trunk", "upper"]
-
-  vision:
-    get_image: False
-    image_type: "depth" # depth, rgb, rgbd
-    frame_stack: 4
-    update_freq: 4 # how many control steps do we update the image buffer
-    width: 64
-    height: 64
-
-  groundType:
-    name: "stepping_stones" # plane, mountain range,
-    staticFriction: 10.0 # [-]
-    dynamicFriction: 10.0 # [-]
-    restitution: 0. # [-]
-    scale: [0.3, 0.3, 0.05]
-    offset: [-5, -5, 0]
 
   baseInitState:
     pos: [0.05, 0.05, 0.45] # x,y,z [m]
@@ -118,13 +102,6 @@ env:
 
     # use diagonal action
     diagonal_act: False
-
-  # viewer cam:
-  viewer:
-    refEnv: 0
-    pos: [5, -5, 4.0] # [m]
-    # pos: [5, 0.3, 3] # [m]
-    lookat: [4, 0, 0.2] # [m]
 
   controller: False
 

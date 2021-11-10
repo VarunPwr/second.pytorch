@@ -16,14 +16,19 @@ class PlaneEnvWrapper(BaseEnvWrapper):
 
     def __init__(self, device, cfg):
         """Initializes the env wrappers."""
+        self.env_name = cfg["env"]["name"]
         super(PlaneEnvWrapper, self).__init__(device, cfg)
+        self.ground_type = self.env_cfg["groundType"]["name"]
+        self.static_friction = self.env_cfg["groundType"]["staticFriction"]
+        self.dynamic_friction = self.env_cfg["groundType"]["dynamicFriction"]
+        self.restitution = self.env_cfg["groundType"]["restitution"]
         return
 
     def check_termination(self, task):
         """Checks if the episode is over."""
         base_pos = task.root_states[task.a1_indices, 0:2]
         flag = ~torch.all(torch.logical_and(base_pos > -self.offset, base_pos <
-                                           self.offset), dim=-1)
+                                            self.offset), dim=-1)
         return flag
 
     def create_surroundings(self, task, env_ptr, env_id):
@@ -37,7 +42,7 @@ class PlaneEnvWrapper(BaseEnvWrapper):
         plane_params.dynamic_friction = self.dynamic_friction
         task.gym.add_ground(task.sim, plane_params)
         return torch.zeros((self.num_envs, 3), device=self.device)
-        
+
     def sample_origins(self, vertices):
         del vertices
         raise NotImplementedError

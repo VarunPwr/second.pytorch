@@ -351,7 +351,8 @@ def parse_arguments(description="Isaac Gym Example", headless=False, no_graphics
         print("Can't use GPU pipeline with CPU Physics. Changing pipeline to 'CPU'.")
         args.pipeline = 'CPU'
         args.use_gpu_pipeline = False
-
+    if not args.use_gpu_pipeline:
+        args.device = 'cpu'
     # Default to PhysX
     args.physics_engine = gymapi.SIM_PHYSX
     args.use_gpu = (args.sim_device_type == 'cuda')

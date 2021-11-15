@@ -420,7 +420,6 @@ class A1(BaseTask):
             dof_props = self._process_dof_props(dof_props_asset, i)
             self.gym.set_actor_dof_properties(
                 env_ptr, a1_handle, dof_props)
-            self.gym.set_actor_dof_properties(env_ptr, a1_handle, dof_props)
             self.gym.enable_actor_dof_force_sensors(env_ptr, a1_handle)
             self.envs.append(env_ptr)
             self.a1_handles.append(a1_handle)

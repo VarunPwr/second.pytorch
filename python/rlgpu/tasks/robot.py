@@ -28,8 +28,8 @@ class Robot:
         self.task_name = cfg["task"]["name"]
         self.env_name = cfg["env"]["name"]
         self.num_envs = cfg["env"]["numEnvs"]
-        self.device_type = cfg.get("device_type", "cuda")
-        self.device_id = cfg.get("device_id", 0)
+        self.device_type = device_type
+        self.device_id = device_id
 
         self.device = "cpu"
         if self.device_type == "cuda" or self.device_type == "GPU":
@@ -58,8 +58,8 @@ class Robot:
         self.cfg["device_type"] = device_type
         self.cfg["device_id"] = device_id
         self.cfg["headless"] = headless
-        self._build_buf()
         self._build_viewer()
+        self._build_buf()
         self._build_utilizers()
         self._prepare_reward_function()
         self.reset(torch.arange(self.num_envs, device=self.device))
@@ -74,6 +74,7 @@ class Robot:
             quit()
         # self._create_ground_plane()
         self.env_wrapper.load_surrounding_assets(self)
+
         self._sample_init_state()
         self._create_ground()
         self._create_envs(self.cfg["env"]['envSpacing'],
@@ -91,6 +92,7 @@ class Robot:
     def _create_ground(self):
         self.robot_origin = self.env_wrapper.create_ground(
             self) + torch.as_tensor(self.base_init_state[:3], device=self.device)
+        # self.robot_origin = torch.zeros((self.num_envs, 3), device=self.device)
 
     def _register(self):
 
@@ -310,8 +312,6 @@ class Robot:
                                    dtype=torch.float, device=self.device, requires_grad=False)
         self.time_out_buf = torch.zeros_like(self.reset_buf)
 
-        jt = self.gym.acquire_jacobian_tensor(self.sim, "a1")
-        self.jacobian_tensor = gymtorch.wrap_tensor(jt)
         self.feet_dof_pos = self.dof_pos[..., self.feet_indices]
         if self.diagonal_act:
             self.action_scale = torch.as_tensor(
@@ -411,7 +411,6 @@ class Robot:
 
             self.gym.set_actor_dof_properties(
                 env_ptr, a1_handle, dof_props)
-            self.gym.set_actor_dof_properties(env_ptr, a1_handle, dof_props)
             self.gym.enable_actor_dof_force_sensors(env_ptr, a1_handle)
             self.envs.append(env_ptr)
             self.a1_handles.append(a1_handle)
@@ -511,7 +510,7 @@ class Robot:
     def get_states(self):
         return self.states_buf
 
-    def render(self, sync_frame_time=True):
+    def render(self):
         if self.viewer:
             # check for window closed
             if self.gym.query_viewer_has_closed(self.viewer):
@@ -532,8 +531,7 @@ class Robot:
             if self.enable_viewer_sync:
                 self.gym.step_graphics(self.sim)
                 self.gym.draw_viewer(self.viewer, self.sim, True)
-                if sync_frame_time:
-                    self.gym.sync_frame_time(self.sim)
+                self.gym.sync_frame_time(self.sim)
             else:
                 self.gym.poll_viewer_events(self.viewer)
 
@@ -571,8 +569,8 @@ class Robot:
         self.post_physics_step()
 
         if self.randomize_input:
-            actions = self.randomizer["randomize_state"].state_randomizations['observations']['noise_lambda'](
-                actions)
+            self.obs_buf = self.randomizer["randomize_state"].state_randomizations['observations']['noise_lambda'](
+                self.obs_buf)
 
     def post_physics_step(self):
         self.frame_count += 1
@@ -848,16 +846,10 @@ class Robot:
                 cam_pos = gymapi.Vec3(20.0, 3.0, 25.0)
                 cam_target = gymapi.Vec3(10.0, 0.0, 15.0)
 
-            self.gym.viewer_camera_look_at(
-                self.viewer, None, cam_pos, cam_target)
-
             p = self.env_wrapper.env_cfg["viewer"]["pos"]
             lookat = self.env_wrapper.env_cfg["viewer"]["lookat"]
             self.camera_distance = [
                 _lookat - _p for _lookat, _p in zip(lookat, p)]
-            lookat = self.root_states[self.a1_indices[self.refEnv], 0:3]
-            p = [_lookat - _camera_distance for _camera_distance,
-                 _lookat in zip(self.camera_distance, lookat)]
             cam_pos = gymapi.Vec3(p[0], p[1], p[2])
             cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
             self.gym.viewer_camera_look_at(

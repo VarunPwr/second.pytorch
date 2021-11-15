@@ -73,7 +73,7 @@ class BaseEnvWrapper(object):
         if self.ground_type != "plane" or len(self.surrounding_assets) == 0:
             # Currently only support surroundings or trimesh ground
             return handles
-        for surrounding_assets, surrounding_cfg in zip(task.surrounding_assets, self.cfg["env"]["surroundings"].values()):
+        for surrounding_assets, surrounding_cfg in zip(self.surrounding_assets, self.cfg["env"]["surroundings"].values()):
             pose = gymapi.Transform()
             pose.p.x = surrounding_cfg["surrounding_origin"][0]
             pose.p.y = surrounding_cfg["surrounding_origin"][1]

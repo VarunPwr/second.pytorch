@@ -63,7 +63,7 @@ class Robot:
         self._build_buf()
         self._build_utilizers()
         self._prepare_reward_function()
-        self._build_learners()
+        # self._build_learners()
         self.reset(torch.arange(self.num_envs, device=self.device))
 
     def create_sim(self):
@@ -184,7 +184,7 @@ class Robot:
 
     def _build_learners(self):
         self.learners = {}
-        if self.cfg["learn"]["gail"]:
+        if self.cfg["gail"]:
             self.learners["gail"] = build_learner("gail", self.cfg)
 
     def _build_buf(self):

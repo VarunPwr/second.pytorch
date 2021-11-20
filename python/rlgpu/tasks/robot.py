@@ -114,11 +114,6 @@ class Robot:
             self.camera_angle = self.env_wrapper.env_cfg["vision"]["camera_angle"]
         self.frame_count = 0
 
-        # reward scales
-        self.reward_scales = self.cfg["env"]["learn"]["reward_scales"]
-        self.reward_params = self.cfg["env"]["learn"]["reward_params"]
-        self.num_rew_terms = len(self.reward_scales)
-
         # use diagonal action
         self.diagonal_act = self.cfg["env"]["learn"]["diagonal_act"]
 
@@ -148,9 +143,6 @@ class Robot:
         self.max_episode_length_s = self.cfg["env"]["learn"]["episodeLength_s"]
         self.max_episode_length = int(
             self.max_episode_length_s / (self.control_freq_inv * self.dt) + 0.5)
-
-        for key in self.reward_scales.keys():
-            self.reward_scales[key] *= self.dt
 
         extra_info_len = 3 if self.use_sys_information else 0
         if self.diagonal_act:
@@ -320,8 +312,6 @@ class Robot:
         else:
             self.action_scale = torch.as_tensor(
                 [self.hip_action_scale, self.action_scale, self.action_scale] * 4, device=self.device)
-        self.episode_sums = {name: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
-                             for name in self.reward_scales.keys()}
 
     def _sample_init_state(self):
         # base init state
@@ -585,7 +575,7 @@ class Robot:
             self.progress_buf, self.command_change_step) == 0).float().nonzero(as_tuple=False).squeeze(-1)
         if len(change_commmand_env_ids) > 0:
             self.reset_command(change_commmand_env_ids)
-        self.check_termination()
+        self.task_wrapper.check_termination(self)
         self.compute_reward()
         env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
         if len(env_ids) > 0:
@@ -612,15 +602,6 @@ class Robot:
             self.obs_buf[:, self.state_obs_size:] = self.image_buf.flatten(1)
         self.compute_observations()
 
-    def check_termination(self):
-        """ Check if environments need to be reset
-        """
-        self.reset_buf = torch.any(torch.norm(
-            self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1., dim=1)
-        self.time_out_buf = self.progress_buf > self.max_episode_length
-        self.reset_buf |= self.time_out_buf
-        self.reset_buf |= self.env_wrapper.check_termination(self)
-
     def compute_observations(self):
         self.gym.refresh_dof_state_tensor(self.sim)  # done in step
         self.gym.refresh_actor_root_state_tensor(self.sim)
@@ -644,7 +625,6 @@ class Robot:
                 self.ang_vel_scale,
                 self.dof_pos_scale,
                 self.dof_vel_scale,
-                self.a1_indices,
                 contact_forces,
             )
         else:
@@ -659,7 +639,6 @@ class Robot:
                 self.ang_vel_scale,
                 self.dof_pos_scale,
                 self.dof_vel_scale,
-                self.a1_indices,
                 contact_forces,
             )
 
@@ -717,9 +696,9 @@ class Robot:
                 m = (self.dof_pos_limits[i, 0] + self.dof_pos_limits[i, 1]) / 2
                 r = self.dof_pos_limits[i, 1] - self.dof_pos_limits[i, 0]
                 self.dof_pos_limits[i, 0] = m - 0.5 * r * \
-                    self.reward_params["soft_dof_vel_limit"]
+                    self.cfg["env"]["learn"]["soft_dof_pos_limit"]
                 self.dof_pos_limits[i, 1] = m + 0.5 * r * \
-                    self.reward_params["soft_dof_vel_limit"]
+                    self.cfg["env"]["learn"]["soft_dof_pos_limit"]
         for i in range(self.num_dof):
             props['driveMode'][i] = gymapi.DOF_MODE_POS
             props['stiffness'][i] = self.Kp
@@ -935,12 +914,24 @@ class Robot:
         """
         self.reward_functions = []
         self.reward_names = []
+
+        # reward scales
+        self.reward_scales = self.task_wrapper.task_cfg["learn"]["reward_scales"]
+        self.reward_params = self.task_wrapper.task_cfg["learn"]["reward_params"]
+        self.num_rew_terms = len(self.reward_scales)
+
+        for key in self.reward_scales.keys():
+            self.reward_scales[key] *= self.dt
+
         for name in self.reward_scales.keys():
             if name == "termination":
                 continue
             self.reward_names.append(name)
             name = '_reward_' + name
             self.reward_functions.append(getattr(self, name))
+
+        self.episode_sums = {name: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
+                             for name in self.reward_scales.keys()}
 
     def compute_reward(self):
         """ Compute rewards
@@ -1014,16 +1005,16 @@ class Robot:
 
     def _reward_dof_vel_limits(self):
         # Penalize dof velocities too close to the limit
-        return torch.sum((torch.abs(self.dof_vel) - self.dof_vel_limits * self.reward_params["soft_dof_vel_limit"]).clip(min=0.), dim=1)
+        return torch.sum((torch.abs(self.dof_vel) - self.dof_vel_limits * self.cfg["env"]["learn"]["soft_dof_vel_limit"]).clip(min=0.), dim=1)
 
     def _reward_torque_limits(self):
         # penalize torques too close to the limit
-        return torch.sum((torch.abs(self.torques) - self.torque_limits * self.reward_params["soft_torque_limit"]).clip(min=0.), dim=1)
+        return torch.sum((torch.abs(self.torques) - self.torque_limits * self.cfg["env"]["learn"]["soft_torque_limit"]).clip(min=0.), dim=1)
 
     def _reward_moving_forward(self):
         # encourage moving forward
         base_lin_val_in_world_frame = self.root_states[self.a1_indices,
-                                                       7:10] * self.lin_vel_scale
+                                                       7] * self.lin_vel_scale
         return torch.clamp(base_lin_val_in_world_frame, min=-1000., max=self.reward_params["forward_vel"])
 
     def _reward_tracking_lin_vel(self):
@@ -1087,7 +1078,6 @@ class Robot:
                                 ang_vel_scale: float,
                                 dof_pos_scale: float,
                                 dof_vel_scale: float,
-                                a1_indices: Tensor,
                                 contact_forces: Tensor
                                 ) -> Tensor:
 

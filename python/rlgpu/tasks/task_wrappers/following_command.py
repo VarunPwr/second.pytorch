@@ -2,7 +2,7 @@ from rlgpu.tasks.task_wrappers.base_task_wrapper import BaseTaskWrapper
 import torch
 
 
-class MovingForwardTask(BaseTaskWrapper):
+class FollowingCommandTask(BaseTaskWrapper):
 
     def __init__(self, device, cfg):
         """Initializes the task."""

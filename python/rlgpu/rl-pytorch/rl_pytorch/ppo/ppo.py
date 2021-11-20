@@ -305,7 +305,6 @@ class PPO:
                 actions_log_prob_batch, entropy_batch, value_batch, mu_batch, sigma_batch = self.actor_critic.evaluate(obs_batch,
                                                                                                                        states_batch,
                                                                                                                        actions_batch)
-
                 # KL
                 if self.desired_kl != None and self.schedule == 'adaptive':
 

@@ -16,6 +16,7 @@ from torch import Tensor
 from rlgpu.tasks.task_wrappers import build_task_wrapper
 from rlgpu.tasks.env_wrappers import build_env_wrapper
 from rlgpu.tasks.utilizers import build_utilizer
+from rlgpu.tasks.learnable import build_learner
 
 
 class Robot:
@@ -62,6 +63,7 @@ class Robot:
         self._build_buf()
         self._build_utilizers()
         self._prepare_reward_function()
+        self._build_learners()
         self.reset(torch.arange(self.num_envs, device=self.device))
 
     def create_sim(self):
@@ -171,6 +173,7 @@ class Robot:
 
     def _build_utilizers(self):
         self.randomizer = {}
+        self.curriculum_scheduler = {}
         if self.cfg["randomize_state"]["randomize"]:
             self.randomizer["randomize_state"] = build_utilizer(
                 "randomize_state", self.cfg)
@@ -178,6 +181,11 @@ class Robot:
         if self.cfg["randomize_reward"]["randomize"]:
             self.randomizer["randomize_reward"] = build_utilizer(
                 "randomize_reward", self.cfg)
+
+    def _build_learners(self):
+        self.learners = {}
+        if self.cfg["learn"]["gail"]:
+            self.learners["gail"] = build_learner("gail", self.cfg)
 
     def _build_buf(self):
         # get gym state tensors
@@ -1076,8 +1084,6 @@ class Robot:
 
         projected_gravity = quat_rotate(self.base_quat, gravity_vec)
 
-        dof_pos_scaled = dof_pos * dof_pos_scale
-
         commands_scaled = commands[..., :3] * \
             torch.tensor([lin_vel_scale, lin_vel_scale, ang_vel_scale],
                          requires_grad=False, device=commands.device)
@@ -1087,7 +1093,7 @@ class Robot:
                         projected_gravity,
                         commands_scaled,
                         commands[..., 3:],
-                        dof_pos_scaled,
+                        dof_pos * dof_pos_scale,
                         dof_vel * dof_vel_scale,
                         actions,
                         contact_forces,

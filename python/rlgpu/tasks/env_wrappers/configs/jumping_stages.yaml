@@ -15,7 +15,7 @@ vision:
   update_freq: 4 # how many control steps do we update the image buffer
   width: 64
   height: 64
-  camera_angle: 0
+  camera_angle: 20
 
 groundType:
   name: "jumping_stages" # plane, mountain range,

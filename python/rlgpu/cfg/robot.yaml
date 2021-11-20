@@ -1,7 +1,7 @@
 task:
   name: "base"
 env:
-  name: "obstacles"
+  name: "stone_ground"
   numEnvs: 1024
   envSpacing: 4. # [m]
   command: "vel"

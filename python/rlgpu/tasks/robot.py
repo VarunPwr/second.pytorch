@@ -121,11 +121,6 @@ class Robot:
         self.command_type = self.cfg["env"]["command"]
         self.command_change_step = self.cfg["env"]["commandChangeStep"]
 
-        # command ranges
-        self.command_x_range = self.cfg["env"]["randomCommandRanges"]["linear_x"]
-        self.command_y_range = self.cfg["env"]["randomCommandRanges"]["linear_y"]
-        self.command_yaw_range = self.cfg["env"]["randomCommandRanges"]["yaw"]
-
         # sensor settings
         self.historical_step = self.cfg["env"]["sensor"]["historical_step"]
         self.use_sys_information = self.cfg["env"]["sensor"]["sys_id"]
@@ -573,7 +568,7 @@ class Robot:
             self.base_quat, self.root_states[self.a1_indices, 10:13]) * self.ang_vel_scale
         change_commmand_env_ids = (torch.fmod(
             self.progress_buf, self.command_change_step) == 0).float().nonzero(as_tuple=False).squeeze(-1)
-        if len(change_commmand_env_ids) > 0:
+        if self.task_wrapper.task_name == "following_command" and len(change_commmand_env_ids) > 0:
             self.reset_command(change_commmand_env_ids)
         self.task_wrapper.check_termination(self)
         self.compute_reward()
@@ -731,13 +726,6 @@ class Robot:
                                               gymtorch.unwrap_tensor(
                                                   self.dof_state),
                                               gymtorch.unwrap_tensor(a1_indices), len(env_ids_int32))
-
-        self.commands_x[env_ids] = torch_rand_float(
-            self.command_x_range[0], self.command_x_range[1], (len(env_ids), 1), device=self.device).squeeze()
-        self.commands_y[env_ids] = torch_rand_float(
-            self.command_y_range[0], self.command_y_range[1], (len(env_ids), 1), device=self.device).squeeze()
-        self.commands_yaw[env_ids] = torch_rand_float(
-            self.command_yaw_range[0], self.command_yaw_range[1], (len(env_ids), 1), device=self.device).squeeze()
 
         if self.historical_step > 1:
             self.dof_pos_buf[env_ids] = 0
@@ -932,6 +920,11 @@ class Robot:
 
         self.episode_sums = {name: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
                              for name in self.reward_scales.keys()}
+        if self.task_wrapper.task_name == "following_command":
+            # command ranges
+            self.command_x_range = self.task_wrapper.task_cfg["randomCommandRanges"]["linear_x"]
+            self.command_y_range = self.task_wrapper.task_cfg["randomCommandRanges"]["linear_y"]
+            self.command_yaw_range = self.task_wrapper.task_cfg["randomCommandRanges"]["yaw"]
 
     def compute_reward(self):
         """ Compute rewards

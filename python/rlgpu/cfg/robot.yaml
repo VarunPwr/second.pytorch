@@ -1,8 +1,8 @@
 task:
   name: "base"
 env:
-  name: "mountain_range"
-  numEnvs: 3
+  name: "obstacles"
+  numEnvs: 1024
   envSpacing: 4. # [m]
   command: "vel"
   commandChangeStep: 200

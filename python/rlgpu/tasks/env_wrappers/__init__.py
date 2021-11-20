@@ -4,11 +4,13 @@ from rlgpu.tasks.env_wrappers.state.upstairs import UpstairsEnvWrapper
 from rlgpu.tasks.env_wrappers.state.downstairs import DownstairsEnvWrapper
 from rlgpu.tasks.env_wrappers.state.mountain_range import MountainRangeEnvWrapper
 from rlgpu.tasks.env_wrappers.state.barriers import BarriersEnvWrapper
+from rlgpu.tasks.env_wrappers.state.box_ground import BoxGroundEnvWrapper
+from rlgpu.tasks.env_wrappers.vision.obstalces import ObstacleEnvWrapper
 
 state_env_wrappers = {"base": BaseEnvWrapper, "plane": PlaneEnvWrapper, "upstairs": UpstairsEnvWrapper,
-                      "downstairs": DownstairsEnvWrapper, "mountain_range": MountainRangeEnvWrapper, "barriers": BarriersEnvWrapper}
+                      "downstairs": DownstairsEnvWrapper, "mountain_range": MountainRangeEnvWrapper, "barriers": BarriersEnvWrapper, "box_ground": BoxGroundEnvWrapper}
 
-vision_env_wrappers = {}
+vision_env_wrappers = {"obstacles": ObstacleEnvWrapper}
 
 all_env_wrappers = state_env_wrappers.copy()
 all_env_wrappers.update(vision_env_wrappers)

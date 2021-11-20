@@ -11,26 +11,22 @@ from rlgpu.tasks.env_wrappers.base_env_wrapper import BaseEnvWrapper
 from isaacgym import gymapi
 
 
-class UpstairsEnvWrapper(BaseEnvWrapper):
+class ObstacleEnvWrapper(BaseEnvWrapper):
 
     def __init__(self, device, cfg):
         """Initializes the env wrappers."""
         self.env_name = cfg["env"]["name"]
-        super(UpstairsEnvWrapper, self).__init__(device, cfg)
+        super(ObstacleEnvWrapper, self).__init__(device, cfg)
         self.ground_type = self.env_cfg["groundType"]["name"]
         self.static_friction = self.env_cfg["groundType"]["staticFriction"]
         self.dynamic_friction = self.env_cfg["groundType"]["dynamicFriction"]
         self.restitution = self.env_cfg["groundType"]["restitution"]
-        self.goal_position = torch.as_tensor(
-            [self.env_cfg["goal_position"]], device=self.device)
 
     def check_termination(self, task):
         """Checks if the episode is over."""
         base_xy_pos = task.root_states[task.a1_indices, 0:2]
-        base_pos = task.root_states[task.a1_indices, 0:3]
         flag = ~torch.all(torch.logical_and(base_xy_pos > -self.offset, base_xy_pos <
                                             self.offset), dim=-1)
-        flag |= torch.norm(base_pos - self.goal_position, dim=-1) < 0.05
         return flag
 
     def create_surroundings(self, task, env_ptr, env_id):

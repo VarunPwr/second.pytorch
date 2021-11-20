@@ -11,12 +11,12 @@ from rlgpu.tasks.env_wrappers.base_env_wrapper import BaseEnvWrapper
 from isaacgym import gymapi
 
 
-class UpstairsEnvWrapper(BaseEnvWrapper):
+class BoxGroundEnvWrapper(BaseEnvWrapper):
 
     def __init__(self, device, cfg):
         """Initializes the env wrappers."""
         self.env_name = cfg["env"]["name"]
-        super(UpstairsEnvWrapper, self).__init__(device, cfg)
+        super(BoxGroundEnvWrapper, self).__init__(device, cfg)
         self.ground_type = self.env_cfg["groundType"]["name"]
         self.static_friction = self.env_cfg["groundType"]["staticFriction"]
         self.dynamic_friction = self.env_cfg["groundType"]["dynamicFriction"]

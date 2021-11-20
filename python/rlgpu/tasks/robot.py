@@ -105,12 +105,12 @@ class Robot:
         self.hip_action_scale = self.cfg["env"]["control"]["hipActionScale"]
         if self.get_image:
             # vision-guided mode
-            self.frame_stack = self.cfg["env"]["vision"]["frame_stack"]
-            self.vision_update_freq = self.cfg["env"]["vision"]["update_freq"]
-            self.image_type = self.cfg["env"]["vision"]["image_type"]
-            self.width = self.cfg["env"]["vision"]["width"]
-            self.height = self.cfg["env"]["vision"]["height"]
-            self.camera_angle = self.cfg["env"]["vision"]["camera_angle"]
+            self.frame_stack = self.env_wrapper.env_cfg["vision"]["frame_stack"]
+            self.vision_update_freq = self.env_wrapper.env_cfg["vision"]["update_freq"]
+            self.image_type = self.env_wrapper.env_cfg["vision"]["image_type"]
+            self.width = self.env_wrapper.env_cfg["vision"]["width"]
+            self.height = self.env_wrapper.env_cfg["vision"]["height"]
+            self.camera_angle = self.env_wrapper.env_cfg["vision"]["camera_angle"]
         self.frame_count = 0
 
         # reward scales
@@ -795,6 +795,8 @@ class Robot:
             image_vec.append(rgb_image)
 
         image_vec = torch.cat(image_vec, dim=0).flatten()
+        if self.device == "cpu":
+            image_vec = image_vec.to(self.device)
         # # flip the direction so near-objects are light and far objects are dark
         # normalized_depth = -255.0 * \
         #     (depth_image / torch.min(depth_image + 1e-4))

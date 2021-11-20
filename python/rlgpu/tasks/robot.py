@@ -93,6 +93,7 @@ class Robot:
         self.robot_origin = self.env_wrapper.create_ground(
             self) + torch.as_tensor(self.base_init_state[:3], device=self.device)
         # self.robot_origin = torch.zeros((self.num_envs, 3), device=self.device)
+        # self.robot_origin = self.env_wrapper.create_ground(self)
 
     def _register(self):
 

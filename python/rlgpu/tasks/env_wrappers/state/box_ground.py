@@ -61,7 +61,7 @@ class BoxGroundEnvWrapper(BaseEnvWrapper):
         plane_params.static_friction = self.static_friction
         plane_params.dynamic_friction = self.dynamic_friction
         task.gym.add_ground(task.sim, plane_params)
-        return torch.zeros((self.num_envs, 3), device=self.device)
+        return self.sample_origins()
 
     def sample_origins(self, vertices=None):
         del vertices
@@ -75,8 +75,9 @@ class BoxGroundEnvWrapper(BaseEnvWrapper):
         # 2. The robot is on the stairs
 
         prob_ground = self.env_cfg["prob_ground"]
-        prob_stairs = (1 - prob_ground) / (num_choices - 1)
-        sampled_origins = np.random.choice(robot_origin, size=self.num_envs, p=[
-                                           prob_ground] + [prob_stairs] * (num_choices - 1))
+        prob_in_process = (1 - prob_ground) / (num_choices - 1)
+        sampled_origins = np.random.choice(list(range(num_choices)), size=self.num_envs, p=[
+                                           prob_ground] + [prob_in_process] * (num_choices - 1)).astype(int)
+        sampled_origins = np.asarray(robot_origin)[sampled_origins]
         sampled_origins = torch.as_tensor(sampled_origins, device=self.device)
         return sampled_origins

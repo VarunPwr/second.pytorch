@@ -17,7 +17,7 @@ env:
     terminate_after_contacts_on: ["trunk", "upper"]
 
   baseInitState:
-    pos: [0.05, 0.05, 0.45] # x,y,z [m]
+    pos: [0.0, 0.0, 0.32] # x,y,z [m]
     rot: [0.0, 0.0, 0.0, 1.0] # x,y,z,w [quat]
     vLinear: [0.0, 0.0, 0.0] # x,y,z [m/s]
     vAngular: [0.0, 0.0, 0.0] # x,y,z [rad/s]

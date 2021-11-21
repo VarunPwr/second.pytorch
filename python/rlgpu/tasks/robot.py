@@ -16,7 +16,7 @@ from torch import Tensor
 from rlgpu.tasks.task_wrappers import build_task_wrapper
 from rlgpu.tasks.env_wrappers import build_env_wrapper
 from rlgpu.tasks.utilizers import build_utilizer
-from rlgpu.tasks.learnable import build_learner
+from rlgpu.tasks.learner import build_learner
 
 
 class Robot:
@@ -63,7 +63,7 @@ class Robot:
         self._build_buf()
         self._build_utilizers()
         self._prepare_reward_function()
-        # self._build_learners()
+        self._build_learners()
         self.reset(torch.arange(self.num_envs, device=self.device))
 
     def create_sim(self):
@@ -183,9 +183,12 @@ class Robot:
                 "randomize_reward", self.cfg)
 
     def _build_learners(self):
+        if "learners" not in self.cfg:
+            return
         self.learners = {}
-        if self.cfg["gail"]:
-            self.learners["gail"] = build_learner("gail", self.cfg)
+        for key, _ in self.cfg["learners"].items():
+            self.learners[key] = build_learner(
+                key, self.num_envs, self.device,  self.cfg)
 
     def _build_buf(self):
         # get gym state tensors
@@ -224,6 +227,11 @@ class Robot:
             actor_root_state).view(-1, 13)
         self.last_root_states = torch.zeros_like(self.root_states)
         self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
+        self.last_dof_pos = self.dof_state.view(
+            self.num_envs, self.num_dof, 2)[..., 0]
+        self.last_dof_vel = self.dof_state.view(
+            self.num_envs, self.num_dof, 2)[..., 1]
+
         self.dof_pos = self.dof_state.view(
             self.num_envs, self.num_dof, 2)[..., 0]
         self.dof_vel = self.dof_state.view(
@@ -469,6 +477,8 @@ class Robot:
     def pre_physics_step(self, actions):
         self.actions = actions.clone().to(self.device)
         self.last_root_states = self.root_states.clone()
+        self.last_dof_pos = self.dof_pos.clone()
+        self.last_dof_vel = self.dof_vel.clone()
         self.last_actions[:] = self.actions[:]
         if self.historical_step > 1:
             self.actions_buf = torch.cat(
@@ -579,6 +589,13 @@ class Robot:
         if self.task_wrapper.task_name == "following_command" and len(change_commmand_env_ids) > 0:
             self.reset_command(change_commmand_env_ids)
         self.task_wrapper.check_termination(self)
+        for k in self.learners.keys():
+            if k == "gail":
+                self.learners[k].save_transition(
+                    self.last_dof_pos, self.dof_pos)
+                if self.learners[k].check_update():
+                    self.learners[k].update()
+
         self.compute_reward()
         env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
         if len(env_ids) > 0:
@@ -586,9 +603,9 @@ class Robot:
         # self._update_viewer()
         if self.historical_step > 1:
             self.dof_pos_buf = torch.cat(
-                [self.dof_pos_buf[:, :-1], self.dof_pos.unsqueeze(1)], dim=1)
+                [self.dof_pos_buf[:, 1:], self.dof_pos.unsqueeze(1)], dim=1)
             self.torques_buf = torch.cat(
-                [self.torques_buf[:, :-1], self.torques.unsqueeze(1)], dim=1)
+                [self.torques_buf[:, 1:], self.torques.unsqueeze(1)], dim=1)
 
         if self.get_image and self.frame_count % self.vision_update_freq == 0:
             if self.headless:
@@ -722,7 +739,8 @@ class Robot:
             (torch.rand_like(
                 self.default_dof_pos[env_ids], device=self.device) - 0.5)
         self.dof_vel[env_ids] = velocities
-        # self.dof_vel[env_ids] = 0
+        self.last_dof_pos[env_ids] = self.dof_pos[env_ids]
+        self.last_dof_vel[env_ids] = self.dof_vel[env_ids]
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)
         a1_indices = self.a1_indices[env_ids].to(torch.int32)
@@ -1069,6 +1087,10 @@ class Robot:
         self.feet_air_time *= ~contact
         return rew_airTime * self.reward_scales["feet_air_time"]
 
+    def _reward_gail(self):
+        # GAIL reward
+        return self.learners["gail"].reward(self.last_dof_pos, self.dof_pos) * self.reward_scales["gail"]
+
     def compute_a1_observations(self,
                                 commands: Tensor,
                                 dof_pos: Tensor,
@@ -1088,15 +1110,16 @@ class Robot:
             torch.tensor([lin_vel_scale, lin_vel_scale, ang_vel_scale],
                          requires_grad=False, device=commands.device)
 
-        obs = torch.cat((self.base_lin_vel,
+        obs = torch.cat((
+                        dof_pos * dof_pos_scale,
+                        dof_vel * dof_vel_scale,
+                        self.base_lin_vel,
                         self.base_ang_vel,
                         projected_gravity,
                         commands_scaled,
                         commands[..., 3:],
-                        dof_pos * dof_pos_scale,
-                        dof_vel * dof_vel_scale,
                         actions,
                         contact_forces,
-                         ), dim=-1)
+                        ), dim=-1)
 
         return obs

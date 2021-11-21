@@ -1031,7 +1031,7 @@ class Robot:
         return torch.sum((torch.abs(self.torques) - self.torque_limits * self.cfg["env"]["learn"]["soft_torque_limit"]).clip(min=0.), dim=1)
 
     def _reward_moving_forward(self):
-        # encourage moving forward
+        # encourage moving forward as fast as possible
         base_lin_val_in_world_frame = self.root_states[self.a1_indices,
                                                        7] * self.lin_vel_scale
         return torch.clamp(base_lin_val_in_world_frame, min=-1000., max=self.reward_params["forward_vel"])

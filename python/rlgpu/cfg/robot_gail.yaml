@@ -1,5 +1,5 @@
 task:
-  name: "pace_forward"
+  name: "trot_forward"
 env:
   name: "plane"
   numEnvs: 1024
@@ -99,7 +99,7 @@ learners:
     noptepochs: 3
     nminibatches: 4 # this is per env
     dof: 12
-    motion_names: ["pace"]
+    motion_names: ["trot"]
     state_dim: 12 # dof pos
     hidden_dim: 256
     max_grad_norm: 0.5

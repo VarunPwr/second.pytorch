@@ -183,9 +183,9 @@ class Robot:
                 "randomize_reward", self.cfg)
 
     def _build_learners(self):
+        self.learners = {}
         if "learners" not in self.cfg:
             return
-        self.learners = {}
         for key, _ in self.cfg["learners"].items():
             self.learners[key] = build_learner(
                 key, self.num_envs, self.device,  self.cfg)

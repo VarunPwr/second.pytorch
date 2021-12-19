@@ -485,7 +485,7 @@ def predict_kitti_to_anno(net,
                           global_set=None):
     batch_image_shape = example['image_shape']
     batch_imgidx = example['image_idx']
-    predictions_dicts = net(example)
+    predictions_dicts, voxel_features, spatial_features= net(example)
     # t = time.time()
     annos = []
     for i, preds_dict in enumerate(predictions_dicts):
@@ -546,7 +546,7 @@ def predict_kitti_to_anno(net,
         num_example = annos[-1]["name"].shape[0]
         annos[-1]["image_idx"] = np.array(
             [img_idx] * num_example, dtype=np.int64)
-    return annos
+    return annos, voxel_features, spatial_features
 
 
 def evaluate(config_path,

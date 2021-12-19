@@ -666,6 +666,7 @@ class VoxelNet(nn.Module):
         # num_points: [num_voxels]
         # coors: [num_voxels, 4]
         voxel_features = self.voxel_feature_extractor(voxels, num_points, coors)
+        spatial_features = None
         if self._use_sparse_rpn:
             preds_dict = self.sparse_rpn(voxel_features, coors, batch_size_dev)
         else:
@@ -740,7 +741,7 @@ class VoxelNet(nn.Module):
                 "cared": cared,
             }
         else:
-            return self.predict(example, preds_dict)
+            return self.predict(example, preds_dict), voxel_features, spatial_features
 
     def predict(self, example, preds_dict):
         t = time.time()
